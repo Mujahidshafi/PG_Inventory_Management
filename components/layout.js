@@ -10,7 +10,7 @@ const Layout = ({ title, children }) => {
         </button>
 
         {/*page title*/}
-        <span className="text-[40px]">{title}</span>
+        <span className="text-[40px] text-black">{title}</span>
 
         {/*settings*/}
         <button>

@@ -1,3 +1,3 @@
-import AdminMenu from "./adminMenu";
+import Login from "./login";
 
-export default AdminMenu;
+export default Login;

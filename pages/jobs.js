@@ -1,13 +1,12 @@
 import React from "react";
-//import "../App.css";
 import Layout from "../components/layout"; 
 
-function MillJob() {
+function Jobs() {
   return (
-    <Layout title="Mill Job">
+    <Layout title="Jobs">
       <span>Mill Job Page Content</span>
     </Layout>
   );
 }
 
-export default MillJob;
+export default Jobs;
