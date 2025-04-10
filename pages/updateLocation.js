@@ -22,7 +22,7 @@ function UpdateLocation() {
       quality,
       dateTime,
     });
-    alert("Form submitted! (no backend yet)");
+    alert("Location update form submitted! Backend connection coming soon.)");
   };
 
   return (
