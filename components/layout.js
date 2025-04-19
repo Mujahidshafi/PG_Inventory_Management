@@ -9,7 +9,7 @@ const Layout = ({ title, children, onSettingsClick, showBack }) => {
       <div className="flex items-center w-[95%] justify-between translate-y-[-3vh] mt-6">
         {/*back*/}
         
-        {/* ✅ Only show Back button if showBack is true */}
+        {/* Only show Back button if showBack is true */}
         {showBack ? (
           <button
             onClick={() => router.back()}
@@ -23,7 +23,7 @@ const Layout = ({ title, children, onSettingsClick, showBack }) => {
 
         <span className="text-[40px] text-black">{title}</span>
 
-        {/* ✅ Only show settings icon if onSettingsClick exists */}
+        {/*Only show settings icon if onSettingsClick exists */}
         {onSettingsClick ? (
           <button onClick={onSettingsClick}>
             <img
