@@ -26,6 +26,7 @@ function RunningJob() {
         </div>
   
         <div className= "flex flex-auto gap-10 p-6" >
+          {/*Panel 1*/}
           <div className = "flex-1 bg-gray-100 rounded-2xl p-4">
             <div className= "w-full flex-1 w-[85%] grid grid-cols-2 bg-gray-300 text-black rounded-2xl p-2">
               
@@ -43,40 +44,35 @@ function RunningJob() {
 
             </div>
           </div>
-          <div className= "flex-1 bg-gray-100 rounded-2xl"> 
-            <div className= "overflow-x-auto p-10">
-              <table className="w-full table-auto border-collapse text-sm text-center bg-white">
-                <thead className="bg-gray-200 text-black">
-                  <tr>
-                    <th>Clean</th>
-                    <th></th>
-                    <th></th>
-                    <th>Screening</th>
-                    <th></th>
-                    <th>Trash</th>
-                  </tr>
-                </thead>
-                 <thead className="text-black">
-                  <tr>
-                    <th></th>
-                    <th className="bg-gray-100 text-sm">Gravity</th>
-                    <th className="bg-gray-100 text-sm">Light</th>
-                    <th className="bg-gray-100 text-sm">Small</th>
-                    <th className="bg-gray-100 text-sm">De Stoner Light</th>
-                    <th></th>
-                  </tr>
-                  </thead>
-                <tbody>
-                  <tr>
-                    <td>2,000</td>
-                    <td>1,500</td>
-                    <td>1,000</td>
-                    <td>3,000</td>
-                    <td>2,500</td>
-                    <td>2,000</td>
-                  </tr>
-                </tbody>
-              </table>
+          {/*Panel 2*/}
+          <div className= "flex-1 bg-gray-100 rounded-2xl p-4"> 
+            <div className= "overflow-x-auto p-3">
+              <div className="bg-white rounded-md text-sm text-center">
+                {/*Title*/}
+                <div className="grid grid-cols-6 bg-gray-200 text-black font-semibold border-b border-gray-300">
+                  <div className="p-2">Clean</div>
+                  <div className="col-span-4 p-2">Screening</div>
+                  <div className="p-2">Trash</div>
+                </div>
+                {/*sub-title*/}
+                <div className="grid grid-cols-6 bg-gray-100 text-black border-b border-gray-300 text-sm">
+                  <div></div>
+                  <div>Gravity</div>
+                  <div>Light</div>
+                  <div>Small</div>
+                  <div>DE-Stoner Light</div>
+                  <div></div>
+                </div>
+                {/*Data*/}
+                <div className="grid grid-cols-6 divide-x divide-gray-200 border-t border-gray-200 text-black">
+                  <div>2,000</div>
+                  <div>1,500</div>
+                  <div>1,000</div>
+                  <div>3,000</div>
+                  <div>2,500</div>
+                  <div>2,000</div>
+                </div>
+    </div>
             </div>
           </div>
         </div>
