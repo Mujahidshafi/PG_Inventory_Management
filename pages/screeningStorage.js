@@ -5,7 +5,7 @@ import Layout from "../components/layout";
 function screeningStorage() {
     return (
       <Layout title="Screening Storage">
-        <div class = "w-[100%] h-[100%] flex flex-col items-center gap-4 overflow-y-scroll">
+        <div class = "w-[100%] h-[100%] flex flex-col items-center gap-4 overflow-y-scroll text-black">
             <div class = "bg-gray-100 w-[90%] h-[20%] rounded-[30px] shadow-lg items-start items-center justify-around flex gap-2 p-4">
               <div class = "flex flex-col items-center gap-2">
                 <span class = "text-sm">Location</span>
