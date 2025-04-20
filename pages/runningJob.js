@@ -1,7 +1,6 @@
 import React from "react";
 //import "../App.css";
 import Layout from "../components/layout"; 
-import DateTimePicker from "@/components/DateandTimePicker";
 
 function RunningJob() {
   const jobMenu = [
@@ -31,21 +30,55 @@ function RunningJob() {
             <div className= "w-full flex-1 w-[85%] grid grid-cols-2 bg-gray-300 text-black rounded-2xl p-2">
               
               <div className= "flex items-center justify-center"> Box 1 </div>
-
-              <div>
-                <label htmlFor="Weight">Weight</label>
+              <div className="flex flex-col">
+                <label htmlFor="Weight" className = "flex items-center justify-center">Weight</label>
                 <input 
                  type ="text"
                  id="Weight" 
-                 className="bg-gray-50 border-gray-300 text-black text-sm" 
+                 className= "w-auto bg-gray-50 border-gray-300 text-black text-sm rounded-lg px-2 py-1" 
                  placeholder="LB's" 
                  required
                  />
-              </div>
+              </div>   
 
             </div>
           </div>
-          <div className= "flex-1 bg-gray-100 rounded-2xl"></div>
+          <div className= "flex-1 bg-gray-100 rounded-2xl"> 
+            <div className= "overflow-x-auto p-10">
+              <table className="w-full table-auto border-collapse text-sm text-center bg-white">
+                <thead className="bg-gray-200 text-black">
+                  <tr>
+                    <th>Clean</th>
+                    <th></th>
+                    <th></th>
+                    <th>Screening</th>
+                    <th></th>
+                    <th>Trash</th>
+                  </tr>
+                </thead>
+                 <thead className="text-black">
+                  <tr>
+                    <th></th>
+                    <th className="bg-gray-100 text-sm">Gravity</th>
+                    <th className="bg-gray-100 text-sm">Light</th>
+                    <th className="bg-gray-100 text-sm">Small</th>
+                    <th className="bg-gray-100 text-sm">De Stoner Light</th>
+                    <th></th>
+                  </tr>
+                  </thead>
+                <tbody>
+                  <tr>
+                    <td>2,000</td>
+                    <td>1,500</td>
+                    <td>1,000</td>
+                    <td>3,000</td>
+                    <td>2,500</td>
+                    <td>2,000</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
   
