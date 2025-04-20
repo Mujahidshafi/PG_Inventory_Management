@@ -9,7 +9,8 @@ function Button({label, color = "green", className = ''}){
     };
 
     return (
-        <button className={`${baseStyles} ${colorStyles[color]} ${className}`}>
+        <button
+            className={`${baseStyles} ${colorStyles[color]} ${className}`}>
             {label}
         </button>
     );
