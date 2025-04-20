@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import Layout from "../components/layout";
 import Button from "../components/button";
 
-function NewFieldRun() {
+function CreateJob() {
   const [fields, setFields] = useState({
     productDescription: "",
     location: "",
@@ -55,4 +55,4 @@ function NewFieldRun() {
   );
 }
 
-export default NewFieldRun;
+export default CreateJob;
