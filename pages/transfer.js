@@ -80,8 +80,7 @@ function Transfer() {
                         {formattedDateTimeDisplay}
                     </div>
                 </div>
-                <div className="mt-6 flex justify-center">
-
+                <div className="mt-6 flex flex-col items-center">
                     <Button
                         label="Transfer"
                         Color="red"

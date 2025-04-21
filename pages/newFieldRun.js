@@ -31,6 +31,7 @@ function NewFieldRun() {
                 onChange={(e) => handleChange(e, `field${i}`)}
                 placeholder={`Enter value ${i}`}
                 className="placeholder-gray-400 px-2 py-1 border border-gray-400 rounded-md shadow focus:outline-none focus:ring-2 focus:ring-blue-400"
+
               />
             </div>
           ))}
