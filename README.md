@@ -30,11 +30,23 @@ This website uses next.js with react for the front end and tailwind for the styl
 This website will be deployed on vercel for easy deployment. 
 
 ## Timeline
+Current Timeline Estimate:
+| Sprint #       | Planned Tasks                                                                                                                                              |
+|----------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Sprint 05      | Back End Structure Creation and Front End Retouch/Linking                                                                                                  |
+| Sprint 06      | Back End Creation for Login/New Field Run/Create Job/<br>Update Location/Transfer Pages                                                                    |
+| Sprint 07      | Back End Creation for Search/Add New Items/Delete Items/<br>Run Job/View Job Pages                                                                         |
+| Sprint 08      | Back End Creation for Search Modify/Search History/<br>Field Run Storage/Clean Storage/Screening Storage Pages and<br>Front End Creation for Search History|
+| Sprint 09      | Back End Creation for Field Run Modify/Clean Storage Modify/<br>Screening Storage Modify/Sale Page/In Process Pages<br>and any other needed modifications  |
 
-| Sprint #       | Planned Tasks                                                                                                                                             |
-|----------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Sprint 05      | Back End Structure Creation and Front End Retouch/Linking                                                                                                 |
-| Sprint 06      | Back End Creation for Login/New Field Run/Create Job/<br>Update Location/Transfer Pages                                                                   |
-| Sprint 07      | Back End Creation for Search/Add New Items/Delete Items/<br>View Job Pages                                                                                |
-| Sprint 08      | Back End Creation for Search Modify/Search History/Run Job/<br>Field Run Storage/Clean Storage/Screening Storage Pages                                    |
-| Sprint 09      | Back End Creation for Field Run Modify/Clean Storage Modify/<br>Screening Storage Modify/Sale Page/In Process Pages<br>and any other needed modifications |
+Key Milestones:
+ * The creation of our database is essential for the continution of our project, and due to that it is placed in Sprint 05
+ * Several of our pages depend on data produced by other pages. For example:
+   * New Field Run- allows the user to input data to begin manipulating
+   * Create Job- allows for job creation, which can then be viewed/manipulated through the View Job, Run Job, and In Process Pages
+   * Search- supports the Search History and Search Modify pages
+ * These pages are planned for earlier on due to their dependencies to prevent possible function problems
+
+## Contributors
+
+[![Contributors](https://contrib.rocks/image?repo=Mujahidshafi/PG_Inventory_Management)](https://github.com/Mujahidshafi/PG_Inventory_Management/graphs/contributors)
