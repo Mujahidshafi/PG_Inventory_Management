@@ -22,9 +22,11 @@ What makes our team’s solution unique:
 
 
 ## Developer Instructions
+This website uses next.js with react for the front end and tailwind for the styling. The database will be PostgreSQL. 
 
 ## Testing 
 
 ## Deployment
+This website will be deployed on vercel for easy deployment. 
 
 ## Timeline
