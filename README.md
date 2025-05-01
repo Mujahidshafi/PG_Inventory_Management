@@ -19,7 +19,10 @@ What makes our team’s solution unique:
  * Serverless — cheaper to host and easier to maintain
  * Designed to grow with their needs — we can always add more features later
 
+## Back End Visualization
+ERD:
 
+![Image](https://github.com/user-attachments/assets/1c78b170-6c83-4049-b365-7082498c1206)
 
 ## Developer Instructions
 This website uses next.js with react for the front end and tailwind for the styling. The database will be PostgreSQL. 
