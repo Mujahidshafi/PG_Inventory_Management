@@ -1,3 +1,5 @@
+![Logo](https://github.com/user-attachments/assets/9c5e3e15-9f75-410b-9846-af551bb4cf24)
+
 ## Inventory Management System for Pleasant Grove Farms
 
 Our team the Syntax Stingers are building a simple and efficient inventory management system for Pleasant Grove Farms. Their current process relies on the management of spreadsheets. This makes it difficult to keep track of what they have in stock. Our system will make it easier for them by having everything they need in an intuitive and organized interface.
