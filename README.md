@@ -30,3 +30,11 @@ This website uses next.js with react for the front end and tailwind for the styl
 This website will be deployed on vercel for easy deployment. 
 
 ## Timeline
+
+| Sprint #       | Planned Tasks                                                                                                                                             |
+|----------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Sprint 05      | Back End Structure Creation and Front End Retouch/Linking                                                                                                 |
+| Sprint 06      | Back End Creation for Login/New Field Run/Create Job/<br>Update Location/Transfer Pages                                                                   |
+| Sprint 07      | Back End Creation for Search/Add New Items/Delete Items/<br>View Job Pages                                                                                |
+| Sprint 08      | Back End Creation for Search Modify/Search History/Run Job/<br>Field Run Storage/Clean Storage/Screening Storage Pages                                    |
+| Sprint 09      | Back End Creation for Field Run Modify/Clean Storage Modify/<br>Screening Storage Modify/Sale Page/In Process Pages<br>and any other needed modifications |
