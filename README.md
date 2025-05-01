@@ -19,8 +19,22 @@ What makes our team’s solution unique:
  * Serverless — cheaper to host and easier to maintain
  * Designed to grow with their needs — we can always add more features later
 
+## Front End Visuals
+We used Figma to create a prototype for the project, here are some examples from that prototype:<br>
+Login Interface:
+![Image](https://github.com/user-attachments/assets/1d0cc273-ae7f-460b-b0f4-80cd45ae5da5)
+
+Admin Dashboard:
+![Image](https://github.com/user-attachments/assets/18c533b2-bd04-4f16-9873-79229cf34af0)
+
+Search Page:
+![Image](https://github.com/user-attachments/assets/3b3113f3-6f48-40ee-9ebd-0853505de361)
+
+Running Job Page:
+![Image](https://github.com/user-attachments/assets/68829f99-d86c-4911-97d4-56d9a658e5ca)
+
 ## Back End Visualization
-ERD:
+This is our current Entity Relationship Diagram:
 
 ![Image](https://github.com/user-attachments/assets/1c78b170-6c83-4049-b365-7082498c1206)
 
