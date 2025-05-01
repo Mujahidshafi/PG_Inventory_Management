@@ -7,7 +7,6 @@ Key solutions:
 * A clean, easy-to-use dashboard to view and update inventory
   Real-time updates so they always know what is in stock
   Separate access for admins and regular users to keep things secure
-
 * A reliable database to store all their product, user, and sales info
   Secure login system with password protection
 
