@@ -1,4 +1,4 @@
-![Logo](https://github.com/user-attachments/assets/9c5e3e15-9f75-410b-9846-af551bb4cf24)
+![image](https://github.com/user-attachments/assets/152b291c-c5b9-46e1-bdc4-d6197711b21e)
 
 ## Inventory Management System for Pleasant Grove Farms
 
