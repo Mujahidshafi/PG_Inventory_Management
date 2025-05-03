@@ -1,5 +1,5 @@
 ![image](https://github.com/user-attachments/assets/1c514d96-ffab-459d-aff8-07aef5d505c5)
-
+<a id="readme-top"></a>
 ## Inventory Management System for Pleasant Grove Farms
 
 Our team the Syntax Stingers are building a simple and efficient inventory management system for Pleasant Grove Farms. Their current process relies on the management of spreadsheets. This makes it difficult to keep track of what they have in stock. Our system will make it easier for them by having everything they need in an intuitive and organized interface.
@@ -19,6 +19,29 @@ What makes our team’s solution unique:
  * Serverless — cheaper to host and easier to maintain
  * Designed to grow with their needs — we can always add more features later
 
+<details>
+  <summary>Table of Contents</summary>
+  <ol>
+    <li><a href="#technologies">Technologies</a></li>
+    <li><a href="#front-end-visuals">Front End Visuals</a></li>
+    <li><a href="#back-end-visuals">Back End Visuals</a></li>
+    <li><a href="#developer-instructions">Developer Instructions</a></li>
+    <li><a href="#testing">Testing</a></li>
+    <li><a href="#deployment">Deployment</a></li>
+    <li><a href="#timeline">Timeline</a></li>
+    <li><a href="#contributors">Contributors</a></li>
+  </ol>
+</details>
+
+## Technologies
+* [![React][React.js]][React-url]
+* [![Next][Next.js]][Next-url]
+* [![PostgreSQL][PostgreSQL.js]][PostgreSQL-url]
+* [![Vercel][Vercel.js]][Vercel-url]
+* [![Tailwind][Tailwind.js]][Tailwind-url]
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 ## Front End Visuals
 We used Figma to create a prototype for the project, here are some examples from that prototype:<br>
 Login Interface:
@@ -33,18 +56,23 @@ Search Page:
 Running Job Page:
 ![Image](https://github.com/user-attachments/assets/68829f99-d86c-4911-97d4-56d9a658e5ca)
 
-## Back End Visualization
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## Back End Visuals
 This is our current Entity Relationship Diagram:
 
 ![Image](https://github.com/user-attachments/assets/1c78b170-6c83-4049-b365-7082498c1206)
 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 ## Developer Instructions
-This website uses next.js with react for the front end and tailwind for the styling. The database will be PostgreSQL. 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Testing 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-## Deployment
-This website will be deployed on vercel for easy deployment. 
+## Deployment 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Timeline
 Current Timeline Estimate:
@@ -64,6 +92,21 @@ Key Milestones:
    * Search- supports the Search History and Search Modify pages
  * These pages are planned for earlier on due to their dependencies to prevent possible function problems
 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 ## Contributors
 
 [![Contributors](https://contrib.rocks/image?repo=Mujahidshafi/PG_Inventory_Management)](https://github.com/Mujahidshafi/PG_Inventory_Management/graphs/contributors)
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+[Next.js]: https://img.shields.io/badge/next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white
+[Next-url]: https://nextjs.org/
+[React.js]: https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB
+[React-url]: https://reactjs.org/
+[PostgreSQL.js]: https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white
+[PostgreSQL-url]: https://www.postgresql.org/
+[Vercel.js]: https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white
+[Vercel-url]: https://vercel.com/
+[Tailwind.js]: https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white
+[Tailwind-url]: https://tailwindcss.com/
