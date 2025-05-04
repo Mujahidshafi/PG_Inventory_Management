@@ -8,10 +8,10 @@ Our team the Syntax Stingers are building a simple and efficient inventory manag
 Key solutions:
 
 * A clean, easy-to-use dashboard to view and update inventory
-  Real-time updates so they always know what is in stock
-  Separate access for admins and regular users to keep things secure
-* A reliable database to store all their product, user, and sales info
-  Secure login system with password protection
+* Real-time updates so users always know what's in stock
+* Separate access levels for admins and regular users help mantain security
+* A reliable database to store all their product, user, and sales data
+* Includes a secure login system with password protection
 
 What makes our team’s solution unique:
 
