@@ -42,6 +42,10 @@ What makes our team’s solution unique:
   </ol>
 </details>
 
+## 💡 Why This Matters
+
+Pleasant Grove Farms currently uses spreadsheets to manage over 3,000 acres of certified organic crop data. Our solution replaces this with a centralized, secure system that supports faster decisions, minimizes data loss, and boosts productivity. This app makes that transition seamless.
+
 ## Technologies
 * [![React][React.js]][React-url]
 * [![Next][Next.js]][Next-url]
