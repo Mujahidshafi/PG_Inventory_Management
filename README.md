@@ -9,7 +9,7 @@ Key solutions:
 
 * 🧠 A clean, easy-to-use dashboard to view and update inventory
 * 🔄 Real-time updates so users always know what's in stock
-* 👥 Separate access levels for admins and regular users help mantain security
+* 👥 Separate access levels for admins and regular users help maintain security
 * 🗃️ A reliable database to store all their product, user, and sales data
 * 🔐 Includes a secure login system with password protection
 
@@ -48,7 +48,7 @@ What makes our team’s solution unique:
 ## ✨Features
 - Admin login and role-based access
 - Inventory CRUD (Create, Read, Update, Delete)
-- Mill Job tracking and ouputs
+- Mill Job tracking and outputs
 - Search by year, location, and product
 - Transfer and location update pages
 - ERD-based database structure
@@ -97,12 +97,12 @@ Current Timeline Estimate:
 | Sprint 09      | Back End Creation for Field Run Modify/Clean Storage Modify/<br>Screening Storage Modify/Sale Page/In Process Pages<br>and any other needed modifications  |
 
 Key Milestones:
- * The creation of our database is essential for the continution of our project, and due to that it is placed in Sprint 05
+ * The creation of our database is essential for the continuation of our project, and due to that it is placed in Sprint 05
  * Several of our pages depend on data produced by other pages. For example:
    * New Field Run- allows the user to input data to begin manipulating
    * Create Job- allows for job creation, which can then be viewed/manipulated through the View Job, Run Job, and In Process Pages
    * Search- supports the Search History and Search Modify pages
- * These pages are planned for earlier on due to their dependencies to prevent possible function problems
+ * These pages are planned for earlier on due to their dependencies to prevent possible functional issues
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
