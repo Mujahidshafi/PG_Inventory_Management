@@ -43,6 +43,16 @@ What makes our team’s solution unique:
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+
+## ✨Features
+- Admin login and role-based access
+- Inventory CRUD (Create, Read, Update, Delete)
+- Mill Job tracking and ouputs
+- Search by year, location, and product
+- Transfer and location update pages
+- ERD-based database structure
+
+  
 ## Front End Visuals
 We used Figma to create a prototype for the project, here are some examples from that prototype:<br>
 Login Interface:
