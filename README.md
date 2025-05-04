@@ -23,14 +23,15 @@ What makes our team’s solution unique:
 <details>
   <summary>Table of Contents</summary>
   <ol>
-    <li><a href="#technologies">Technologies</a></li>
-    <li><a href="#front-end-visuals">Front End Visuals</a></li>
-    <li><a href="#back-end-visuals">Back End Visuals</a></li>
-    <li><a href="#developer-instructions">Developer Instructions</a></li>
-    <li><a href="#testing">Testing</a></li>
-    <li><a href="#deployment">Deployment</a></li>
-    <li><a href="#timeline">Timeline</a></li>
-    <li><a href="#contributors">Contributors</a></li>
+    <li><a href="#technologies">🛠 Technologies</a></li>
+    <li><a href="#features">✨ Features</a></li>
+    <li><a href="#front-end-visuals">🎨 Front End Visuals</a></li>
+    <li><a href="#back-end-visuals">🧠 Back End Visuals</a></li>
+    <li><a href="#developer-instructions">🧪 Developer Instructions</a></li>
+    <li><a href="#testing">🧪 Testing</a></li>
+    <li><a href="#deployment">🚀 Deployment</a></li>
+    <li><a href="#timeline">⏱ Timeline</a></li>
+    <li><a href="#contributors">👥 Contributors</a></li>
   </ol>
 </details>
 
