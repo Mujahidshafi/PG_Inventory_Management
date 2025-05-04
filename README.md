@@ -1,7 +1,14 @@
 <a id="readme-top"></a>
 ![image](https://github.com/user-attachments/assets/1c514d96-ffab-459d-aff8-07aef5d505c5)
 
-## Inventory Management System for Pleasant Grove Farms
+# 🌾 Pleasant Grove Farms Inventory Management
+
+An inventory tracking and management system built for Pleasant Grove Farms to streamline product data, storage, mill output, and sales.
+
+![Next.js](https://img.shields.io/badge/Next.js-13-blue)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-ORM-green)
+![Tailwind](https://img.shields.io/badge/Tailwind-CSS-blue)
+![Status](https://img.shields.io/badge/Status-In_Progress-yellow)
 
 Our team the Syntax Stingers are building a simple and efficient inventory management system for Pleasant Grove Farms. Their current process relies on the management of spreadsheets. This makes it difficult to keep track of what they have in stock. Our system will make it easier for them by having everything they need in an intuitive and organized interface.
 
