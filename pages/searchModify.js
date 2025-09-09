@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 //import "../App.css";
 import Layout from "../components/layout"; 
 
-function searchModify() {
+function SearchModify() {
 
     const [fieldLot, setFieldLot] = useState('');
     const [productDescription, setProductDescription] = useState('');
@@ -79,4 +79,4 @@ function searchModify() {
   );
 }
 
-export default searchModify;
+export default SearchModify;
