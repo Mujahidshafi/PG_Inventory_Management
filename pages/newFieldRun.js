@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import Layout from "../components/layout";
 import Button from "../components/button";
+import TextFields from "../components/textFields";
 
 function NewFieldRun() {
   const [fields, setFields] = useState({
@@ -12,36 +13,67 @@ function NewFieldRun() {
     field6: "",
   });
 
-  const handleChange = (e, key) => {
-    setFields({ ...fields, [key]: e.target.value });
+  const handleChange = (key, value) => {
+    setFields({ ...fields, [key]: value });
+  };
+
+  // Define your fields (like CreateJob does)
+  const fieldLabels = [
+    { key: "field1", label: "Field Lot Number 1", type: "text" },
+    { key: "field2", label: "Field Lot Number 2", type: "text" },
+    { key: "field3", label: "Field Lot Number 3", type: "text" },
+    { key: "field4", label: "Field Lot Number 4", type: "text" },
+    { key: "field5", label: "Field Lot Number 5", type: "text" },
+    { key: "field6", label: "Field Lot Number 6", type: "text" },
+  ];
+
+  const handleSubmit = async () => {
+    try {
+      const res = await fetch("/api/fieldruns", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(fields),
+      });
+
+      if (res.ok) {
+        console.log("Field run saved!");
+        setFields({
+          field1: "",
+          field2: "",
+          field3: "",
+          field4: "",
+          field5: "",
+          field6: "",
+        });
+      } else {
+        console.error("Failed to save field run");
+      }
+    } catch (err) {
+      console.error("Error:", err);
+    }
   };
 
   return (
-    <Layout title="New Field Run">
+    <Layout title="New Field Run" showBack={true} onSettingsClick={() => console.log(" ")}>
       <div className="w-full px-8 flex flex-col items-center">
-        
-        {/* Input fields container */}
-        <div className="flex flex-wrap justify-between w-full max-w-5xl mb-8">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="flex flex-col w-[30%] min-w-[200px] mb-4">
-              <span className="mb-1 font-medium text-gray-700">Field Lot Number</span>
-              <input
-                type="text"
-                value={fields[`field${i}`]}
-                onChange={(e) => handleChange(e, `field${i}`)}
-                placeholder={`Enter value ${i}`}
-                className="placeholder-gray-400 px-2 py-1 border border-gray-400 rounded-md shadow focus:outline-none focus:ring-2 focus:ring-blue-400"
-
-              />
-            </div>
+        <div className="grid grid-cols-3 gap-6 w-full max-w-5xl mb-8">
+          {fieldLabels.map(({ key, label, type }) => (
+            <TextFields
+              key={key}
+              id={key}
+              label={label}
+              type={type}
+              value={fields[key]}
+              onChange={(e) => handleChange(key, e.target.value)}
+              placeholder={`Enter ${label.toLowerCase()}`}
+            />
           ))}
         </div>
-  
-        {/* Centered Button */}
+
+        {/* Save Button */}
         <div className="flex justify-center">
-          <Button label="Save" color="red" />
+          <Button label="Save" color="red" onClick={handleSubmit} />
         </div>
-  
       </div>
     </Layout>
   );
