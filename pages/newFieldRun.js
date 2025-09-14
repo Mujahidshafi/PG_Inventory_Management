@@ -2,14 +2,15 @@ import React, { useState } from "react";
 import Layout from "../components/layout";
 import Button from "../components/button";
 import TextFields from "../components/textFields";
+import DateTimeField from "../components/dateTimeField";
 
 function NewFieldRun() {
   const [fields, setFields] = useState({
-    field1: "",
-    field2: "",
-    field3: "",
-    field4: "",
-    field5: "",
+    fieldLotNumber: "",
+    productDescription: "",
+    Weight: "",
+    Moisture: "",
+    Location: "",
   });
   
   const [dateTime, setDateTime] = useState("");
@@ -22,24 +23,24 @@ function NewFieldRun() {
     try {
       const payload = { ...fields, dateTime }; 
 
-      const res = await fetch("/api/fieldruns", {
+      const res = await fetch("/api/newFieldRunBackend", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
       if (res.ok) {
-        console.log("Field run saved!");
+        console.log("Field Run Save");
         setFields({
-          field1: "",
-          field2: "",
-          field3: "",
-          field4: "",
-          field5: "",
+          fieldLotNumber: "",
+          productDescription: "",
+          Weight: "",
+          Moisture: "",
+          Location: "",
         });
         setDateTime("");
       } else {
-        console.error("Failed to save field run");
+        console.error("Failed to save Field Run");
       }
     } catch (err) {
       console.error("Error:", err);
@@ -47,11 +48,11 @@ function NewFieldRun() {
   };
 
   const fieldLabels = [
-    { key: "field1", label: "Field Lot Number", type: "text" },
-    { key: "field2", label: "Product Description", type: "text" },
-    { key: "field3", label: "Weight", type: "text" },
-    { key: "field4", label: "Moisture", type: "text" },
-    { key: "field5", label: "Location", type: "text" },
+    { key: "fieldLotNumber", label: "Field Lot Number", type: "text" },
+    { key: "productDescription", label: "Product Description", type: "text" },
+    { key: "Weight", label: "Weight", type: "text" },
+    { key: "Moisture", label: "Moisture", type: "text" },
+    { key: "Location", label: "Location", type: "text" },
   ];
 
   return (
@@ -61,7 +62,7 @@ function NewFieldRun() {
       onSettingsClick={() => console.log(" ")}
     >
       <div className="w-full px-8 flex flex-col items-center">
-        <div className="grid grid-cols-3 gap-6 w-full max-w-5xl mb-8">
+        <div className="grid grid-cols-3 gap-28 w-full max-w-5xl mb-35">
           {fieldLabels.map(({ key, label, type }) => (
             <TextFields
               key={key}
@@ -74,19 +75,11 @@ function NewFieldRun() {
             />
           ))}
 
-          {/*Date & Time*/}
-          <div className="flex flex-col">
-            <label htmlFor="dateTime" className="mb-1 text-black">
-              Date & Time
-            </label>
-            <input
-              id="dateTime"
-              className="border p-2 rounded border-gray-400 text-black"
-              type="datetime-local"
-              value={dateTime}
-              onChange={(e) => setDateTime(e.target.value)}
-            />
-          </div>
+          <DateTimeField
+            value={dateTime}
+            onChange={setDateTime}
+          />
+          
         </div>
 
         {/* Save Button */}

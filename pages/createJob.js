@@ -26,40 +26,13 @@ function CreateJob() {
     { key: "jobType", label: "Job Type", type: "text" },
   ];
 
-  const handleSubmit = async () => {
-    try {
-      const res = await fetch("/api/jobs", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(fields),
-      });
-
-      if (res.ok) {
-        console.log("Job saved!");
-        setFields({
-          productDescription: "",
-          location: "",
-          lotNumber: "",
-          amount: "",
-          processId: "",
-          jobType: "",
-        });
-      } else {
-        console.error("Failed to save job");
-      }
-    } catch (err) {
-      console.error("Error:", err);
-    }
-  };
-
   return (
     <Layout title="Create Job" showBack={true} onSettingsClick={() => console.log(" ")}
     >
       <div className="w-full px-8 flex flex-col items-center">
         {/* Input fields */}
-        <div className="grid grid-cols-3 gap-6 w-full max-w-5xl mb-8">
+        <div className="grid grid-cols-3 gap-28 w-full max-w-5xl mb-35">
           {fieldLabels.map(({ key, label, type }) => (
-            <div>
              <TextFields
               key={key}
               id={key}                       
@@ -69,14 +42,14 @@ function CreateJob() {
               onChange={(e) => handleChange(key, e.target.value)}
               placeholder={`Enter ${label.toLowerCase()}`} 
             />
-            </div>
+
 
           ))}
         </div>
 
         {/* Save Button */}
         <div className="flex justify-center">
-          <Button label="Save" color="red" onClick={handleSubmit} />
+          <Button label="Save" color="red" />
         </div>
       </div>
     </Layout>
