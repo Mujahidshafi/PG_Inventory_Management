@@ -1,8 +1,5 @@
-import React from "react";
-//import "../App.css";
-
 import Layout from "../components/layout"; 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import FRStorageLayout from "../components/fRStorageLayout";
 import { getStorageData } from "./api/fRStorageBackend"
 import { supabase } from "../lib/supabaseClient";
