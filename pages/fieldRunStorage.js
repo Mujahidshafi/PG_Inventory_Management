@@ -5,7 +5,7 @@ import { getStorageData } from "./api/fRStorageBackend"
 import { supabase } from "../lib/supabaseClient";
 
 
-function fieldRunStorage() {
+function FieldRunStorage() {
   const [storageItems, setStorageItems] = useState([]);
 
   useEffect(() => {
@@ -37,4 +37,4 @@ function fieldRunStorage() {
 }
 
 
-export default fieldRunStorage;
+export default FieldRunStorage;
