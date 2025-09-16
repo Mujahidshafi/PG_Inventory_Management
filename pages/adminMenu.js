@@ -12,6 +12,8 @@ function adminMenu() {
 
         <Link href="/transfer" className={buttonStyle}> Transfer </Link>
 
+        <Link href="/mix" className={buttonStyle}> Mix </Link>
+
         <Link href="/addNewItems" className={buttonStyle}> Add New Items </Link>
 
         <Link href="/deleteItems" className={buttonStyle}> Delete Items </Link>
