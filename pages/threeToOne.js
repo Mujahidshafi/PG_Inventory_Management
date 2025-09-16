@@ -10,16 +10,14 @@ function ThreeToOne() {
 
   // Fetch all boxes from Supabase
   useEffect(() => {
-    const fetchBoxes = async () => {
-      const { data, error } = await supabase.from("boxes").select("*");
-      if (error) console.error(error);
-      else {
-        setAllBoxes(data);
-        setBoxes(Array.from({ length: 10 }, () => ({ box1: "", box2: "", box3: "" })));
-      }
-    };
-    fetchBoxes();
-  }, []);
+  const fetchBoxes = async () => {
+    const res = await fetch("/api/threeToOneBackend");
+    const data = await res.json();
+    setAllBoxes(data);
+    setBoxes(Array.from({ length: 10 }, () => ({ box1: "", box2: "", box3: "" })));
+  };
+  fetchBoxes();
+}, []);
 
   const handleChange = (rowIndex, key, value) => {
     const updated = [...boxes];
