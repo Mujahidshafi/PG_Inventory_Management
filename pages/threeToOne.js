@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import Layout from "../components/layout";
-import { supabase } from "../lib/supabaseClient";
 
 function ThreeToOne() {
   const [boxes, setBoxes] = useState([]);
@@ -8,16 +7,16 @@ function ThreeToOne() {
   const [storeTo, setStoreTo] = useState("Co2 1");
   const [dateTime, setDateTime] = useState("");
 
-  // Fetch all boxes from Supabase
+  // Fetch all boxes from API
   useEffect(() => {
-  const fetchBoxes = async () => {
-    const res = await fetch("/api/threeToOneBackend");
-    const data = await res.json();
-    setAllBoxes(data);
-    setBoxes(Array.from({ length: 10 }, () => ({ box1: "", box2: "", box3: "" })));
-  };
-  fetchBoxes();
-}, []);
+    const fetchBoxes = async () => {
+      const res = await fetch("/api/threeToOneBackend");
+      const data = await res.json();
+      setAllBoxes(data);
+      setBoxes(Array.from({ length: 10 }, () => ({ box1: "", box2: "", box3: "" })));
+    };
+    fetchBoxes();
+  }, []);
 
   const handleChange = (rowIndex, key, value) => {
     const updated = [...boxes];
