@@ -1,16 +1,14 @@
-import Layout from "../components/layout"; 
-import React, { useEffect, useState } from 'react';
+import Layout from "../components/layout";
+import React, { useEffect, useState } from "react";
 import FRStorageLayout from "../components/fRStorageLayout";
-import { getStorageData } from "./api/fRStorageBackend"
-import { supabase } from "../lib/supabaseClient";
-
 
 function FieldRunStorage() {
   const [storageItems, setStorageItems] = useState([]);
 
   useEffect(() => {
     async function fetchData() {
-      const items = await getStorageData();
+      const res = await fetch("/api/fRStorageBackend");
+      const items = await res.json();
       setStorageItems(items);
     }
     fetchData();
@@ -18,23 +16,20 @@ function FieldRunStorage() {
 
   return (
     <Layout location="Field Run Storage">
-      <div class = "w-[100%] h-[100%] flex flex-col items-center gap-4 overflow-y-scroll">
-      {storageItems.map((item, index) => (
-        <FRStorageLayout
-          key={index}
-          location={item.location}
-          lotNumber={item.lot_number}
-          product={item.product}
-          weight={item.weight}
-          dateStored={item.date_stored}
-        />
-      ))}
+      <div className="w-[100%] h-[100%] flex flex-col items-center gap-4 overflow-y-scroll">
+        {storageItems.map((item, index) => (
+          <FRStorageLayout
+            key={index}
+            location={item.location}
+            lotNumber={item.lot_number}
+            product={item.product}
+            weight={item.weight}
+            dateStored={item.date_stored}
+          />
+        ))}
       </div>
-    
     </Layout>
   );
-
 }
-
 
 export default FieldRunStorage;

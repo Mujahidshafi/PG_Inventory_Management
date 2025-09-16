@@ -1,14 +1,14 @@
 import { supabase } from "../../lib/supabaseClient";
 
-export async function getStorageData() {
-    const { data, error } = await supabase
-    .from('field_run_storage')
-    .select('location, lot_number, product, weight, date_stored');
+export default async function handler(req, res) {
+  const { data, error } = await supabase
+    .from("field_run_storage")
+    .select("location, lot_number, product, weight, date_stored");
 
   if (error) {
-    console.error('Error fetching storage data:', error);
-    return [];
+    console.error("Error fetching storage data:", error);
+    return res.status(500).json({ error: error.message });
   }
 
-  return data;
+  res.status(200).json(data);
 }
