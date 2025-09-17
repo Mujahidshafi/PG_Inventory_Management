@@ -30,6 +30,8 @@ function adminMenu() {
 
         <Link href="/search" className={buttonStyle}> Search </Link>
 
+        <Link href="/accountsManager" className={buttonStyle}> Accounts Manager </Link>
+
       </div>
     </Layout>
   );
