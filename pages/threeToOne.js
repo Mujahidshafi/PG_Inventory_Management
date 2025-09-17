@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Layout from "../components/layout";
 
-function TwoToOne() {
+function ThreeToOne() {
   const [boxes, setBoxes] = useState([]);
   const [allBoxes, setAllBoxes] = useState([]);
   const [storeTo, setStoreTo] = useState("Co2 1");
@@ -11,10 +11,10 @@ function TwoToOne() {
   useEffect(() => {
     const fetchBoxes = async () => {
       try {
-        const res = await fetch("/api/twoToOneBackend");
+        const res = await fetch("/api/threeToOneBackend");
         const data = await res.json();
         setAllBoxes(data);
-        setBoxes(Array.from({ length: 10 }, () => ({ box1: "", box2: "" })));
+        setBoxes(Array.from({ length: 10 }, () => ({ box1: "", box2: "", box3: "" })));
       } catch (err) {
         console.error("Error fetching boxes:", err);
       }
@@ -28,14 +28,14 @@ function TwoToOne() {
     setBoxes(updated);
   };
 
-  const addRow = () => setBoxes([...boxes, { box1: "", box2: "" }]);
+  const addRow = () => setBoxes([...boxes, { box1: "", box2: "", box3: "" }]);
   const removeRow = () => {
     if (boxes.length > 1) setBoxes(boxes.slice(0, -1));
   };
 
   const handleSave = async () => {
     try {
-      const res = await fetch("/api/twoToOneSaveBackend", {
+      const res = await fetch("/api/threeToOneSaveBackend", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ boxes, storeTo, dateTime }),
@@ -47,10 +47,10 @@ function TwoToOne() {
       alert("Mix saved successfully!");
 
       // Refresh boxes from backend
-      const refreshedRes = await fetch("/api/twoToOneBackend");
+      const refreshedRes = await fetch("/api/threeToOneBackend");
       const refreshedBoxes = await refreshedRes.json();
       setAllBoxes(refreshedBoxes);
-      setBoxes(Array.from({ length: 10 }, () => ({ box1: "", box2: "" })));
+      setBoxes(Array.from({ length: 10 }, () => ({ box1: "", box2: "", box3: "" })));
     } catch (err) {
       console.error(err);
       alert(`Error saving mix: ${err.message}`);
@@ -60,7 +60,7 @@ function TwoToOne() {
   return (
     <Layout title="Mix">
       <div className="w-full h-full flex flex-col items-center gap-6 overflow-y-scroll">
-        <h1 className="text-black text-3xl font-bold mb-6 text-center">Two to One</h1>
+        <h1 className="text-black text-3xl font-bold mb-6 text-center">Three to One</h1>
 
         <div className="w-full flex gap-8 justify-center">
           {/* Left Table */}
@@ -70,12 +70,13 @@ function TwoToOne() {
                 <tr className="bg-gray-200">
                   <th className="border border-gray-400 px-4 py-2 text-left">Crop 1</th>
                   <th className="border border-gray-400 px-4 py-2 text-left">Crop 2</th>
+                  <th className="border border-gray-400 px-4 py-2 text-left">Crop 3</th>
                 </tr>
               </thead>
               <tbody>
                 {boxes.map((row, i) => (
                   <tr key={i}>
-                    {["box1", "box2"].map((key, j) => (
+                    {["box1", "box2", "box3"].map((key, j) => (
                       <td key={j} className="border border-gray-300 px-2 py-1 bg-gray-100">
                         <input
                           type="text"
@@ -144,4 +145,4 @@ function TwoToOne() {
   );
 }
 
-export default TwoToOne;
+export default ThreeToOne;
