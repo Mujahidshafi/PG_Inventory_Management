@@ -4,11 +4,11 @@ import { supabase } from "../lib/supabaseClient";
 
 function TwoToOne() {
   const [boxes, setBoxes] = useState([]);
-  const [allBoxes, setAllBoxes] = useState([]); // fetched from Supabase
+  const [allBoxes, setAllBoxes] = useState([]);
   const [storeTo, setStoreTo] = useState("Co2 1");
   const [dateTime, setDateTime] = useState("");
 
-  // Fetch all boxes from Supabase on mount
+  // Fetch all boxes from Supabase
   useEffect(() => {
     const fetchBoxes = async () => {
       const { data, error } = await supabase.from("boxes").select("*");
@@ -34,7 +34,7 @@ function TwoToOne() {
 
   const handleSave = async () => {
     try {
-      // Fetch storage once
+      // Fetch storage
       const { data: storageData, error: storageError } = await supabase
         .from("storage_locations")
         .select("*")
@@ -42,12 +42,10 @@ function TwoToOne() {
         .single();
       if (storageError) throw storageError;
 
-      // Accumulators
       let totalWeightToAdd = 0;
       let productsToAdd = [...storageData.products];
       let fieldLotsToAdd = [...storageData.field_lots];
 
-      // Process all boxes
       for (let row of boxes) {
         for (let key of ["box1", "box2"]) {
           const boxNumber = row[key];
@@ -67,7 +65,7 @@ function TwoToOne() {
           totalWeightToAdd += box.weight;
 
           // Update products
-          const productIndex = productsToAdd.findIndex(p => p.product === box.product);
+          const productIndex = productsToAdd.findIndex((p) => p.product === box.product);
           if (productIndex >= 0) productsToAdd[productIndex].weight += box.weight;
           else productsToAdd.push({ product: box.product, weight: box.weight });
 
@@ -81,7 +79,7 @@ function TwoToOne() {
             .eq("box_number", boxNumber);
           if (boxError) throw boxError;
 
-          // Log in box history
+          // Log box history
           const { error: historyError } = await supabase
             .from("box_history")
             .insert({
@@ -95,7 +93,7 @@ function TwoToOne() {
         }
       }
 
-      // Update storage location once
+      // Update storage
       const { error: updateStorageError } = await supabase
         .from("storage_locations")
         .update({
@@ -108,7 +106,7 @@ function TwoToOne() {
 
       alert("Mix saved successfully!");
 
-      // Refresh boxes and reset table
+      // Refresh boxes
       const { data: refreshedBoxes } = await supabase.from("boxes").select("*");
       setAllBoxes(refreshedBoxes);
       setBoxes(Array.from({ length: 10 }, () => ({ box1: "", box2: "" })));
@@ -125,7 +123,7 @@ function TwoToOne() {
 
         <div className="w-full flex gap-8 justify-center">
           {/* Left Table */}
-          <div className="w-1/2 flex flex-col gap-4">
+          <div className="w-2/3 flex flex-col gap-4">
             <table className="table-auto w-full border-collapse border border-gray-400">
               <thead>
                 <tr className="bg-gray-200">
@@ -136,30 +134,21 @@ function TwoToOne() {
               <tbody>
                 {boxes.map((row, i) => (
                   <tr key={i}>
-                    <td className="border border-gray-300 px-2 py-1 bg-gray-100">
-                      <input
-                        type="text"
-                        value={row.box1}
-                        onChange={(e) => handleChange(i, "box1", e.target.value)}
-                        placeholder={`Box #${i + 1}`}
-                        className="w-full px-2 py-1 border rounded"
-                      />
-                    </td>
-                    <td className="border border-gray-300 px-2 py-1 bg-gray-100">
-                      <input
-                        type="text"
-                        value={row.box2}
-                        onChange={(e) => handleChange(i, "box2", e.target.value)}
-                        placeholder={`Box #${i + 1}`}
-                        className="w-full px-2 py-1 border rounded"
-                      />
-                    </td>
+                    {["box1", "box2"].map((key, j) => (
+                      <td key={j} className="border border-gray-300 px-2 py-1 bg-gray-100">
+                        <input
+                          type="text"
+                          value={row[key]}
+                          onChange={(e) => handleChange(i, key, e.target.value)}
+                          placeholder={`Box #${i + 1}`}
+                          className="w-full px-2 py-1 border rounded"
+                        />
+                      </td>
+                    ))}
                   </tr>
                 ))}
               </tbody>
             </table>
-
-            
           </div>
 
           {/* Right Controls */}
@@ -193,7 +182,7 @@ function TwoToOne() {
               Save
             </button>
 
-                <div className="flex gap-2 mt-2">
+            <div className="flex gap-2 mt-2">
               <button
                 onClick={addRow}
                 className="px-6 py-2 bg-green-600 text-white rounded-xl shadow hover:bg-green-700 transition"
@@ -207,7 +196,6 @@ function TwoToOne() {
                 – Remove Row
               </button>
             </div>
-
           </div>
         </div>
       </div>
