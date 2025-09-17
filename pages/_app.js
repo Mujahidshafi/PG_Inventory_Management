@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabaseClient'
 import AuthGuard from '../components/AuthGuard'
 import '../styles/globals.css'
 
+
 export default function MyApp({ Component, pageProps }) {
   return (
     <SessionContextProvider supabaseClient={supabase} initialSession={pageProps.initialSession}>

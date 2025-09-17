@@ -1,47 +1,91 @@
 import React, { useState } from "react";
 import Layout from "../components/layout";
 import Button from "../components/button";
+import TextFields from "../components/textFields";
+import DateTimeField from "../components/dateTimeField";
 
 function NewFieldRun() {
   const [fields, setFields] = useState({
-    field1: "",
-    field2: "",
-    field3: "",
-    field4: "",
-    field5: "",
-    field6: "",
+    fieldLotNumber: "",
+    productDescription: "",
+    Weight: "",
+    Moisture: "",
+    Location: "",
   });
+  
+  const [dateTime, setDateTime] = useState("");
 
-  const handleChange = (e, key) => {
-    setFields({ ...fields, [key]: e.target.value });
+  const handleChange = (key, value) => {
+    setFields({ ...fields, [key]: value });
   };
 
-  return (
-    <Layout title="New Field Run">
-      <div className="w-full px-8 flex flex-col items-center">
-        
-        {/* Input fields container */}
-        <div className="flex flex-wrap justify-between w-full max-w-5xl mb-8">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="flex flex-col w-[30%] min-w-[200px] mb-4">
-              <span className="mb-1 font-medium text-gray-700">Field Lot Number</span>
-              <input
-                type="text"
-                value={fields[`field${i}`]}
-                onChange={(e) => handleChange(e, `field${i}`)}
-                placeholder={`Enter value ${i}`}
-                className="placeholder-gray-400 px-2 py-1 border border-gray-400 rounded-md shadow focus:outline-none focus:ring-2 focus:ring-blue-400"
+  const handleSubmit = async () => {
+    try {
+      const payload = { ...fields, dateTime }; 
 
-              />
-            </div>
+      const res = await fetch("/api/newFieldRunBackend", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        console.log("Field Run Save");
+        setFields({
+          fieldLotNumber: "",
+          productDescription: "",
+          Weight: "",
+          Moisture: "",
+          Location: "",
+        });
+        setDateTime("");
+      } else {
+        console.error("Failed to save Field Run");
+      }
+    } catch (err) {
+      console.error("Error:", err);
+    }
+  };
+
+  const fieldLabels = [
+    { key: "fieldLotNumber", label: "Field Lot Number", type: "text" },
+    { key: "productDescription", label: "Product Description", type: "text" },
+    { key: "Weight", label: "Weight", type: "text" },
+    { key: "Moisture", label: "Moisture", type: "text" },
+    { key: "Location", label: "Location", type: "text" },
+  ];
+
+  return (
+    <Layout
+      title="New Field Run"
+      showBack={true}
+      onSettingsClick={() => console.log(" ")}
+    >
+      <div className="w-full px-8 flex flex-col items-center">
+        <div className="grid grid-cols-3 gap-28 w-full max-w-5xl mb-35">
+          {fieldLabels.map(({ key, label, type }) => (
+            <TextFields
+              key={key}
+              id={key}
+              label={label}
+              type={type}
+              value={fields[key]}
+              onChange={(e) => handleChange(key, e.target.value)}
+              placeholder={`Enter ${label.toLowerCase()}`}
+            />
           ))}
+
+          <DateTimeField
+            value={dateTime}
+            onChange={setDateTime}
+          />
+          
         </div>
-  
-        {/* Centered Button */}
+
+        {/* Save Button */}
         <div className="flex justify-center">
-          <Button label="Save" color="red" />
+          <Button label="Save" color="red" onClick={handleSubmit} />
         </div>
-  
       </div>
     </Layout>
   );

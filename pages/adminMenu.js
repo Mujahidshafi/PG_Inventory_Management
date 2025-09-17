@@ -5,11 +5,26 @@ import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
 
 const buttonStyle = "bg-[#5D1214] text-white px-6 py-6 rounded-[15px] text-lg font-semibold text-center hover:bg-[#3D5147] transition-all duration-300";
 
+
 function AdminMenu() {
   const [showSettings, setShowSettings] = useState(false);
   const [role, setRole] = useState(null);
   const session = useSession();
   const supabase = useSupabaseClient();
+
+  return (
+    <Layout title="Admin Menu">
+      <div className="grid grid-cols-4 gap-8">
+        <Link href="/newFieldRun" className={buttonStyle}> New Field Run </Link>
+
+        <Link href="/transfer" className={buttonStyle}> Transfer </Link>
+
+        <Link href="/mix" className={buttonStyle}> Mix </Link>
+
+        <Link href="/addNewItems" className={buttonStyle}> Add New Items </Link>
+
+        <Link href="/deleteItems" className={buttonStyle}> Delete Items </Link>
+
 
   // Fetch user role
   useEffect(() => {
