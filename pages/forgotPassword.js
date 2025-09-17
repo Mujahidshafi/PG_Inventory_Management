@@ -15,7 +15,7 @@ function ForgotPassword() {
     setError("");
 
     const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/resetPassword` // page user will be sent to
+      redirectTo: `${window.location.origin}/resetPassword`
     });
 
     if (error) {
@@ -63,7 +63,6 @@ function ForgotPassword() {
           onClick={handleResetPassword}
         />
 
-        {/* Feedback messages */}
         {successMessage && (
           <div className="bg-green-200 text-green-900 p-4 rounded-md shadow-md mt-4 text-center w-[300px]">
             {successMessage}

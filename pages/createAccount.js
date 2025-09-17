@@ -1,5 +1,4 @@
 import React, { useState } from "react"
-//import "../App.css";
 import Button from "../components/button"; 
 import Link from "next/link";
 import Image from "next/image";
@@ -20,7 +19,6 @@ function createAccount() {
   setError(null)
   setSuccessMessage("")
 
-  // --- Password validation ---
   const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*]).{8,}$/;
   if (!passwordRegex.test(password)) {
     setError(
@@ -30,7 +28,6 @@ function createAccount() {
     return;
   }
 
-  // --- Create user in Supabase Auth ---
   const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
     email,
     password,
@@ -44,7 +41,6 @@ function createAccount() {
 
   const user = signUpData.user
 
-  // --- Insert extra data into public.users table ---
   const { data: profileData, error: profileError } = await supabase
     .from("users")
     .insert({

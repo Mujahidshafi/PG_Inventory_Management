@@ -1,24 +1,14 @@
-// pages/_app.js
-import '../styles/globals.css'
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/router'
-import { createPagesBrowserClient } from '@supabase/auth-helpers-nextjs'
-import { SessionContextProvider, useSession } from '@supabase/auth-helpers-react'
+import { SessionContextProvider } from '@supabase/auth-helpers-react'
+import { supabase } from '../lib/supabaseClient'
 import AuthGuard from '../components/AuthGuard'
+import '../styles/globals.css'
 
-function App({ Component, pageProps }) {
-  const [supabaseClient] = useState(() => createPagesBrowserClient())
-
+export default function MyApp({ Component, pageProps }) {
   return (
-    <SessionContextProvider
-      supabaseClient={supabaseClient}
-      initialSession={pageProps.initialSession}
-    >
+    <SessionContextProvider supabaseClient={supabase} initialSession={pageProps.initialSession}>
       <AuthGuard>
         <Component {...pageProps} />
       </AuthGuard>
     </SessionContextProvider>
   )
 }
-
-export default App;

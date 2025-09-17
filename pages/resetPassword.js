@@ -11,7 +11,6 @@ function ResetPassword() {
   const [loading, setLoading] = useState(false);
   const [sessionReady, setSessionReady] = useState(false);
 
-  // Read tokens from the URL hash
   useEffect(() => {
     const hash = window.location.hash;
     if (!hash) {
@@ -19,7 +18,7 @@ function ResetPassword() {
       return;
     }
 
-    const params = new URLSearchParams(hash.slice(1)); // Remove the `#`
+    const params = new URLSearchParams(hash.slice(1));
     const access_token = params.get("access_token");
     const refresh_token = params.get("refresh_token");
     const type = params.get("type");
@@ -50,7 +49,6 @@ function ResetPassword() {
     setSuccessMessage("");
     setError("");
 
-    // Password constraints
     if (password.length < 8) {
       setError("Password must be at least 8 characters long");
       return;

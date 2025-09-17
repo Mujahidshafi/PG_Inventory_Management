@@ -21,7 +21,7 @@ const Layout = ({ title, children, onSettingsClick, showBack }) => {
 
         {/*page title*/}
 
-        <span className="text-[40px] text-[#3D5147] font-medium font-[amiri] mx-8">{title}</span>
+        <span className="text-[40px] text-[#3D5147]">{title}</span>
 
         {/*Only show settings icon if onSettingsClick exists */}
         {onSettingsClick ? (
