@@ -1,6 +1,8 @@
 import React from "react";
 
+
 function Button({label, color = "green", className = '', onClick}){
+
     const baseStyles = "flex items-center justify-center px-6 py-2 rounded-xl shadow-md";
     const colorStyles = 
     {
@@ -12,6 +14,7 @@ function Button({label, color = "green", className = '', onClick}){
         <button
             onClick={onClick}
             className={`${baseStyles} ${colorStyles[color]} ${className}`}>
+
             {label}
         </button>
     );
