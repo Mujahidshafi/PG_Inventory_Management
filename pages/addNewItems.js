@@ -2,8 +2,29 @@ import React from "react";
 //import "../App.css";
 import Layout from "../components/layout"; 
 import Button from "@/components/button";
+import {useState, useEffect} from "react";
 
 function addNewItems() {
+
+  const [saleQuantity, setSaleQuantity] = useState("");
+
+  async function handleAddSaleItem() {
+    const res = await fetch("/api/addSaleItem", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({product_quantity: saleQuantity}),
+    });
+
+
+    const data = await res.json();
+    if (res.ok) {
+      alert ("SALE ITEM WAS ADDED");
+      setSaleQuantity("");
+    } else {
+      alert("ERROR: "+ data.error)
+    }
+  }
+
   return (
     <div>
         <Layout title="Add New Items">
@@ -34,11 +55,17 @@ function addNewItems() {
               <h1 className="text-black text-[20px] font-[amiri] my-7">
                 Add Sale Item
               </h1>
-              <input className="p-4 w-[300px] bg-white text-black border rounded-lg my-4" placeholder="Input" />
+              <input 
+              className="p-4 w-[300px] bg-white text-black border rounded-lg my-4" 
+              placeholder="Input" 
+              value= {saleQuantity}
+              onChange={(e) => setSaleQuantity(e.target.value)}
+              />
               <Button
                 label="Add"
                 color="red"
                 className="w-[120px] h-[45px] font-[amiri] items-center my-6"
+                onClick={handleAddSaleItem} 
               />
             </div>
           </div>
