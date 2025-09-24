@@ -3,6 +3,8 @@ import React from "react";
 import Layout from "../components/layout"; 
 
 function deleteItems() {
+
+  const [storagelocationName, delStorageLocationName] = useState("");
     return (
       <Layout title="Delete Items">
         <div class = "flex flex-wrap items-center justify-center gap-20">
@@ -10,11 +12,23 @@ function deleteItems() {
               <label class = "font-bold">
               Delete Storage Location
               </label>
-            <input className="bg-white p-2 w-[150px] border rounded-lg my-3" placeholder="Input" />
-            <button
-              class = "w-[100px] px-6 py-2 rounded-xl shadow-md bg-[#5D1214] text-white hover:bg-[#2C3A35]">
-              Delete
-            </button>
+              <Selector
+                label="From"
+                value={storagelocationName}
+                onChange={delStorageLocationName(selectedValue)}
+                options={[
+                  st
+                  ]}
+                  onClick={() => delStorageLocationName("/api/addStorageLocationList", 
+                  { storage_location_name: storageLocationName }, 
+                  setStorageLocationName, 
+                  "NEW STORAGE LOCATION ADDED!")}
+              >
+              </Selector>
+              <button
+                class = "w-[100px] px-6 py-2 rounded-xl shadow-md bg-[#5D1214] text-white hover:bg-[#2C3A35]">
+                Delete
+              </button>
             </div>
 
             <div class = "flex flex-col items-center">
