@@ -91,21 +91,6 @@ function ThreeToOne() {
                 ))}
               </tbody>
             </table>
-
-            <div className="flex gap-2 mt-2">
-              <button
-                onClick={addRow}
-                className="px-6 py-2 bg-green-600 text-white rounded-xl shadow hover:bg-green-700 transition"
-              >
-                + Add Row
-              </button>
-              <button
-                onClick={removeRow}
-                className="px-6 py-2 bg-red-600 text-white rounded-xl shadow hover:bg-red-700 transition"
-              >
-                – Remove Row
-              </button>
-            </div>
           </div>
 
           {/* Right Controls */}
@@ -138,6 +123,22 @@ function ThreeToOne() {
             >
               Save
             </button>
+
+            <div className="flex gap-2 mt-2">
+              <button
+                onClick={addRow}
+                className="px-6 py-2 bg-green-600 text-white rounded-xl shadow hover:bg-green-700 transition"
+              >
+                + Add Row
+              </button>
+              <button
+                onClick={removeRow}
+                className="px-6 py-2 bg-red-600 text-white rounded-xl shadow hover:bg-red-700 transition"
+              >
+                – Remove Row
+              </button>
+            </div>
+
           </div>
         </div>
       </div>
