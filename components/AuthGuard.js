@@ -46,14 +46,16 @@ const AuthGuard = ({ children }) => {
   useEffect(() => {
     if (loading) return;
 
-    // If not logged in, redirect away from protected pages
+    const isRecovery = router.pathname === '/resetPassword';
+
+    // Not logged in, redirect from protected pages (except recovery)
     if (!session && !publicPaths.includes(router.pathname)) {
       router.replace('/login');
       return;
     }
 
-    // If logged in but on a public page, redirect to the proper dashboard
-    if (session && publicPaths.includes(router.pathname)) {
+    // Logged in but on a public page
+    if (session && publicPaths.includes(router.pathname) && !isRecovery) {
       if (role === 'admin') router.replace('/adminMenu');
       else if (role === 'employee') router.replace('/employeeMenu');
       return;
