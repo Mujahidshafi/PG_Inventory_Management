@@ -1,10 +1,10 @@
 import React from "react";
 //import "../App.css";
 import Layout from "../components/layout"; 
-import Button from "@/components/button";
+import Button from "../components/button";
 import {useState, useEffect} from "react";
 
-function addNewItems() {
+function AddNewItems() {
 
   const [saleQuantity, setSaleQuantity] = useState("");
 
@@ -74,4 +74,4 @@ function addNewItems() {
   );
 }
 
-export default addNewItems;
+export default AddNewItems;

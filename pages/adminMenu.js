@@ -12,7 +12,7 @@ function AdminMenu() {
   const session = useSession();
   const supabase = useSupabaseClient();
 
-  return (
+  /*Ureturn (
     <Layout title="Admin Menu">
       <div className="grid grid-cols-4 gap-8">
         <Link href="/newFieldRun" className={buttonStyle}> New Field Run </Link>
@@ -25,7 +25,7 @@ function AdminMenu() {
 
         <Link href="/deleteItems" className={buttonStyle}> Delete Items </Link>
 
-
+  */
   // Fetch user role
   useEffect(() => {
     const fetchRole = async () => {
@@ -83,7 +83,7 @@ function AdminMenu() {
         <Link href="/updateLocation" className={buttonStyle}>Update Location</Link>
         <Link href="/createJob" className={buttonStyle}>Create Job</Link>
         <Link href="/inProcess" className={buttonStyle}>In Process</Link>
-        <Link href="/storageDashboard" className={buttonStyle}>Storage Dashboard</Link>
+        <Link href="/StorageDashboard" className={buttonStyle}>Storage Dashboard</Link>
         <Link href="/sale" className={buttonStyle}>Sale</Link>
         <Link href="/search" className={buttonStyle}>Search</Link>
         <Link href="/accountsManager" className={buttonStyle}>Accounts Manager</Link>
