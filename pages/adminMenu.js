@@ -47,7 +47,7 @@ function AdminMenu() {
         <Link href="/updateLocation" className={buttonStyle}>Update Location</Link>
         <Link href="/createJob" className={buttonStyle}>Create Job</Link>
         <Link href="/inProcess" className={buttonStyle}>In Process</Link>
-        <Link href="/storageDashboard" className={buttonStyle}>Storage Dashboard</Link>
+        <Link href="/StorageDashboard" className={buttonStyle}>Storage Dashboard</Link>
         <Link href="/sale" className={buttonStyle}>Sale</Link>
         <Link href="/search" className={buttonStyle}>Search</Link>
         <Link href="/accountsManager" className={buttonStyle}>Accounts Manager</Link>
