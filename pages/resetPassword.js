@@ -49,16 +49,8 @@ function ResetPassword() {
     setSuccessMessage("");
     setError("");
 
-    if (password.length < 8) {
-      setError("Password must be at least 8 characters long");
-      return;
-    }
-    if (!/[A-Z]/.test(password)) {
-      setError("Password must contain at least one uppercase letter");
-      return;
-    }
-    if (!/[0-9]/.test(password)) {
-      setError("Password must contain at least one number");
+    if ((password.length < 8)||(!/[A-Z]/.test(password))||(!/[0-9]/.test(password))) {
+      setError("Password must be at least 8 characters long, contain at least one uppercase letter and one number.");
       return;
     }
 
@@ -66,6 +58,7 @@ function ResetPassword() {
     const { error: updateError } = await supabase.auth.updateUser({ password });
     if (updateError) setError(updateError.message);
     else setSuccessMessage("Password updated successfully!");
+    await supabase.auth.signOut();
     setLoading(false);
   };
 

@@ -1,25 +1,24 @@
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect } from "react";
 import Button from "../components/button"; 
 import Link from "next/link";
 import Image from "next/image";
 import Layout from "../components/layout";
-import { supabase } from "../lib/supabaseClient"
+import { supabase } from "../lib/supabaseClient";
 
 function CreateAccount() {
-  const [name, setName] = useState("")
-  const [email, setEmail] = useState("")
-  const [role, setRole] = useState("")
-  const [password, setPassword] = useState("")
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
-  const [successMessage, setSuccessMessage] = useState("")
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [role, setRole] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState("");
 
   // listen for auth state changes and insert profile when user is confirmed/logged in
   useEffect(() => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      // event can be: 'SIGNED_IN', 'SIGNED_OUT', 'PASSWORD_RECOVERY', etc.
       if (event === "SIGNED_IN" && session?.user) {
         try {
           // Insert into your "users" table now that auth.users has the row
@@ -50,7 +49,7 @@ function CreateAccount() {
     return () => {
       subscription.unsubscribe();
     };
-  }, [name, email, role]); // include fields you want to insert when the event fires
+  }, [name, email, role]);
 
   const handleCreateAccount = async () => {
     setLoading(true);
@@ -66,7 +65,6 @@ function CreateAccount() {
       return;
     }
 
-    // signUp triggers email confirmation; insert happens later in onAuthStateChange
     const { error: signUpError } = await supabase.auth.signUp({
       email,
       password,
@@ -78,17 +76,16 @@ function CreateAccount() {
       return;
     }
 
-    // If email confirmation is on, Supabase sends email automatically
-    // When user confirms and session is created, our useEffect will insert profile
     setSuccessMessage(
       "Sign-up email sent! Please confirm your email to complete account creation."
     );
   };
 
   return (
-    <Layout title="Create New Account">
+    <Layout title="Create New Account" onSettingsClick={() => setShowSettings(!showSettings)}>
       <div className="flex flex-col items-center justify-center my-10">
         <div className="flex flex-row gap-x-10 justify-center">
+
           {/* Name */}
           <div className="flex flex-col items-center justify-center">
             <h1 className="text-black text-[20px] font-[amiri] my-7">Name</h1>
@@ -149,12 +146,12 @@ function CreateAccount() {
 
       <div className="fixed bottom-10 left-1/2 transform -translate-x-1/2 w-[90%] max-w-md">
         {successMessage && (
-          <div className="bg-green-200 text-green-900 p-4 rounded-md shadow-md text-center">
+          <div className="bg-green-200 text-[#3D5147] p-4 rounded-md shadow-md text-center">
             {successMessage}
           </div>
         )}
         {error && (
-          <div className="bg-red-200 text-red-900 p-4 rounded-md shadow-md text-center">
+          <div className="text-[#5D1214] bg-red-200 text-center mb-4 font-[amiri] rounded-lg">
             {error}
           </div>
         )}
