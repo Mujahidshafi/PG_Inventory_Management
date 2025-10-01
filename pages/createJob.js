@@ -17,6 +17,34 @@ function CreateJob() {
     setFields({ ...fields, [key]: value });
   };
 
+  const handleSubmit = async () => {
+    try {
+      const payload = { ...fields}; 
+
+      const res = await fetch("/api/createJobBackend", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        console.log("Create Job Save");
+        setFields({
+          productDescription: "",
+          location: "",
+          lotNumber: "",
+          amount: "",
+          processId: "",
+          jobType: "",
+        });
+      } else {
+        console.error("Failed to save Job");
+      }
+    } catch (err) {
+      console.error("Error:", err);
+    }
+  };
+
   const fieldLabels = [
     { key: "productDescription", label: "Product Description", type: "text" },
     { key: "location", label: "Location", type: "text" },
@@ -49,7 +77,7 @@ function CreateJob() {
 
         {/* Save Button */}
         <div className="flex justify-center">
-          <Button label="Save" color="red" />
+          <Button label="Save" color="red" onClick={handleSubmit}/>
         </div>
       </div>
     </Layout>
