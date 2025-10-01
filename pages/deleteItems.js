@@ -140,6 +140,7 @@ export default function DeleteItems() {
               }
             }}
           >
+
             Delete
           </button>
         </div>
@@ -192,6 +193,7 @@ export default function DeleteItems() {
               }
             }}
           >
+
             Delete
           </button>
         </div>
@@ -225,3 +227,6 @@ export default function DeleteItems() {
     </Layout>
   );
 }
+
+export default deleteItems;
+

@@ -80,7 +80,8 @@ function AddNewItems() {
               />
             </div>
           </div>
-        </Layout>
+        </div>
+      </Layout>
     </div>
   );
 }
