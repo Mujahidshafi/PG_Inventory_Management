@@ -7,19 +7,19 @@ import {useState, useEffect} from "react";
 function AddNewItems() {
 
   const [saleQuantity, setSaleQuantity] = useState("");
+  const [storageLocationName, setStorageLocationName] = useState("");
 
-  async function handleAddSaleItem() {
-    const res = await fetch("/api/addSaleItem", {
+    async function handleAddItems(apiRoute, payload, resetInput, actionMessage) {
+    const res = await fetch( apiRoute,{
       method: "POST",
       headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({product_quantity: saleQuantity}),
+      body: JSON.stringify(payload),
     });
-
 
     const data = await res.json();
     if (res.ok) {
-      alert ("SALE ITEM WAS ADDED");
-      setSaleQuantity("");
+      alert (actionMessage);
+      resetInput("");
     } else {
       alert("ERROR: "+ data.error)
     }
@@ -33,11 +33,19 @@ function AddNewItems() {
               <h1 className="text-black text-[20px] font-[amiri] my-7">
                 Add Storage Location
               </h1>
-              <input className="p-4 w-[300px] bg-white text-black border rounded-lg my-4" placeholder="Input" />
+              <input className="p-4 w-[300px] bg-white text-black border rounded-lg my-4"
+              placeholder="Input"
+              value= {storageLocationName}
+              onChange={(e) => setStorageLocationName(e.target.value)}
+              />
               <Button
                 label="Add"
                 color="red"
                 className="w-[120px] h-[45px] font-[amiri] items-center my-6"
+                onClick={() => handleAddItems("/api/addStorageLocationList", 
+                  { storage_location_name: storageLocationName }, 
+                  setStorageLocationName, 
+                  "NEW STORAGE LOCATION ADDED!")}
               />
             </div>
             <div className="flex flex-col items-center justify-center">
@@ -65,7 +73,10 @@ function AddNewItems() {
                 label="Add"
                 color="red"
                 className="w-[120px] h-[45px] font-[amiri] items-center my-6"
-                onClick={handleAddSaleItem} 
+                onClick={() => handleAddItems("/api/addSaleList", 
+                  { product_quantity: saleQuantity }, 
+                  setSaleQuantity, 
+                  "NEW SALE ITEM ADDED!")}
               />
             </div>
           </div>

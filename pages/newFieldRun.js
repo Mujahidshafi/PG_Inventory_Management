@@ -58,7 +58,6 @@ function NewFieldRun() {
   return (
     <Layout
       title="New Field Run"
-      showBack={true}
       onSettingsClick={() => console.log(" ")}
     >
       <div className="w-full px-8 flex flex-col items-center">

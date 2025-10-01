@@ -15,22 +15,22 @@ function ForgotPassword() {
     setError("");
 
     const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/resetPassword`
+      redirectTo: `${window.location.origin}/resetPassword`,
     });
 
     if (error) {
       setError(error.message);
     } else {
-      setSuccessMessage(
-        "Password reset email sent! Please check your inbox."
-      );
+      setSuccessMessage("If this email exists in our system, you’ll receive a reset link.");
     }
 
     setLoading(false);
   };
 
   return (
-    <div className="flex bg-white flex-wrap flex-col justify-between items-center">
+    <div className="flex bg-white flex-col flex-wrap justify-between items-center">
+      
+      {/* Header */}
       <div className="flex bg-white p-6 m-[40px] flex-row w-[95%] justify-between items-center">
         <div className="w-2 h-2 bg-white"></div>
         <div className="flex items-center bg-white">
@@ -42,7 +42,8 @@ function ForgotPassword() {
         <div className="w-2 h-2 bg-white"></div>
       </div>
 
-      <div className="flex items-center flex-col justify-center w-[424px] h-[605px] bg-[#3D5147] rounded-3xl">
+      {/* Content Box */}
+      <div className="flex flex-col items-center justify-center w-[424px] h-[605px] bg-[#3D5147] rounded-3xl">
         <span className="text-white text-[40px] font-[amiri] my-7">
           Forgot Password?
         </span>
@@ -63,13 +64,14 @@ function ForgotPassword() {
           onClick={handleResetPassword}
         />
 
+        {/* Messages */}
         {successMessage && (
           <div className="bg-green-200 text-green-900 p-4 rounded-md shadow-md mt-4 text-center w-[300px]">
             {successMessage}
           </div>
         )}
         {error && (
-          <div className="bg-red-200 text-red-900 p-4 rounded-md shadow-md mt-4 text-center w-[300px]">
+          <div className="text-[#5D1214] bg-red-200 text-center mb-4 font-[amiri] rounded-lg">
             {error}
           </div>
         )}
