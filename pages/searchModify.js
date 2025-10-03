@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-//import "../App.css";
 import Layout from "../components/layout"; 
 
 function SearchModify() {

@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-//import "../App.css";
 import Layout from "../components/layout";
 import { useRouter } from "next/router";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";

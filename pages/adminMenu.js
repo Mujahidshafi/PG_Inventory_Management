@@ -41,13 +41,14 @@ function AdminMenu() {
       <div className="grid grid-cols-4 gap-8">
         <Link href="/newFieldRun" className={buttonStyle}>New Field Run</Link>
         <Link href="/transfer" className={buttonStyle}>Transfer</Link>
+        <Link href="/mix" className={buttonStyle}>Mix</Link>
         <Link href="/addNewItems" className={buttonStyle}>Add New Items</Link>
         <Link href="/deleteItems" className={buttonStyle}>Delete Items</Link>
         <Link href="/jobs" className={buttonStyle}>Jobs</Link>
         <Link href="/updateLocation" className={buttonStyle}>Update Location</Link>
         <Link href="/createJob" className={buttonStyle}>Create Job</Link>
         <Link href="/inProcess" className={buttonStyle}>In Process</Link>
-        <Link href="/StorageDashboard" className={buttonStyle}>Storage Dashboard</Link>
+        <Link href="/storageDashboard" className={buttonStyle}>Storage Dashboard</Link>
         <Link href="/sale" className={buttonStyle}>Sale</Link>
         <Link href="/search" className={buttonStyle}>Search</Link>
         <Link href="/accountsManager" className={buttonStyle}>Accounts Manager</Link>
