@@ -41,6 +41,7 @@ function AdminMenu() {
       <div className="grid grid-cols-4 gap-8">
         <Link href="/newFieldRun" className={buttonStyle}>New Field Run</Link>
         <Link href="/transfer" className={buttonStyle}>Transfer</Link>
+        <Link href="/mix" className={buttonStyle}>Mix</Link>
         <Link href="/addNewItems" className={buttonStyle}>Add New Items</Link>
         <Link href="/deleteItems" className={buttonStyle}>Delete Items</Link>
         <Link href="/jobs" className={buttonStyle}>Jobs</Link>

@@ -1,88 +1,96 @@
 import React, { useEffect, useState } from "react";
 import Layout from "../components/layout";
+import Link from "next/link";
+
 import CleanStorageCard from "../components/CleanStorageCard";
 import { supabase } from "../lib/supabaseClient";
 
 function CleanStorage() {
-  const [data, setData] = useState([]);
+  const [groups, setGroups] = useState({});
+  const [loading, setLoading] = useState(true);
+
+  const fetchData = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("clean_storage")
+      .select(`
+        id,
+        crop_type,
+        weight_kg,
+        quality,
+        received_at,
+        notes,
+        storage_location_list:location_id (
+          storage_location_name
+        )
+      `)
+      .order("received_at", { ascending: false });
+
+    if (error) {
+      setGroups({});
+      setLoading(false);
+      return;
+    }
+
+    const byLoc = {};
+    for (const row of data || []) {
+      const loc =
+        row?.storage_location_list?.storage_location_name || "Unknown";
+      if (!byLoc[loc]) byLoc[loc] = [];
+      byLoc[loc].push({
+        id: row.id,
+        crop_type: row.crop_type,
+        weight_kg: row.weight_kg,
+        quality: row.quality,
+        received_at: row.received_at,
+        notes: row.notes,
+      });
+    }
+    setGroups(byLoc);
+    setLoading(false);
+  };
 
   useEffect(() => {
     fetchData();
-
     const channel = supabase
-      .channel("clean-storage-changes")
+      .channel("clean-storage-realtime")
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "clean_storage" },
-        () => {
-          fetchData();
-        }
+        () => fetchData()
       )
       .subscribe();
-
     return () => {
       supabase.removeChannel(channel);
     };
   }, []);
 
-  async function fetchData() {
-    const { data, error } = await supabase
-      .from("clean_storage")
-      .select(
-        `
-        id,
-        crop_type,
-        weight_kg,
-        quality,
-        notes,
-        received_at,
-        location,  
-        storage_location_list(storage_location_name)
-      `
-      );
+return (
+  <Layout title="Clean Storage">
+    {/* Add button here */}
+    <div className="w-full max-w-[1140px] mx-auto flex justify-end p-4">
+  <Link
+    href="/cleanStorageModify"
+    className="bg-[#5D1214] text-white px-4 py-2 rounded-[12px] font-semibold hover:bg-[#3D5147]"
+  >
+    + Add Clean Product
+  </Link>
+</div>
 
-    if (error) {
-      console.error("Error fetching clean_storage:", error);
-      return;
-    }
-
-    // Group by location
-    const grouped = data.reduce((acc, row) => {
-      const location =
-        row.storage_location_list?.storage_location_name || row.location || "Unknown";
-
-      if (!acc[location]) acc[location] = [];
-      acc[location].push({
-        lot: row.id, // or another field if you have lot numbers
-        processId: row.id,
-        product: row.crop_type,
-        amount: row.weight_kg,
-        date: row.received_at,
-        quality: row.quality,
-        notes: row.notes,
-      });
-      return acc;
-    }, {});
-
-    const formatted = Object.keys(grouped).map((location) => ({
-      location,
-      rows: grouped[location],
-    }));
-
-    setData(formatted);
-  }
-
-  return (
-    <Layout title="Clean Storage">
-      <div className="w-[100%] h-[100%] flex flex-col items-center gap-4 overflow-y-scroll">
-        <div className="min-h-screen flex flex-col items-center py-8 border-black">
-          {data.map((locationData, idx) => (
-            <CleanStorageCard key={idx} {...locationData} />
-          ))}
-        </div>
-      </div>
-    </Layout>
-  );
+    {/* Your existing list */}
+    <div className="w-[100%] h-[100%] flex flex-col items-center gap-4 overflow-auto p-4">
+      {loading ? (
+        <div className="text-gray-600">Loading…</div>
+      ) : Object.keys(groups).length === 0 ? (
+        <div className="text-gray-600">No records found.</div>
+      ) : (
+        Object.keys(groups).map((loc) => (
+          <CleanStorageCard key={loc} location={loc} rows={groups[loc]} />
+        ))
+      )}
+    </div>
+  </Layout>
+);
 }
 
 export default CleanStorage;

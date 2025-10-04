@@ -1,12 +1,11 @@
 import React from "react";
-//import "../App.css";
 import Layout from "../components/layout"; 
 import Link from "next/link"
 
 const buttonStyle="bg-[#5D1214] text-white px-6 py-6 rounded-[15px] text-lg font-semibold text-center hover:bg-[#3D5147] transition-all duration-300"
 
 
-function storageDashboard() {
+function StorageDashboard() {
   return (
       <Layout title="Storage Dashboard">
         <div className= "grid grid-cols-3 gap-20">
@@ -18,4 +17,4 @@ function storageDashboard() {
   );
 }
 
-export default storageDashboard;
+export default StorageDashboard;

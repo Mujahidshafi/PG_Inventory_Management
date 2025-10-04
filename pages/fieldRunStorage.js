@@ -15,7 +15,7 @@ function FieldRunStorage() {
   }, []);
 
   return (
-    <Layout location="Field Run Storage">
+    <Layout title="Field Run Storage">
       <div className="w-[100%] h-[100%] flex flex-col items-center gap-4 overflow-y-scroll">
         {storageItems.map((item, index) => (
           <FRStorageLayout
@@ -24,9 +24,11 @@ function FieldRunStorage() {
             lotNumber={item.lot_number}
             product={item.product}
             weight={item.weight}
+            moisture={item.moisture}
             dateStored={item.date_stored}
           />
         ))}
+        
       </div>
     </Layout>
   );
