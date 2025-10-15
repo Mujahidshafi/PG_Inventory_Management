@@ -1,56 +1,278 @@
-import React from "react";
-//import "../App.css";
+import React, { useState, useEffect } from "react";
 import Layout from "../components/layout";
-import DeleteCropForm from "../components/DeleteCropForm";
+import Selector from "../components/Selector";
 
-function deleteItems() {
+// Delete storage location by ID
+async function deleteStorageLocation(id) {
+  try {
+    const res = await fetch("/api/delStorageLocation", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Delete failed");
+
+    alert("Storage location deleted!");
+    return true;
+  } catch (err) {
+    console.error("Delete error:", err);
+    alert(err.message);
+    return false;
+  }
+}
+
+// Delete sale item by ID
+async function deleteSaleItem(id) {
+  try {
+    const res = await fetch("/api/delSaleItem", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Delete failed");
+
+    alert("Sale item deleted!");
+    return true;
+  } catch (err) {
+    console.error("Delete error:", err);
+    alert(err.message);
+    return false;
+  }
+}
+
+// Delete product item by ID
+async function deleteProductItem(id) {
+  try {
+    const res = await fetch("/api/delProduct", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Delete failed");
+
+    alert("Product item deleted!");
+    return true;
+  } catch (err) {
+    console.error("Delete error:", err);
+    alert(err.message);
+    return false;
+  }
+}
+
+// Delete Job by Process ID
+async function deleteProcess(id) {
+  try {
+    const res = await fetch("/api/delProcess", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Delete failed");
+
+    alert("Process deleted!");
+    return true;
+  } catch (err) {
+    console.error("Delete error:", err);
+    alert(err.message);
+    return false;
+  }
+}
+
+// Delete Customer by Name
+async function deleteCustomer(id) {
+  try {
+    const res = await fetch("/api/delCustomer", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Delete failed");
+
+    alert("Customer deleted!");
+    return true;
+  } catch (err) {
+    console.error("Delete error:", err);
+    alert(err.message);
+    return false;
+  }
+}
+
+//fetch for dropdown menu
+async function fetchList(apiRoute, setData) {
+  try {
+    const res = await fetch(apiRoute);
+    const data = await res.json();
+    setData(data);
+  } catch (err) {
+    console.error("Error fetching:", err);
+  }
+}
+function DeleteItems() {
+  const [storageLocationId, setStorageLocationId] = useState("");
+  const [saleItemId, setSaleItemId] = useState("");
+  const [productItemId, setProductItemId] = useState("");
+  const [processId, setProcessId] = useState("");
+  const [customerId, setCustomer] = useState("");
+  const [storageLocations, setStorageLocations] = useState([]);
+  const [saleItems, setSaleItems] = useState([]);
+  const [productItems, setProducts] = useState([]);
+  const [processes, setProcesses] = useState([]);
+  const [customers, setCustomers] = useState([]);
+
+  // Fetch lists on mount
+  useEffect(() => {
+    fetchList("/api/fetchStorageLocations", setStorageLocations);
+    fetchList("/api/fetchSaleList", setSaleItems);
+    fetchList("/api/fetchProductList", setProducts);
+    fetchList("/api/fetchProcesses", setProcesses);
+    fetchList("/api/fetchCustomers", setCustomers);
+  }, []);
+
   return (
     <Layout title="Delete Items">
-      <div className="flex flex-wrap items-center justify-center gap-20">
-        {/* Delete Storage Location (placeholder) */}
+      <div className="flex flex-wrap  items-center justify-center gap-20">
+        {/* Delete Storage Location */}
         <div className="flex flex-col items-center">
-          <label className="font-bold">Delete Storage Location</label>
-          <input
-            className="bg-white p-2 w-[150px] border rounded-lg my-3"
-            placeholder="Input"
+          <label className="font-bold text-[20px] my-7">Delete Storage Location</label>
+          <Selector
+            value={storageLocationId}
+            onChange={setStorageLocationId}
+            options={storageLocations.map((loc) => ({
+              value: loc.id,
+              label: loc.storage_location_name,
+            }))}
           />
-          <button className="w-[100px] px-6 py-2 rounded-xl shadow-md bg-[#5D1214] text-white hover:bg-[#2C3A35]">
+          <button
+            className=" mt-4 w-[100px] px-6 py-2 rounded-xl shadow-md bg-[#5D1214] text-white hover:bg-[#2C3A35]"
+            onClick={async () => {
+              const deleted = await deleteStorageLocation(storageLocationId);
+              if (deleted) {
+                fetchList("/api/fetchStorageLocations", setStorageLocations);
+                setStorageLocationId("");
+              }
+            }}
+          >
+
             Delete
           </button>
         </div>
 
-        {/* ✅ Delete Crop (Crop Type) */}
+        {/* Delete Product */}
         <div className="flex flex-col items-center">
-          <label className="font-bold mb-2">Delete Crop</label>
-          <DeleteCropForm />
-        </div>
-
-        {/* Delete Sale Item (placeholder) */}
-        <div className="flex flex-col items-center">
-          <label className="font-bold">Delete Sale Item</label>
-          <input
-            className="bg-white p-2 w-[150px] border rounded-lg my-3"
-            placeholder="Input"
+          <label className="font-bold text-[20px] my-7">Delete Product</label>
+          <Selector
+            value={productItemId}
+            onChange={setProductItemId}
+            options={productItems.map((item) => ({
+              value: item.id,
+              label: item.name,
+            }))}
           />
-          <button className="w-[100px] px-6 py-2 rounded-xl shadow-md bg-[#5D1214] text-white hover:bg-[#2C3A35]">
+          <button
+            className=" mt-4 w-[100px] px-6 py-2 rounded-xl shadow-md bg-[#5D1214] text-white hover:bg-[#2C3A35]"
+            onClick={async () => {
+              const deleted = await deleteProductItem(productItemId);
+              if (deleted) {
+                fetchList("/api/fetchProductList", setProducts);
+                setProductItemId("");
+              }
+            }}
+          >
             Delete
           </button>
         </div>
 
-        {/* Delete Process (placeholder) */}
+        {/* Delete Sale Item */}
         <div className="flex flex-col items-center">
-          <label className="font-bold">Delete Process</label>
-          <input
-            className="bg-white p-2 w-[150px] border rounded-lg my-3"
-            placeholder="Input"
+          <label className="font-bold text-[20px] my-7">Delete Sale Item</label>
+          <Selector
+            value={saleItemId}
+            onChange={setSaleItemId}
+            options={saleItems.map((item) => ({
+              value: item.id,
+              label: item.product_quantity,
+            }))}
           />
-          <button className="w-[100px] px-6 py-2 rounded-xl shadow-md bg-[#5D1214] text-white hover:bg-[#2C3A35]">
+          <button
+            className=" mt-4 w-[100px] px-6 py-2 rounded-xl shadow-md bg-[#5D1214] text-white hover:bg-[#2C3A35]"
+            onClick={async () => {
+              const deleted = await deleteSaleItem(saleItemId);
+              if (deleted) {
+                fetchList("/api/fetchSaleList", setSaleItems);
+                setSaleItemId("");
+              }
+            }}
+          >
+
             Delete
           </button>
         </div>
+
+        {/* Delete Process */}
+        <div className="flex flex-col items-center">
+          <label className="font-bold text-[20px] my-7">Delete Process</label>
+          <Selector
+            value={processId}
+            onChange={setProcessId}
+            options={processes.map((item) => ({
+              value: item.process_id,
+              label: item.process_id,
+            }))}
+          />
+          <button
+            className=" mt-4 w-[100px] px-6 py-2 rounded-xl shadow-md bg-[#5D1214] text-white hover:bg-[#2C3A35]"
+            onClick={async () => {
+              const deleted = await deleteProcess(processId);
+              if (deleted) {
+                fetchList("/api/fetchProcesses", setProcesses);
+                setProcessId("");
+              }
+            }}
+          >
+            Delete
+          </button>
+        </div>
+      
+      
+       {/* Delete Customer*/}     
+        <div className="flex flex-col items-center">
+          <label className="font-bold text-[20px] my-7">Delete Customer</label>
+          <Selector
+            value={customerId}
+            onChange={setCustomer}
+            options={customers.map((item) => ({
+              value: item.customer_id,
+              label: item.name,
+            }))}
+          />
+          <button
+            className=" mt-4 w-[100px] px-6 py-2 rounded-xl shadow-md bg-[#5D1214] text-white hover:bg-[#2C3A35]"
+            onClick={async () => {
+              const deleted = await deleteCustomer(customerId);
+              if (deleted) {
+                fetchList("/api/fetchCustomers", setCustomers);
+                setCustomer("");
+              }
+            }}
+          >
+            Delete
+          </button>
+        </div>
+
       </div>
     </Layout>
   );
 }
 
-export default deleteItems;
+export default DeleteItems;
+
