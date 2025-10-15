@@ -97,7 +97,7 @@ async function fetchList(apiRoute, setData) {
   }
 }
 
-export default function DeleteItems() {
+function DeleteItems() {
   const [storageLocationId, setStorageLocationId] = useState("");
   const [saleItemId, setSaleItemId] = useState("");
   const [productItemId, setProductItemId] = useState("");
@@ -227,6 +227,4 @@ export default function DeleteItems() {
     </Layout>
   );
 }
-
-
-
+export default DeleteItems;

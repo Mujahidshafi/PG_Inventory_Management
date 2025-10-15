@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { supabase } from "../lib/supabaseClient";
 
-
 const label = "text-black text-[20px] my-2 font-semibold";
 const input = "p-4 w-[320px] bg-white text-black border rounded-lg my-1";
 const btn =
@@ -29,86 +28,109 @@ export default function CleanStorageModify() {
   // Load storage locations + crop type suggestions
   useEffect(() => {
     (async () => {
-      const [{ data: locs }, { data: crops }] = await Promise.all([
-        supabase
-          .from("storage_location_list")
-          .select("id, storage_location_name")
-          .order("storage_location_name", { ascending: true }),
-        supabase
-          .from("crop_types")
-          .select("id, name")
-          .order("name", { ascending: true }),
-      ]);
-      if (locs) setLocations(locs);
-      if (crops) setSuggestions(crops.map((c) => c.name));
+      try {
+        const [{ data: locs, error: locErr }, { data: crops, error: cropErr }] =
+          await Promise.all([
+            supabase
+              .from("storage_location_list")
+              .select("id, storage_location_name")
+              .order("storage_location_name", { ascending: true }),
+            supabase
+              .from("crop_types")
+              .select("id, name")
+              .order("name", { ascending: true }),
+          ]);
+
+        if (locErr) throw locErr;
+        if (cropErr) throw cropErr;
+
+        if (locs) setLocations(locs);
+        if (crops) setSuggestions(crops.map((c) => c.name));
+      } catch (e) {
+        setErrorMsg(e?.message || "Failed to load reference data.");
+      }
     })();
   }, []);
 
   const onChange = (e) =>
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
 
-  const normalizedCrop = useMemo(
-    () => form.crop_type.trim(),
-    [form.crop_type]
-  );
+  const normalizedCrop = useMemo(() => form.crop_type.trim(), [form.crop_type]);
 
+  const requiredOk = useMemo(() => {
+    const w = (form.weight_kg || "").toString().replace(/,/g, "").trim();
+    const weight = Number(w);
+    return (
+      !!normalizedCrop &&
+      !!form.location_id &&
+      w.length > 0 &&
+      Number.isFinite(weight) &&
+      weight > 0
+    );
+  }, [form.weight_kg, form.location_id, normalizedCrop]);
+
+  // Upsert crop name into catalog (Supabase JS v2)
   const ensureInCatalog = async () => {
-    if (!saveToCatalog) return;
-    if (!normalizedCrop) return;
+    if (!saveToCatalog || !normalizedCrop) return;
 
-    // if already present (case-insensitive), skip insert
-    const exists =
-      suggestions.find(
-        (s) => s.toLowerCase() === normalizedCrop.toLowerCase()
-      ) !== undefined;
-    if (exists) return;
-
-    // Insert into crop_types (make sure crop_types.name has UNIQUE constraint)
     const { error } = await supabase
       .from("crop_types")
-      .insert([{ name: normalizedCrop }]);
+      .upsert(
+        [{ name: normalizedCrop }],
+        {
+          onConflict: "name",
+          ignoreDuplicates: true, // do nothing if it already exists
+        }
+      );
+
     if (!error) {
-      setSuggestions((prev) => [...prev, normalizedCrop].sort((a, b) => a.localeCompare(b)));
+      setSuggestions((prev) =>
+        [...new Set([...prev, normalizedCrop])].sort((a, b) =>
+          a.localeCompare(b)
+        )
+      );
     }
-    // if UNIQUE constraint blocks (duplicate), it's fine—ignore
+    // If there's an error, we don't fail the whole submit—catalog is a convenience.
   };
 
   const onSubmit = async (e) => {
     e.preventDefault();
+    if (saving) return;
     setErrorMsg("");
 
-    if (!normalizedCrop || !form.weight_kg || !form.location_id) {
-      setErrorMsg("Crop type, weight, and storage location are required.");
+    // Validate
+    const weightSanitized = (form.weight_kg || "").toString().replace(/,/g, "");
+    const weight = Number(weightSanitized);
+    if (!requiredOk) {
+      setErrorMsg("Crop type, positive weight, and storage location are required.");
       return;
     }
 
-    const weight = Number(form.weight_kg);
-    if (Number.isNaN(weight) || weight <= 0) {
-      setErrorMsg("Weight must be a positive number.");
-      return;
-    }
+    try {
+      setSaving(true);
 
-    setSaving(true);
-    // Optionally add to catalog first (won’t block on duplicate)
-    await ensureInCatalog();
+      // Add to catalog first (safe: ignores duplicates)
+      await ensureInCatalog();
 
-    const { error } = await supabase.from("clean_storage").insert([
-      {
-        crop_type: normalizedCrop, // still stored as TEXT in clean_storage
+      const payload = {
+        crop_type: normalizedCrop,
         weight_kg: weight,
         quality: form.quality,
-        notes: form.notes.trim(),
-        location_id: form.location_id,
-      },
-    ]);
-    setSaving(false);
+        notes: (form.notes || "").trim(),
+        location_id: isNaN(Number(form.location_id))
+          ? form.location_id
+          : Number(form.location_id),
+      };
 
-    if (error) {
-      setErrorMsg(error.message || "Insert failed.");
-      return;
+      const { error } = await supabase.from("clean_storage").insert([payload]);
+      if (error) throw error;
+
+      router.push("/cleanStorage");
+    } catch (err) {
+      setErrorMsg(err?.message || "Insert failed.");
+    } finally {
+      setSaving(false);
     }
-
-    router.push("/cleanStorage");
   };
 
   return (
@@ -120,16 +142,19 @@ export default function CleanStorageModify() {
         <div className="grid md:grid-cols-2 gap-6">
           {/* Product with suggestions, but free text allowed */}
           <div className="flex flex-col items-start">
-            <label className={label}>Product (Crop Type)</label>
+            <label htmlFor="crop_type" className={label}>
+              Product (Crop Type)
+            </label>
 
-            {/* Input with datalist suggestions */}
             <input
+              id="crop_type"
               list="cropOptions"
               name="crop_type"
               className={input}
               placeholder="Type or pick… (e.g., Wheat, Potatoes, Corn)"
               value={form.crop_type}
               onChange={onChange}
+              autoComplete="off"
             />
             <datalist id="cropOptions">
               {suggestions.map((name) => (
@@ -149,21 +174,30 @@ export default function CleanStorageModify() {
 
           {/* Weight */}
           <div className="flex flex-col items-start">
-            <label className={label}>Weight (kg)</label>
+            <label htmlFor="weight_kg" className={label}>
+              Weight (kg)
+            </label>
             <input
+              id="weight_kg"
               name="weight_kg"
               className={input}
               placeholder="e.g., 1500"
               value={form.weight_kg}
               onChange={onChange}
-              inputMode="numeric"
+              type="number"
+              min="0"
+              step="0.01"
+              inputMode="decimal"
             />
           </div>
 
           {/* Quality */}
           <div className="flex flex-col items-start">
-            <label className={label}>Quality</label>
+            <label htmlFor="quality" className={label}>
+              Quality
+            </label>
             <select
+              id="quality"
               name="quality"
               className={input}
               value={form.quality}
@@ -177,8 +211,11 @@ export default function CleanStorageModify() {
 
           {/* Storage Location */}
           <div className="flex flex-col items-start">
-            <label className={label}>Storage Location</label>
+            <label htmlFor="location_id" className={label}>
+              Storage Location
+            </label>
             <select
+              id="location_id"
               name="location_id"
               className={input}
               value={form.location_id}
@@ -195,8 +232,11 @@ export default function CleanStorageModify() {
 
           {/* Notes */}
           <div className="md:col-span-2">
-            <label className={label}>Notes</label>
+            <label htmlFor="notes" className={label}>
+              Notes
+            </label>
             <textarea
+              id="notes"
               name="notes"
               className={`${input} h-[110px] resize-y`}
               placeholder="Washed & ready to ship…"
@@ -209,7 +249,12 @@ export default function CleanStorageModify() {
         {errorMsg && <div className="text-red-600 mt-4">{errorMsg}</div>}
 
         <div className="flex items-center gap-3 mt-6">
-          <button type="submit" className={btn} disabled={saving}>
+          <button
+            type="submit"
+            className={`${btn} disabled:opacity-60 disabled:cursor-not-allowed`}
+            disabled={!requiredOk || saving}
+            aria-disabled={!requiredOk || saving}
+          >
             {saving ? "Saving…" : "Save"}
           </button>
           <Link href="/cleanStorage" className="underline">
