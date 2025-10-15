@@ -1,66 +1,71 @@
-import { useState, useEffect } from "react";
+"use client";
+import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 
 export default function DeleteCropForm() {
   const [crops, setCrops] = useState([]);
-  const [selected, setSelected] = useState("");
-  const [message, setMessage] = useState("");
+  const [selectedId, setSelectedId] = useState("");
+  const [msg, setMsg] = useState("");
   const [loading, setLoading] = useState(true);
 
+  const field = "border p-2 rounded border-gray-400 w-full text-black";
+  const btn =
+    "bg-[#5D1214] text-white px-6 py-2 rounded-[10px] text-base font-semibold text-center hover:bg-[#3D5147] transition-all duration-300 disabled:opacity-60";
+
   useEffect(() => {
-    const fetchCrops = async () => {
+    const load = async () => {
       setLoading(true);
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from("crop_types")
         .select("id, name")
-        .order("name");
-      if (error) {
-        console.error(error.message);
-        setMessage("❌ Error loading crops");
-      } else {
-        setCrops(data ?? []);
-      }
+        .order("name", { ascending: true });
+      setCrops(data || []);
       setLoading(false);
     };
-    fetchCrops();
+    load();
   }, []);
 
-  const handleDelete = async (e) => {
+  const onDelete = async (e) => {
     e.preventDefault();
-    if (!selected) return;
+    setMsg("");
+    if (!selectedId) return setMsg("Select a crop to delete.");
+    const crop = crops.find((c) => c.id === selectedId);
+    if (!confirm(`Delete "${crop?.name}"? This cannot be undone.`)) return;
 
-    const target = crops.find((c) => c.id === selected);
-    const ok = confirm(`Delete "${target?.name ?? "this crop"}"?`);
-    if (!ok) return;
+    // optimistic remove (logic unchanged)
+    const prev = crops;
+    setCrops((list) => list.filter((c) => c.id !== selectedId));
+    setSelectedId("");
 
-    const { error } = await supabase.from("crop_types").delete().eq("id", selected);
-
+    const { error } = await supabase.from("crop_types").delete().eq("id", selectedId);
     if (error) {
-      console.error(error.message);
-      setMessage("❌ Error deleting crop");
+      setMsg("Error deleting crop.");
+      setCrops(prev);
+      console.error(error);
     } else {
-      setMessage("✅ Crop deleted");
-      setCrops((prev) => prev.filter((c) => c.id !== selected));
-      setSelected("");
+      setMsg(`Deleted: ${crop?.name}`);
     }
   };
 
   return (
-    <form onSubmit={handleDelete} style={{ marginBottom: 16 }}>
+    <form onSubmit={onDelete} className="flex flex-col gap-3">
       <select
-        value={selected}
-        onChange={(e) => setSelected(e.target.value)}
+        className={field}
+        value={selectedId}
+        onChange={(e) => setSelectedId(e.target.value)}
         disabled={loading}
-        style={{ padding: "6px", marginRight: "8px" }}
       >
-        <option value="">{loading ? "Loading..." : "Select crop to delete"}</option>
+        <option value="">{loading ? "Loading…" : "Select crop to delete"}</option>
         {crops.map((c) => (
           <option key={c.id} value={c.id}>{c.name}</option>
         ))}
       </select>
-      <button type="submit" disabled={!selected || loading}>Delete</button>
-      {message && <p>{message}</p>}
+
+      <button type="submit" className={btn} disabled={!selectedId || loading}>
+        Delete
+      </button>
+
+      {msg ? <p className="text-sm">{msg}</p> : null}
     </form>
   );
 }
-
