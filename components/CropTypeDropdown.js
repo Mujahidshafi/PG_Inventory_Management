@@ -1,47 +1,44 @@
-import { useEffect, useState } from "react"
-import { supabase } from "../lib/supabase"
+import { useEffect, useState } from "react";
+import { supabase } from "../lib/supabase";
 
-//type Crop = { id: string; name: string }
-//problem
-//export default function CropTypeDropdown({ onChange }: { onChange?: (value: string) => void }) {
-export default function CropTypeDropdown({ onChange }) {
-  //const [crops, setCrops] = useState<Crop[]>([])
-  //const [loading, setLoading] = useState(true)
+export default function CropTypeDropdown({ value, onChange }) {
   const [crops, setCrops] = useState([]);
-  const [value, setValue] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchCrops = async () => {
-      setLoading(true)
+      setLoading(true);
       const { data, error } = await supabase
         .from("crop_types")
         .select("id, name")
-        .order("name")
+        .eq("show_in_dropdown", true)            // only showing items marked ON
+        .order("name", { ascending: true });
 
       if (error) {
-        console.error("Error fetching crops:", error.message)
+        console.error("Error fetching crops:", error.message);
+        setCrops([]);
       } else {
-        setCrops(data ?? [])
+        setCrops(data ?? []);
       }
+      setLoading(false);
+    };
 
-      setLoading(false)
-    }
-
-    fetchCrops()
-  }, [])
+    fetchCrops();
+  }, []);
 
   return (
     <select
+      value={value}
       onChange={(e) => onChange?.(e.target.value)}
       disabled={loading}
       style={{ padding: "6px 10px", margin: "8px 0" }}
     >
       <option value="">{loading ? "Loading..." : "Select crop type"}</option>
       {crops.map((c) => (
-        <option key={c.id} value={c.name}>
+        <option key={c.id} value={c.id}>
           {c.name}
         </option>
       ))}
     </select>
-  )
+  );
 }
