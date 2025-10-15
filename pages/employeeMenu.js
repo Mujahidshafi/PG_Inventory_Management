@@ -26,7 +26,7 @@ function EmployeeMenu() {
     };
 
     fetchRole();
-  }, [session]);
+  }, [session, supabase]);
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();

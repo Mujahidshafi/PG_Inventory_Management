@@ -96,8 +96,7 @@ async function fetchList(apiRoute, setData) {
     console.error("Error fetching:", err);
   }
 }
-
-export default function DeleteItems() {
+function DeleteItems() {
   const [storageLocationId, setStorageLocationId] = useState("");
   const [saleItemId, setSaleItemId] = useState("");
   const [productItemId, setProductItemId] = useState("");
@@ -228,5 +227,5 @@ export default function DeleteItems() {
   );
 }
 
-export default deleteItems;
+export default DeleteItems;
 
