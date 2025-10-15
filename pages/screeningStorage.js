@@ -8,6 +8,8 @@ function ScreeningStorage() {
   const router = useRouter();
   const[data, setData] = useState([]);
   const [openId, setOpenId] = useState(null);
+  const [notesOpenFor, setNotesOpenFor] = useState(null);
+  const [notesText, setNotesText] = useState("");
   useEffect(() => {
   (async () => {
     try {
@@ -21,6 +23,7 @@ function ScreeningStorage() {
           product: r.Product,
           amount: r.Amount,
           dateStored: new Date(r.Date_Stored).toLocaleDateString(),
+          notes: r.Notes,
         }));
         setData(list);
       } else {
@@ -46,6 +49,36 @@ const handleDelete = async (processId) => {
     console.error("Error deleting item:", err);
   }
 };
+const handleSaveNotes = async () => {
+  if (!notesOpenFor) {
+    alert("Missing id");
+    return;
+  }
+  try {
+    const res = await fetch(`/api/screeningStorageBackend?id=${encodeURIComponent(notesOpenFor)}`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ Notes: notesText }),
+      }
+    );
+    if (!res.ok) throw new Error(await res.text());
+    setData(prev =>
+      prev.map(x => x.processId === notesOpenFor ? { ...x, notes: notesText } : x)
+    );
+    setNotesOpenFor(null);
+    setNotesText("");
+  } catch (err) {
+    console.error("Save notes failed:", err);
+    alert(`Failed to save notes: ${err.message}`);
+  }
+};
+useEffect(() => {
+  if (openId === null) return;
+  const handleOutside = () => setOpenId(null);
+  document.addEventListener("click", handleOutside);
+  return () => document.removeEventListener("click", handleOutside);
+}, [openId]);
     return (
       <Layout title="Screening Storage">
         <div class = "w-[100%] h-[100%] flex flex-col items-center gap-4 overflow-y-scroll text-black">
@@ -134,12 +167,58 @@ const handleDelete = async (processId) => {
                     >
                       Delete
                     </button>
+                    <button
+                      type="button"
+                      className="block w-full px-4 py-2 text-left text-indigo-600 hover:bg-gray-100"
+                      onClick={() => {
+                        setOpenId(null);
+                        setNotesOpenFor(item.processId);
+                        setNotesText(item.notes ?? "");
+                      }}
+                    >
+                      Add Notes
+                    </button>
                   </div>
                 )}
               </div>
             </div>
           ))}
         </div>
+        {notesOpenFor && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+            onClick={() => setNotesOpenFor(null)}
+          >
+            <div
+              className="w-[520px] max-w-[90vw] rounded-xl bg-white p-4 shadow-xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="text-lg font-semibold mb-2">Add Notes</h3>
+              <textarea
+                className="w-full h-[160px] border rounded-md p-2 resize-none"
+                placeholder="Enter notes…"
+                value={notesText}
+                onChange={(e) => setNotesText(e.target.value)}
+              />
+              <div className="mt-4 flex justify-end gap-2">
+                <button
+                  type="button"
+                  className="px-4 py-2 rounded-md border"
+                  onClick={() => setNotesOpenFor(null)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="px-4 py-2 rounded-md bg-[#5D1214] text-white hover:bg-[#2C3A35]"
+                  onClick={handleSaveNotes}
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </Layout>
     );
   }

@@ -58,18 +58,27 @@ function FieldRunModify() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     //supabase jsonb format field lot and product description
-    const lotsArray = fieldLot.split(",").map((lot) => lot.trim()).filter((lot) => lot);
-    const productsArray = productDescription.split(",").map((p) => p.trim().toUpperCase()).filter((p) => p);
-    //supabase format date
-    const isoDate = new Date(dateTime).toISOString();
+  const lotsArray = Array.isArray(fieldLot)
+    ? fieldLot
+    : fieldLot
+    ? fieldLot.split(",").map(lot => lot.trim()).filter(lot => lot)
+    : [];
+
+  const productsArray = Array.isArray(productDescription)
+    ? productDescription
+    : productDescription
+    ? productDescription.split(",").map(p => p.trim().toUpperCase()).filter(p => p)
+    : [];
+      //supabase format date, convert to null if zero'd out
+    const isoDate = dateTime ? new Date(dateTime).toISOString() : null;
 
     const { error } = await supabase
       .from("field_run_storage_test")
       .update({
         lot_number: lotsArray,
         product: productsArray,
-        weight: Number(formWeight),
-        moisture: Number(formMoisture),
+        weight: Number(formWeight) || 0,
+        moisture: Number(formMoisture) || 0,
         date_stored: isoDate,
       })
       .eq("location", location); // since location is the primary key
@@ -83,7 +92,7 @@ function FieldRunModify() {
       }
     };
   return (
-    <Layout title="Field Run Modify">
+    <Layout title="Field Run Modify" showBack={true} backRoute={"/fieldRunStorage"}>
       <div className="max-w-4xl mx-auto bg-white px-12 py-4 rounded-xl shadow">
       <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-1 gap-4">
             <div className = "flex flex-col">
@@ -111,7 +120,7 @@ function FieldRunModify() {
               placeholder="Field Lot Number"
               value={fieldLot}
               onChange={(e) => setFieldLot(e.target.value)}
-              required
+              
             />
             </div>
 
@@ -126,7 +135,7 @@ function FieldRunModify() {
               placeholder="Product Description"
               value={productDescription}
               onChange={(e) => setProductDescription(e.target.value)}
-              required
+              
             />
             </div>
 
@@ -141,7 +150,7 @@ function FieldRunModify() {
               placeholder="Weight"
               value={formWeight}
               onChange={(e) => setFormWeight(e.target.value)}
-              required
+              
             />
             </div>
 
@@ -156,7 +165,7 @@ function FieldRunModify() {
                 placeholder="Moisture"
                 value={formMoisture}
                 onChange={(e) => setFormMoisture(e.target.value)}
-                required
+                
               />
             </div>
 
@@ -170,18 +179,34 @@ function FieldRunModify() {
               type="datetime-local"
               value={dateTime}
               onChange={(e) => setDateTime(e.target.value)}
-              required
+              
             />
             </div>
 
-            <div className="col-span-full flex justify-left">
-              <button
-                type="submit"
-                className="bg-red-800 text-white rounded-xl py-2 px-6 hover:bg-[#3D5147]"
-              >
-                Save
-              </button>
-            </div>
+          <div className="flex justify-between items-center mt-4">
+            <button
+              type="submit"
+              className="bg-red-800 text-white rounded-xl py-2 px-6 hover:bg-[#3D5147]"
+            >
+              Save
+            </button>
+
+            <button
+              type="button"
+              className="bg-gray-600 text-white rounded-xl py-2 px-6 hover:bg-[#4B5563]"
+              onClick={() => {
+                setFieldLot([]);
+                setProductDescription([]);
+                setFormWeight(0);
+                setFormMoisture(0);
+
+                const now = new Date();
+                setDateTime(toLocalInputFormat(now));
+              }}
+            >
+              Zero
+            </button>
+          </div>
           </form>
         </div>
     </Layout>

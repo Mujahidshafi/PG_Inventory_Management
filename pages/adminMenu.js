@@ -27,7 +27,7 @@ function AdminMenu() {
     };
 
     fetchRole();
-  }, [session]);
+  }, [session,supabase]);
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -52,6 +52,9 @@ function AdminMenu() {
         <Link href="/sale" className={buttonStyle}>Sale</Link>
         <Link href="/search" className={buttonStyle}>Search</Link>
         <Link href="/accountsManager" className={buttonStyle}>Accounts Manager</Link>
+        <Link href="/qsageJob" className={buttonStyle}>Qsage Job</Link>
+        <Link href="/CropMenu" className={buttonStyle}>Crop Menu</Link>
+
       </div>
     </Layout>
   );
