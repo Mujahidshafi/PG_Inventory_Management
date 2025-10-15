@@ -228,5 +228,5 @@ export default function DeleteItems() {
   );
 }
 
-export default deleteItems;
+
 

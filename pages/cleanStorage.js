@@ -12,42 +12,36 @@ function CleanStorage() {
   const fetchData = async () => {
     setLoading(true);
     const { data, error } = await supabase
-      .from("clean_storage")
-      .select(`
-        id,
-        crop_type,
-        weight_kg,
-        quality,
-        received_at,
-        notes,
-        storage_location_list:location_id (
-          storage_location_name
-        )
-      `)
-      .order("received_at", { ascending: false });
+  .from("clean_storage")
+  .select(`
+    id,
+    crop_type,
+    weight_kg,
+    quality,
+    received_at,
+    notes,
+    storage_location_list:location_id (
+      storage_location_name
+    )
+  `)
+  .order("received_at", { ascending: false });
 
-    if (error) {
-      setGroups({});
-      setLoading(false);
-      return;
-    }
+console.log("clean_storage rows:", data?.length, data?.[0]); // keep for now
 
-    const byLoc = {};
-    for (const row of data || []) {
-      const loc =
-        row?.storage_location_list?.storage_location_name || "Unknown";
-      if (!byLoc[loc]) byLoc[loc] = [];
-      byLoc[loc].push({
-        id: row.id,
-        crop_type: row.crop_type,
-        weight_kg: row.weight_kg,
-        quality: row.quality,
-        received_at: row.received_at,
-        notes: row.notes,
-      });
-    }
-    setGroups(byLoc);
-    setLoading(false);
+if (error) {
+  setGroups({});
+  setLoading(false);
+  return;
+}
+
+const byLoc = {};
+for (const row of data || []) {
+  const loc = row?.storage_location_list?.storage_location_name || "Unknown";
+  if (!byLoc[loc]) byLoc[loc] = [];
+  byLoc[loc].push(row); // <-- push the row as-is (id, crop_type, weight_kg, quality, received_at, notes)
+}
+setGroups(byLoc);
+setLoading(false);
   };
 
   useEffect(() => {

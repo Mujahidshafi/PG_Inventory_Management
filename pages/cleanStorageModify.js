@@ -1,8 +1,8 @@
-
+import React, { useEffect, useState, useMemo } from "react";
 import Layout from "../components/layout";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { supabase } from "../lib/supabaseClient"; // or default import if your file uses default export
+import { supabase } from "../lib/supabaseClient";
 
 
 const label = "text-black text-[20px] my-2 font-semibold";
