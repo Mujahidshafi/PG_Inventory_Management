@@ -32,6 +32,8 @@ function adminMenu() {
 
         <Link href="/search" className={buttonStyle}> Search </Link>
 
+        <Link href="/CropMenu" className={buttonStyle}>Crop Menu</Link>
+
       </div>
     </Layout>
   );
