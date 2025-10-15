@@ -1,6 +1,7 @@
 import React, { useState , useEffect} from "react";
 import Layout from "../components/layout";
 import { FaCheckSquare } from "react-icons/fa";
+import { useRouter } from "next/router";
 
 
 //fetch for dropdown menu
@@ -15,10 +16,13 @@ async function fetchList(apiRoute, setData) {
 }
 
 function Sale() {
+  const router = useRouter();
+  const { lot, processId: queryProcessId, weight, location, dateTime } = router.query;
+
   const [fieldLot, setFieldLot] = useState("");
   const [processId, setProcessId] = useState("");
-  const [weight, setWeight] = useState("");
-  const [location, setLocation] = useState("");
+  const [weightValue, setWeight] = useState("");
+  const [locationValue, setLocation] = useState("");
   const [quality, setQuality] = useState("");
   const [customerId, setCustomer] = useState("");
   const [dateTime, setDateTime] = useState("2/25/25 | 3:55 pm");
@@ -87,7 +91,7 @@ function Sale() {
         {/* Field Lot Number (Dropdown) */}
         <div className="flex flex-col items-center">
           <label className="mb-2 font-medium">Field Lot Number</label>
-          <select
+          <input
             className="w-full px-4 py-2 rounded border"
             value={fieldLot}
             onChange={(e) => setFieldLot(e.target.value)}
@@ -125,7 +129,7 @@ function Sale() {
           <input
             className="w-full px-4 py-2 rounded border"
             placeholder="Input"
-            value={weight}
+            value={weightValue}
             onChange={(e) => setWeight(e.target.value)}
           />
         </div>
@@ -133,9 +137,10 @@ function Sale() {
         {/* Location - Screening Storage Shed (Dropdown) */}
         <div className="flex flex-col items-center">
           <label className="mb-2 font-medium">Location</label>
-          <select
+          <input
             className="w-full px-4 py-2 rounded border"
-            value={location}
+            placeholder="Input"
+            value={locationValue}
             onChange={(e) => setLocation(e.target.value)}
           >
             <option value="">Select</option>
@@ -167,7 +172,7 @@ function Sale() {
           <label className="mb-2 font-medium">Date & Time</label>
           <input
             className="w-full px-4 py-2 rounded border"
-            value={dateTime}
+            value={dateTimeValue}
             onChange={(e) => setDateTime(e.target.value)}
           />
         </div>
