@@ -86,6 +86,27 @@ async function deleteProcess(id) {
   }
 }
 
+// Delete Customer by Name
+async function deleteCustomer(id) {
+  try {
+    const res = await fetch("/api/delCustomer", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Delete failed");
+
+    alert("Customer deleted!");
+    return true;
+  } catch (err) {
+    console.error("Delete error:", err);
+    alert(err.message);
+    return false;
+  }
+}
+
 //fetch for dropdown menu
 async function fetchList(apiRoute, setData) {
   try {
@@ -96,16 +117,17 @@ async function fetchList(apiRoute, setData) {
     console.error("Error fetching:", err);
   }
 }
-
 function DeleteItems() {
   const [storageLocationId, setStorageLocationId] = useState("");
   const [saleItemId, setSaleItemId] = useState("");
   const [productItemId, setProductItemId] = useState("");
   const [processId, setProcessId] = useState("");
+  const [customerId, setCustomer] = useState("");
   const [storageLocations, setStorageLocations] = useState([]);
   const [saleItems, setSaleItems] = useState([]);
   const [productItems, setProducts] = useState([]);
   const [processes, setProcesses] = useState([]);
+  const [customers, setCustomers] = useState([]);
 
   // Fetch lists on mount
   useEffect(() => {
@@ -113,16 +135,16 @@ function DeleteItems() {
     fetchList("/api/fetchSaleList", setSaleItems);
     fetchList("/api/fetchProductList", setProducts);
     fetchList("/api/fetchProcesses", setProcesses);
+    fetchList("/api/fetchCustomers", setCustomers);
   }, []);
 
   return (
     <Layout title="Delete Items">
-      <div className="flex flex-wrap items-center justify-center gap-20">
+      <div className="flex flex-wrap  items-center justify-center gap-20">
         {/* Delete Storage Location */}
         <div className="flex flex-col items-center">
-          <label className="font-bold">Delete Storage Location</label>
+          <label className="font-bold text-[20px] my-7">Delete Storage Location</label>
           <Selector
-            label="From"
             value={storageLocationId}
             onChange={setStorageLocationId}
             options={storageLocations.map((loc) => ({
@@ -147,9 +169,8 @@ function DeleteItems() {
 
         {/* Delete Product */}
         <div className="flex flex-col items-center">
-          <label className="font-bold">Delete Product</label>
+          <label className="font-bold text-[20px] my-7">Delete Product</label>
           <Selector
-            label="From"
             value={productItemId}
             onChange={setProductItemId}
             options={productItems.map((item) => ({
@@ -173,9 +194,8 @@ function DeleteItems() {
 
         {/* Delete Sale Item */}
         <div className="flex flex-col items-center">
-          <label className="font-bold">Delete Sale Item</label>
+          <label className="font-bold text-[20px] my-7">Delete Sale Item</label>
           <Selector
-            label="From"
             value={saleItemId}
             onChange={setSaleItemId}
             options={saleItems.map((item) => ({
@@ -200,9 +220,8 @@ function DeleteItems() {
 
         {/* Delete Process */}
         <div className="flex flex-col items-center">
-          <label className="font-bold">Delete Process</label>
+          <label className="font-bold text-[20px] my-7">Delete Process</label>
           <Selector
-            label="From"
             value={processId}
             onChange={setProcessId}
             options={processes.map((item) => ({
@@ -223,6 +242,33 @@ function DeleteItems() {
             Delete
           </button>
         </div>
+      
+      
+       {/* Delete Customer*/}     
+        <div className="flex flex-col items-center">
+          <label className="font-bold text-[20px] my-7">Delete Customer</label>
+          <Selector
+            value={customerId}
+            onChange={setCustomer}
+            options={customers.map((item) => ({
+              value: item.customer_id,
+              label: item.name,
+            }))}
+          />
+          <button
+            className=" mt-4 w-[100px] px-6 py-2 rounded-xl shadow-md bg-[#5D1214] text-white hover:bg-[#2C3A35]"
+            onClick={async () => {
+              const deleted = await deleteCustomer(customerId);
+              if (deleted) {
+                fetchList("/api/fetchCustomers", setCustomers);
+                setCustomer("");
+              }
+            }}
+          >
+            Delete
+          </button>
+        </div>
+
       </div>
     </Layout>
   );

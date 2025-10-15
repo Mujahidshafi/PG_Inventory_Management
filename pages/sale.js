@@ -1,7 +1,19 @@
-import React, { useState, useEffect } from "react";
+import React, { useState , useEffect} from "react";
 import Layout from "../components/layout";
 import { FaCheckSquare } from "react-icons/fa";
 import { useRouter } from "next/router";
+
+
+//fetch for dropdown menu
+async function fetchList(apiRoute, setData) {
+  try {
+    const res = await fetch(apiRoute);
+    const data = await res.json();
+    setData(data);
+  } catch (err) {
+    console.error("Error fetching:", err);
+  }
+}
 
 function Sale() {
   const router = useRouter();
@@ -12,25 +24,31 @@ function Sale() {
   const [weightValue, setWeight] = useState("");
   const [locationValue, setLocation] = useState("");
   const [quality, setQuality] = useState("");
-  const [dateTimeValue, setDateTime] = useState("");
+  const [customerId, setCustomer] = useState("");
+  const [dateTime, setDateTime] = useState("2/25/25 | 3:55 pm");
   const [isSold, setIsSold] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
 
-  // Prefill fields when query params are available
-  useEffect(() => {
-    if (lot) setFieldLot(lot);
-    if (queryProcessId) setProcessId(queryProcessId);
-    if (weight) setWeight(weight);
-    if (location) setLocation(location);
-    if (dateTime) setDateTime(dateTime);
-  }, [lot, queryProcessId, weight, location, dateTime]);
+
+  const [customers, setCustomers] = useState([]);
+  const [processes, setProcesses] = useState([]);
+  const [fieldLotNums, setFieldLotNums] = useState([]);
+  const [screeningShedLocals, setScreeningShedLocals] = useState([]);
 
   const handleSell = () => setIsSold(true);
+
+  useEffect(() => {
+    fetchList("/api/fetchCustomers", setCustomers);
+    fetchList("/api/fetchProcesses", setProcesses);
+    fetchList("/api/fetchFieldRuns", setFieldLotNums);
+    fetchList("api/fetchScreeningShed", setScreeningShedLocals);
+  }, []);
 
   return (
     <Layout
       title="Sale"
       onSettingsClick={() => setShowSettings(!showSettings)}
+      showBack={true}
     >
       {/* Sold Status */}
       {isSold && (
@@ -52,26 +70,57 @@ function Sale() {
 
       {/* Form Area */}
       <div className="w-full max-w-6xl grid grid-cols-3 gap-6">
-        {/* Field Lot Number */}
+
+        {/* Customer Selection (DropDown) */}
+        <div className="flex flex-col items-center">
+          <label className="mb-2 font-medium">Customers</label>
+          <select
+            className="w-full px-4 py-2 rounded border"
+            value={customerId}
+            onChange={(e) => setCustomer(e.target.value)}
+          >
+            <option value="">Select</option>
+            {customers.map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Field Lot Number (Dropdown) */}
         <div className="flex flex-col items-center">
           <label className="mb-2 font-medium">Field Lot Number</label>
           <input
             className="w-full px-4 py-2 rounded border"
             value={fieldLot}
             onChange={(e) => setFieldLot(e.target.value)}
-            placeholder="Input"
-          />
+          >
+            <option value="">Select</option>
+            {fieldLotNums.map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.field_lot_number}
+              </option>
+            ))}
+          </select>
         </div>
 
-        {/* Process ID */}
+        {/* Process ID (Dropdown) */}
         <div className="flex flex-col items-center">
           <label className="mb-2 font-medium">Process ID</label>
-          <input
+          <select
             className="w-full px-4 py-2 rounded border"
-            placeholder="Input"
             value={processId}
             onChange={(e) => setProcessId(e.target.value)}
-          />
+          >
+            <option value="">Select</option>
+            {processes.map((item) => (
+              <option key={item.id} value={item.process_id}>
+                {item.process_id}
+              </option>
+            ))}
+          </select>
+          
         </div>
 
         {/* Weight */}
@@ -85,7 +134,7 @@ function Sale() {
           />
         </div>
 
-        {/* Location */}
+        {/* Location - Screening Storage Shed (Dropdown) */}
         <div className="flex flex-col items-center">
           <label className="mb-2 font-medium">Location</label>
           <input
@@ -93,7 +142,14 @@ function Sale() {
             placeholder="Input"
             value={locationValue}
             onChange={(e) => setLocation(e.target.value)}
-          />
+          >
+            <option value="">Select</option>
+            {screeningShedLocals.map((item) => (
+              <option key={item.id} value={item.Location}>
+                {item.Location}
+              </option>
+            ))}
+          </select>
         </div>
 
         {/* Quality */}

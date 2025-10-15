@@ -5,6 +5,7 @@ import Button from "../components/button";
 function AddNewItems() {
   const [saleQuantity, setSaleQuantity] = useState("");
   const [storageLocationName, setStorageLocationName] = useState("");
+  const [customerName, setCustomerName] = useState("");
 
   async function handleAddItems(apiRoute, payload, resetInput, actionMessage) {
     const res = await fetch(apiRoute, {
@@ -83,6 +84,31 @@ function AddNewItems() {
             }
           />
         </div>
+
+        {/* Add Customer */}
+        <div className="flex flex-col items-center">
+          <h1 className="text-black text-[20px] my-7">Add Customer</h1>
+          <input
+            className="p-4 w-[300px] bg-white text-black border rounded-lg my-4"
+            placeholder="Input"
+            value={customerName}
+            onChange={(e) => setCustomerName(e.target.value)}
+          />
+          <Button
+            label="Add"
+            color="red"
+            className="w-[120px] h-[45px] my-6"
+            onClick={() =>
+              handleAddItems(
+                "/api/addCustomer",
+                { name: customerName },
+                setCustomerName,
+                "NEW CUSTOMER ADDED!"
+              )
+            }
+          />
+        </div>
+
       </div>
     </Layout>
   );

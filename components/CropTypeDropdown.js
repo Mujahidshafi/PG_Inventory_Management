@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react"
 import { supabase } from "../lib/supabase"
 
-type Crop = { id: string; name: string }
-
-export default function CropTypeDropdown({ onChange }: { onChange?: (value: string) => void }) {
-  const [crops, setCrops] = useState<Crop[]>([])
-  const [loading, setLoading] = useState(true)
+//type Crop = { id: string; name: string }
+//problem
+//export default function CropTypeDropdown({ onChange }: { onChange?: (value: string) => void }) {
+export default function CropTypeDropdown({ onChange }) {
+  //const [crops, setCrops] = useState<Crop[]>([])
+  //const [loading, setLoading] = useState(true)
+  const [crops, setCrops] = useState([]);
+  const [value, setValue] = useState("");
 
   useEffect(() => {
     const fetchCrops = async () => {
