@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { useSupabaseClient, useSession } from "@supabase/auth-helpers-react";
 
-const Layout = ({ title, children, showBack }) => {
+const Layout = ({ title, children, showBack, backRoute}) => {
   const router = useRouter();
   const supabase = useSupabaseClient();
   const session = useSession(); // Supabase session
@@ -40,7 +40,10 @@ const Layout = ({ title, children, showBack }) => {
       <div className="flex items-center w-[95%] justify-between translate-y-[-3vh] mt-6">
         {showBack ? (
           <button
-            onClick={() => router.back()}
+            onClick={() => {
+              if (backRoute) router.push(backRoute);
+              else router.back();
+            }}
             className="bg-[#3D5147] text-white px-6 py-2 rounded-lg shadow-md hover:bg-[#2c3a35]"
           >
             Back
