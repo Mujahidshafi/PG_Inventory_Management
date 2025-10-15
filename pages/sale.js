@@ -1,22 +1,36 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Layout from "../components/layout";
 import { FaCheckSquare } from "react-icons/fa";
+import { useRouter } from "next/router";
 
 function Sale() {
+  const router = useRouter();
+  const { lot, processId: queryProcessId, weight, location, dateTime } = router.query;
+
   const [fieldLot, setFieldLot] = useState("");
   const [processId, setProcessId] = useState("");
-  const [weight, setWeight] = useState("");
-  const [location, setLocation] = useState("");
+  const [weightValue, setWeight] = useState("");
+  const [locationValue, setLocation] = useState("");
   const [quality, setQuality] = useState("");
-  const [dateTime, setDateTime] = useState("2/25/25 | 3:55 pm");
+  const [dateTimeValue, setDateTime] = useState("");
   const [isSold, setIsSold] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+
+  // Prefill fields when query params are available
+  useEffect(() => {
+    if (lot) setFieldLot(lot);
+    if (queryProcessId) setProcessId(queryProcessId);
+    if (weight) setWeight(weight);
+    if (location) setLocation(location);
+    if (dateTime) setDateTime(dateTime);
+  }, [lot, queryProcessId, weight, location, dateTime]);
 
   const handleSell = () => setIsSold(true);
 
   return (
-    <Layout title="Sale" onSettingsClick={() => setShowSettings(!showSettings)}
-    showBack={true}
+    <Layout
+      title="Sale"
+      onSettingsClick={() => setShowSettings(!showSettings)}
     >
       {/* Sold Status */}
       {isSold && (
@@ -38,19 +52,15 @@ function Sale() {
 
       {/* Form Area */}
       <div className="w-full max-w-6xl grid grid-cols-3 gap-6">
-        {/* Field Lot Number (Dropdown) */}
+        {/* Field Lot Number */}
         <div className="flex flex-col items-center">
           <label className="mb-2 font-medium">Field Lot Number</label>
-          <select
+          <input
             className="w-full px-4 py-2 rounded border"
             value={fieldLot}
             onChange={(e) => setFieldLot(e.target.value)}
-          >
-            <option value="">Select</option>
-            {["24D3", "24F3", "25A1", "25B2", "25C4"].map((lot, i) => (
-              <option key={i} value={lot}>{lot}</option>
-            ))}
-          </select>
+            placeholder="Input"
+          />
         </div>
 
         {/* Process ID */}
@@ -61,13 +71,7 @@ function Sale() {
             placeholder="Input"
             value={processId}
             onChange={(e) => setProcessId(e.target.value)}
-            list="processOptions"
           />
-          <datalist id="processOptions">
-            {Array.from({ length: 10 }, (_, i) => (
-              <option key={i} value={`Item${i + 1}`} />
-            ))}
-          </datalist>
         </div>
 
         {/* Weight */}
@@ -76,7 +80,7 @@ function Sale() {
           <input
             className="w-full px-4 py-2 rounded border"
             placeholder="Input"
-            value={weight}
+            value={weightValue}
             onChange={(e) => setWeight(e.target.value)}
           />
         </div>
@@ -84,16 +88,12 @@ function Sale() {
         {/* Location */}
         <div className="flex flex-col items-center">
           <label className="mb-2 font-medium">Location</label>
-          <select
+          <input
             className="w-full px-4 py-2 rounded border"
-            value={location}
+            placeholder="Input"
+            value={locationValue}
             onChange={(e) => setLocation(e.target.value)}
-          >
-            <option value="">Select</option>
-            {[...Array(7)].map((_, i) => (
-              <option key={i} value={`Item${i + 1}`}>{`Item${i + 1}`}</option>
-            ))}
-          </select>
+          />
         </div>
 
         {/* Quality */}
@@ -116,7 +116,7 @@ function Sale() {
           <label className="mb-2 font-medium">Date & Time</label>
           <input
             className="w-full px-4 py-2 rounded border"
-            value={dateTime}
+            value={dateTimeValue}
             onChange={(e) => setDateTime(e.target.value)}
           />
         </div>
