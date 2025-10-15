@@ -10,6 +10,7 @@ function ScreeningStorageModify() {
   const [product, setProduct] = useState("");
   const [amount, setAmount] = useState("");
   const [dateStored, setDateStored] = useState("");
+  const [notes, setNotes] = useState("");
       useEffect(() => {
         if(!id) return;
         (async () => {
@@ -22,6 +23,7 @@ function ScreeningStorageModify() {
           setAmount(String(json?.Amount ?? ""));
           const d = json?.Date_Stored ? new Date(json.Date_Stored) : null;
           setDateStored(d ? d.toLocaleDateString() : "");
+          setNotes(json?.Notes ?? "");
           } catch (err) {
             console.error("Error fetching item:", err);
           }
@@ -36,7 +38,8 @@ function ScreeningStorageModify() {
             Lot_Number: lotNumber ?? "",
             Product: product ?? "",
             Amount: amount ?? "",
-            Date_Stored: dateStored ?? ""
+            Date_Stored: dateStored ?? "",
+            Notes: notes ?? ""
           }),
         });
     if (!res.ok) throw new Error("Save failed");
@@ -87,6 +90,17 @@ function ScreeningStorageModify() {
                   onChange={(e) => setDateStored(e.target.value)}
                 />
               </div>
+              <div className="w-full mt-6 flex justify-center">
+                <div className="w-full max-w-3xl px-6">
+                  <label className="font-bold block mb-2">Notes</label>
+                  <textarea
+                    className="bg-white p-3 w-full min-h-[180px] border rounded-lg resize-none"
+                    placeholder="Notes"
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                  />
+                </div>
+            </div>
               <button
                 type="button"
                 onClick={handleSave}
