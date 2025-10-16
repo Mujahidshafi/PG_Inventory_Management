@@ -1,9 +1,17 @@
 import React, { useState } from "react";
-import { supabase } from "../lib/supabaseClient"; // make sure this points to your client
-import Button from "../components/button"; 
+import { supabase } from "../lib/supabaseClient.js";
+import Button from "../components/button.js";
 import Link from "next/link";
-import Image from "next/image";
+import Image from "next/image.js";
 import { useRouter } from "next/router";
+
+console.log("Button type is:", typeof Button, Button);
+console.log("🔍 React:", React);
+console.log("🔍 Supabase:", supabase);
+console.log("🔍 Button:", Button);
+console.log("🔍 Image:", Image);
+console.log("🔍 Link:", Link);
+
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -57,10 +65,10 @@ function Login() {
       {/* Background Image */}
       <div className="absolute inset-0 -z-10">
         <Image
-          src="/growing-methods.jpg" // or background.jpg
+          src="/growing-methods.jpg"
           alt="Background"
-          layout="fill"
-          objectFit="cover"
+          fill                             // ✅ replaces layout="fill"
+          style={{ objectFit: "cover" }}   // ✅ replaces objectFit prop
           quality={100}
         />
         <div className="absolute inset-0 bg-black/20"></div>
