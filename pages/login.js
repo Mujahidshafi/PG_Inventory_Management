@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { supabase } from "../lib/supabaseClient"; // make sure this points to your client
-import Button from "../components/button"; 
+import { supabase } from "../lib/supabaseClient.js";
+import Button from "../components/button.js";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/router";
@@ -16,7 +16,10 @@ function Login() {
     setLoading(true);
     setError(null);
 
-    const { data: { user }, error: signInError } = await supabase.auth.signInWithPassword({
+    const {
+      data: { user },
+      error: signInError,
+    } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
@@ -39,7 +42,7 @@ function Login() {
       return;
     }
 
-    // redirect based on role
+    // Redirect based on role
     if (profile.role === "admin") {
       router.push("/adminMenu");
     } else if (profile.role === "employee") {
@@ -53,14 +56,13 @@ function Login() {
 
   return (
     <div className="relative min-h-screen w-full flex flex-col items-center justify-start">
-      
       {/* Background Image */}
       <div className="absolute inset-0 -z-10">
         <Image
-          src="/growing-methods.jpg" // or background.jpg
+          src="/growing-methods.jpg"
           alt="Background"
-          layout="fill"
-          objectFit="cover"
+          fill
+          style={{ objectFit: "cover" }}
           quality={100}
         />
         <div className="absolute inset-0 bg-black/20"></div>
@@ -68,16 +70,10 @@ function Login() {
 
       {/* Login Form */}
       <div className="min-h-screen bg-white rounded-lg flex flex-col items-center justify-start">
-
         {/* Header */}
         <div className="flex p-6 bg-white m-[40px] flex-row justify-between items-center">
           <div>
-            <Image 
-              src="/Logo.png" 
-              width={150}
-              height={87}
-              alt="Logo" 
-            />
+            <Image src="/Logo.png" width={150} height={87} alt="Logo" />
           </div>
           <div>
             <span className="text-[#3D5147] text-[55px] font-medium font-[amiri] mx-8">
@@ -107,7 +103,7 @@ function Login() {
             onChange={(e) => setPassword(e.target.value)}
           />
 
-          <Button 
+          <Button
             label={loading ? "Logging in..." : "Log In"}
             color="red"
             className="w-[120px] h-[45px] items-center font-[amiri] my-6"
@@ -127,11 +123,9 @@ function Login() {
             </span>
           </Link>
         </div>
-
       </div>
     </div>
   );
 }
 
 export default Login;
-
