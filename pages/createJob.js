@@ -19,7 +19,7 @@ function CreateJob() {
 
   const handleSubmit = async () => {
     try {
-      const payload = { ...fields}; 
+      const payload = { ...fields };
 
       const res = await fetch("/api/createJobBackend", {
         method: "POST",
@@ -51,33 +51,58 @@ function CreateJob() {
     { key: "lotNumber", label: "Lot Number", type: "text" },
     { key: "amount", label: "Amount", type: "number" },
     { key: "processId", label: "Process ID", type: "text" },
-    { key: "jobType", label: "Job Type", type: "text" },
   ];
 
+  const jobTypes = ["Qsage", "Sortex", "Bagging", "Order Fulfillment"];
+
   return (
-    <Layout title="Create Job" showBack={true} onSettingsClick={() => console.log(" ")}
+    <Layout
+      title="Create Job"
+      showBack={true}
+      onSettingsClick={() => console.log(" ")}
     >
       <div className="w-full px-8 flex flex-col items-center">
         {/* Input fields */}
         <div className="grid grid-cols-3 gap-28 w-full max-w-5xl mb-35">
           {fieldLabels.map(({ key, label, type }) => (
-             <TextFields
+            <TextFields
               key={key}
-              id={key}                       
+              id={key}
               label={label}
-              type={type}                    
+              type={type}
               value={fields[key]}
               onChange={(e) => handleChange(key, e.target.value)}
-              placeholder={`Enter ${label.toLowerCase()}`} 
+              placeholder={`Enter ${label.toLowerCase()}`}
             />
-
-
           ))}
+
+          {/* Job Type Dropdown */}
+          <div className="flex flex-col">
+            <label
+              htmlFor="jobType"
+              className="block text-center mb-2"
+            >
+              Job Type
+            </label>
+            <select 
+              id="jobType"
+              value={fields.jobType}
+              onChange={(e) => handleChange("jobType", e.target.value)}
+              className="w-full px-3 py-2 border border-gray-400 rounded-md shadow focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white"
+            >
+              <option value="">Select job type</option>
+              {jobTypes.map((type) => (
+                <option key={type} value={type}>
+                  {type}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         {/* Save Button */}
         <div className="flex justify-center">
-          <Button label="Save" color="red" onClick={handleSubmit}/>
+          <Button label="Save" color="red" onClick={handleSubmit} />
         </div>
       </div>
     </Layout>
@@ -85,3 +110,4 @@ function CreateJob() {
 }
 
 export default CreateJob;
+
