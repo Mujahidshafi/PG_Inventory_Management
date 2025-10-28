@@ -49,7 +49,7 @@ function AdminMenu() {
         <Link href="/createJob" className={buttonStyle}>Create Job</Link>
         <Link href="/inProcess" className={buttonStyle}>In Process</Link>
         <Link href="/storageDashboard" className={buttonStyle}>Storage Dashboard</Link>
-        <Link href="/sale" className={buttonStyle}>Sale</Link>
+        <Link href="/orders" className={buttonStyle}>Orders</Link>
         <Link href="/search" className={buttonStyle}>Search</Link>
         <Link href="/accountsManager" className={buttonStyle}>Accounts Manager</Link>
         <Link href="/qsageJob" className={buttonStyle}>Qsage Job</Link>
