@@ -7,7 +7,6 @@ export default async function handler(req, res) {
   }
 
   const { customer_id, sale_type } = req.body;
-  console.log("Received payload:", req.body); // ✅ Log input early
 
   if (!customer_id || !sale_type) {
     return res.status(400).json({ message: "Missing customer_id or sale_type" });
@@ -24,8 +23,6 @@ export default async function handler(req, res) {
       },
     ])
     .select();
-
-  console.log("Supabase result:", { data, error }); // ✅ Log the result before handling errors
 
   if (error) {
     console.error("Supabase insert error:", error);

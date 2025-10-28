@@ -37,7 +37,7 @@ function Sale() {
   const [orderType, setOrderType] = useState("");
   const [customerId, setCustomer] = useState("");
   const [customers, setCustomers] = useState([]);
-  const [allOrders, setAllOrders] = useState([]);
+ // const [allOrders, setAllOrders] = useState([]);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showSettings, setShowSettings] = useState(false);
 
@@ -102,7 +102,8 @@ function Sale() {
         </div>
       )}
 
-      <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-6 overflow-y-auto max-h-[70vh] p-2">
+
         {/* New Order Section */}
         <section className="bg-white rounded-xl shadow p-5">
           <h2 className="text-lg font-semibold mb-4">New Order</h2>
