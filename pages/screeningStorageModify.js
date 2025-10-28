@@ -22,7 +22,7 @@ function ScreeningStorageModify() {
           setProduct(json?.Product ?? "");
           setAmount(String(json?.Amount ?? ""));
           const d = json?.Date_Stored ? new Date(json.Date_Stored) : null;
-          setDateStored(d ? d.toLocaleDateString() : "");
+          setDateStored(d ? d.toLocaleString() : "");
           setNotes(json?.Notes ?? "");
           } catch (err) {
             console.error("Error fetching item:", err);
