@@ -54,6 +54,7 @@ function AdminMenu() {
         <Link href="/accountsManager" className={buttonStyle}>Accounts Manager</Link>
         <Link href="/qsageJob" className={buttonStyle}>Qsage Job</Link>
         <Link href="/CropMenu" className={buttonStyle}>Crop Menu</Link>
+        <Link href="/editFRStorageSuppliers" className={buttonStyle}>Add/Delete</Link>
 
       </div>
     </Layout>
