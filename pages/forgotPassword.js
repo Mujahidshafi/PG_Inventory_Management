@@ -1,41 +1,108 @@
-import React from "react";
+import React, { useState } from "react";
 import Button from "../components/button";
-import Link from "next/link";
+import Image from "next/image";
+import { supabase } from "../lib/supabaseClient";
+import { useRouter } from "next/router";
 
 function ForgotPassword() {
-  return (
-    <>
-    <div className = "flex flex-wrap flex-col justify-between items-center">
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [error, setError] = useState("");
+  const router = useRouter();
 
-      <div className = "flex p-6 m-[40px] flex-row w-[95%] justify-between items-center">
-        <Link href="/login">
-          <button className="bg-[#3D5147] text-white px-6 py-2 rounded-lg shadow-md hover:bg-[#2C3A35]">
-            Back
-          </button>
-        </Link>
-        <div className = "flex items-center">
-          <img 
-            src="/Logo.png" 
-            alt="Logo" 
-            className="w-[150px] h-[87px]"
-          />
-          <span className="text-[#3D5147] text-[55px] font-medium font-[amiri] mx-8">Pleasant Grove Farms</span>
+  const handleResetPassword = async () => {
+    setLoading(true);
+    setSuccessMessage("");
+    setError("");
+
+    if (!email) {
+      setError("Please enter your email");
+      return;
+    } 
+
+    const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/resetPassword`,
+    });
+
+    if (error) {
+      setError(error.message);
+    } else {
+      setSuccessMessage(
+        "If this email exists in our system, you’ll receive a reset link."
+      );
+    }
+
+    setLoading(false);
+  };
+
+  return (
+    <div className="flex flex-col flex-wrap items-center justify-between bg-white">
+      <p className="absolute bottom-2 left-6 text-sm text-[#3D5147] opacity-80 font-[amiri] z-[9999]">
+        © 2025 Pleasant Grove Farms
+      </p>
+      {/* Header */}
+      <div className="relative flex flex-row items-center justify-between w-[95%] p-6 m-[40px] bg-white">
+        {/* Back Button */}
+        <button
+          onClick={() => {
+            router.back();
+          }}
+          className="bg-[#3D5147] text-white px-6 py-2 rounded-lg shadow-md hover:bg-[#2c3a35]"
+        >
+          Back
+        </button>
+
+        {/* Center Logo + Title */}
+        <div className="absolute left-1/2 flex -translate-x-1/2 transform items-center">
+          <Image src="/Logo.png" width={150} height={87} alt="Logo" />
+          <span className="mx-8 font-[amiri] text-[55px] font-medium text-[#3D5147]">
+            Pleasant Grove Farms
+          </span>
         </div>
-        <div className = "w-2 h-2 bg-white"></div>
+
+        {/* Spacer (keeps right side balanced for spacing) */}
+        <div className="h-2 w-[120px] bg-white"></div>
       </div>
 
-      <div className = "flex items-center flex-col justify-center w-[424px] h-[605px] bg-[#3D5147] rounded-3xl">
-        <span className="text-white text-[40px] font-[amiri] my-7">Reset Password</span>
-        <span className="text-white text-[20px] font-[amiri] my-4">Enter your email address:</span>
-        <input className="p-4 w-[300px] border rounded-lg my-4" placeholder="Email" />
-        <Button 
-          label = "Submit"
-          color = "red"
-          className = "w-[120px] h-[45px] font-[amiri] items-center my-6"
+      {/* Content Box */}
+      <div className="flex h-[605px] w-[424px] flex-col items-center justify-center rounded-3xl bg-[#3D5147]">
+        <span className="my-7 font-[amiri] text-[40px] text-white">
+          Forgot Password?
+        </span>
+
+        <span className="my-4 font-[amiri] text-[20px] text-white">
+          Enter your email address:
+        </span>
+
+        <input
+          className="my-4 w-[300px] rounded-lg border bg-white p-4 text-black"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
         />
+
+        <Button
+          label={loading ? "Sending..." : "Submit"}
+          color="red"
+          className="my-6 h-[45px] w-[120px] items-center font-[amiri]"
+          onClick={handleResetPassword}
+        />
+
+        {/* Messages */}
+        {successMessage && (
+          <div className="mt-4 w-[300px] rounded-md bg-green-200 p-4 text-center text-green-900 shadow-md">
+            {successMessage}
+          </div>
+        )}
+
+        {error && (
+          <div className="mb-4 rounded-lg bg-red-200 text-center font-[amiri] text-[#5D1214]">
+            {error}
+          </div>
+        )}
       </div>
     </div>
-    </>
   );
 }
 
