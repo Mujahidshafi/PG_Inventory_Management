@@ -1,4 +1,4 @@
-// pages/qsageJob.js
+// pages/sortexJob.js
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
 
@@ -21,7 +21,7 @@ const emptyBox = (defaults = {}) => ({
 });
 
 /* LocalStorage key for draft */
-const LS_KEY = "qsageCleaningDraft";
+const LS_KEY = "sortexCleaningDraft";
 
 /* =========================================================
    Default State
@@ -378,7 +378,7 @@ function InboundTable({ binsUsed, rows = [], onAdd, onUpdate, onRemove }) {
 /* =========================================================
    Main Page
    ========================================================= */
-export default function QsageCleaningPage() {
+export default function SortexCleaningPage() {
   const supabase = useSupabaseClient();
 
   // Full UI state
@@ -1001,11 +1001,11 @@ const handleComplete = async () => {
 
     // ✅ Update bin weights
     const weightByBin = {};
-      for (const box of state.boxes.inbound || []) {
-      const loc = box.fromBin || box.binLocation || box.location || ""; // ✅ FIXED HERE
-      const weight = Number(box.weightLbs) || 0;
-      if (!loc) continue;
-      weightByBin[loc] = (weightByBin[loc] || 0) + weight;
+        for (const box of state.boxes.inbound || []) {
+        const loc = box.fromBin || box.binLocation || box.location || ""; // ✅ FIXED HERE
+        const weight = Number(box.weightLbs) || 0;
+        if (!loc) continue;
+        weightByBin[loc] = (weightByBin[loc] || 0) + weight;
     }
 
     for (const [location, removedWeight] of Object.entries(weightByBin)) {
@@ -1050,7 +1050,7 @@ const handleComplete = async () => {
       }
     }
 
-    // ✅ Save Full Detailed Qsage Report
+    // ✅ Save Full Detailed sortex Report
     try {
       const reportPayload = {
         process_id: state.processID,
@@ -1114,16 +1114,16 @@ const handleComplete = async () => {
       };
 
       const { error: reportError } = await supabase
-        .from("qsage_reports")
+        .from("sortex_reports")
         .insert(reportPayload);
 
       if (reportError) {
-        console.error("❌ Failed to save Qsage report:", reportError.message);
+        console.error("❌ Failed to save Sortex report:", reportError.message);
       } else {
-        console.log("✅ Detailed Qsage report saved successfully.");
+        console.log("✅ Detailed Sortex report saved successfully.");
       }
     } catch (err) {
-      console.error("❌ Unexpected error saving Qsage report:", err);
+      console.error("❌ Unexpected error saving Sortex report:", err);
     }
 
     // ✅ Clear draft & reset UI
@@ -1149,7 +1149,7 @@ const handleComplete = async () => {
   return (
     <div className="min-h-screen bg-gray-100 py-8">
       <div className="mx-auto max-w-6xl p-6">
-        <h1 className="mb-6 text-2xl font-bold text-center">Qsage Cleaning Process</h1>
+        <h1 className="mb-6 text-2xl font-bold text-center">Sortex Cleaning Process</h1>
 
         {/* ================= Header + Summary Side by Side ================ */}
 <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1201,7 +1201,7 @@ const handleComplete = async () => {
         />
       </HeaderField>
       
-      <HeaderField label="Supplier" hint="Select supplier for this Qsage run.">
+      <HeaderField label="Supplier" hint="Select supplier for this Sortex run.">
         <select
           className="w-full rounded-lg border px-3 py-2 bg-white"
           value={selectedSupplier}
