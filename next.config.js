@@ -1,7 +1,9 @@
-// next.config.js
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true,
-};
+  images: {
+    // Define which quality values Next.js can use
+    qualities: [75, 100], 
+  },
+}
 
-export default nextConfig;
+module.exports = nextConfig
