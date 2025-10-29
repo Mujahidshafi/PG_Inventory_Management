@@ -1,6 +1,15 @@
 import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
+const publicPaths = ['/login', '/forgotPassword', '/resetPassword'];
+const employeeOnlyPaths = ['/employeeMenu'];
+const adminOnlyPaths = [
+    '/adminMenu', '/accountsManager', '/deleteItems', '/addNewItems',
+    '/cleanStorageModify', '/cleanStorage', '/createAccount', '/createJob',
+    '/fieldRunModify', '/fieldRunStorage', '/inProcess', '/Sale',
+    '/screeningStorage', '/screeningStorageModify', '/search', '/searchHistory',
+    '/searchModify', '/storageDashboard'
+  ];
 
 const AuthGuard = ({ children }) => {
   const session = useSession();
@@ -8,16 +17,6 @@ const AuthGuard = ({ children }) => {
   const router = useRouter();
   const [role, setRole] = useState(null);
   const [loading, setLoading] = useState(true);
-
-  const publicPaths = ['/login', '/forgotPassword', '/resetPassword'];
-  const employeeOnlyPaths = ['/employeeMenu'];
-  const adminOnlyPaths = [
-    '/adminMenu', '/accountsManager', '/deleteItems', '/addNewItems',
-    '/cleanStorageModify', '/cleanStorage', '/createAccount', '/createJob',
-    '/fieldRunModify', '/fieldRunStorage', '/inProcess', '/Sale',
-    '/screeningStorage', '/screeningStorageModify', '/search', '/searchHistory',
-    '/searchModify', '/storageDashboard'
-  ];
 
   // Fetch role once session is available
   useEffect(() => {
@@ -40,20 +39,22 @@ const AuthGuard = ({ children }) => {
     };
 
     fetchRole();
-  }, [session]);
+  }, [session,supabase]);
 
   // Redirect logic
   useEffect(() => {
     if (loading) return;
 
-    // If not logged in, redirect away from protected pages
+    const isRecovery = router.pathname === '/resetPassword';
+
+    // Not logged in, redirect from protected pages (except recovery)
     if (!session && !publicPaths.includes(router.pathname)) {
       router.replace('/login');
       return;
     }
 
-    // If logged in but on a public page, redirect to the proper dashboard
-    if (session && publicPaths.includes(router.pathname)) {
+    // Logged in but on a public page
+    if (session && publicPaths.includes(router.pathname) && !isRecovery) {
       if (role === 'admin') router.replace('/adminMenu');
       else if (role === 'employee') router.replace('/employeeMenu');
       return;
@@ -71,7 +72,7 @@ const AuthGuard = ({ children }) => {
       return;
     }
 
-  }, [session, role, loading, router.pathname]);
+  }, [session, role, loading, router]);
 
   if (loading) return <div>Loading...</div>;
 
