@@ -85,7 +85,7 @@ useEffect(() => {
           {data.map((item, index) => (
             <div 
             key={index}
-            class = "bg-gray-100 w-[90%] h-[10%] rounded-[30px] shadow-lg items-start items-center justify-around flex gap-2 p-4"
+            class = "bg-gray-100 w-[90%] h-[10%] rounded-[30px] shadow-lg items-center justify-around flex gap-2 p-4"
             >
               <div class = "flex flex-col items-center gap-2">
                 <span class = "text-sm">Location</span>
