@@ -127,7 +127,7 @@ async function handleAddStorage(e) {
       <div className="w-full px-8 flex flex-col items-center">
         <div className="w-full max-w-5xl bg-white p-8 rounded-xl shadow">
           <h1 className="text-black text-3xl font-bold mb-10 text-center">
-            Add/Delete Storage & Customers
+            Add / Delete Storage & Customers
           </h1>
 
           {/* Add in row 1 */}
@@ -139,7 +139,7 @@ async function handleAddStorage(e) {
               </h2>
               <input
                 className={field}
-                placeholder="Enter storage location"
+                placeholder="Enter Storage Location"
                 value={storageName}
                 onChange={(e) => setStorageName(e.target.value)}
               />
@@ -158,7 +158,7 @@ async function handleAddStorage(e) {
               </h2>
               <input
                 className={field}
-                placeholder="Enter customer name"
+                placeholder="Enter Customer Name"
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
               />
@@ -183,7 +183,7 @@ async function handleAddStorage(e) {
                 value={storageLocationId}
                 onChange={(e) => setStorageLocationId(e.target.value)}
               >
-                <option value="">Select storage location</option>
+                <option value="">Select</option>
                 {storageLocations.map((loc) => (
                 <option key={loc.location} value={loc.location}>
                   {loc.location}
@@ -209,7 +209,7 @@ async function handleAddStorage(e) {
                 value={customerId}
                 onChange={(e) => setCustomerId(e.target.value)}
               >
-                <option value="">Select customer</option>
+                <option value="">Select</option>
                 {customers.map((cust) => (
                 <option key={cust.customer_id} value={cust.customer_id}>
                   {cust.name}

@@ -60,7 +60,7 @@ setLoading(false);
   }, []);
 
 return (
-  <Layout title="Clean Storage">
+  <Layout title="Clean Storage" showBack={true}>
     {/* Add button here */}
     <div className="w-full max-w-[1140px] mx-auto flex justify-end p-4">
   <Link

@@ -182,7 +182,7 @@ const fetchSilos = async () => {
   }, [fromRow, toRow, transferAll, weight]);
 
   return (
-    <Layout title="Transfer">
+    <Layout title="Transfer" showBack={true}>
     <div className="max-w-7xl mx-auto p-6">
         <h2 className="text-2xl font-semibold mb-6">Transfer Between Silos</h2>
 

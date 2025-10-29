@@ -26,7 +26,7 @@ function UpdateLocation() {
   };
 
   return (
-    <Layout title="Update Location">
+    <Layout title="Update Location" showBack={true}>
       {/*<div className="min-h-screen bg-gray-100 py-10 px-4">*/}
         <div className="max-w-4xl mx-auto bg-white p-8 rounded-xl shadow">
           <h1 className="text-black text-3xl font-bold mb-6 text-center">Update Location</h1>

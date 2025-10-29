@@ -134,15 +134,19 @@ function NewFieldRun() {
   };
 
   return (
-    <Layout title="New Field Run">
+    <Layout title="New Field Run" showBack={true}>
       <div className="w-full px-8 flex flex-col items-center">
         {/* --- Input Form --- */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-5xl mb-10">
           {/* Location Dropdown */}
           <div>
-            <label className="block text-sm font-medium mb-1">Select Location</label>
+            <label htmlFor="location" className="block text-center -mb-5">
+              Select Location
+            </label>
+            <br />
             <select
-              className="border rounded-lg w-full px-3 py-2"
+              id="location"
+              className="w-full px-3 py-2 border border-gray-400 rounded-md shadow focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white"
               value={fields.Location}
               onChange={(e) => handleChange("Location", e.target.value)}
             >
