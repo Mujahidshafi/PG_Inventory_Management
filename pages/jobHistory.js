@@ -9,13 +9,13 @@ export default function InProcess() {
   const jobsPerPage = 4;
   const [startingId, setStartingId] = useState(null);
 
-  // SQL
+  // SQL - shows jobs that are completed
   const fetchJobs = useCallback(async () => {
     const { data, error } = await supabase
       .from("create_job") // FROM create_job
       .select("*") // SELECT *
-      .eq("is_running", true) // WHERE is_running = TRUE
-      .eq("is_complete", false) // WHERE is_complete = FALSE
+      .eq("is_running", false) // WHERE is_running = FALSE
+      .eq("is_complete", true) // WHERE is_complete = TRUE
       .order("date_created", { ascending: false }); // ORDER BY date_created DESC
 
     if (error) {
@@ -35,29 +35,6 @@ export default function InProcess() {
   const totalPages = Math.ceil(jobs.length / jobsPerPage);
   const startIndex = (currentPage - 1) * jobsPerPage;
   const currentJobs = jobs.slice(startIndex, startIndex + jobsPerPage);
-
-  const handleCompleteJob = async (processId) => {
-    try {
-      setStartingId(processId);
-      const res = await fetch("/api/inProcessBackend", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ processId }),
-      });
-
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        console.error("Failed to complete job:", body?.message || res.statusText);
-      } else {
-        // refresh to remove completed job from this list
-        await fetchJobs();
-      }
-    } catch (e) {
-      console.error("Error completing job:", e);
-    } finally {
-      setStartingId(null);
-    }
-  };
 
   const handleNext = () => {
     if (currentPage < totalPages) {
@@ -144,10 +121,10 @@ export default function InProcess() {
                     </div>
 
                     <div className="flex flex-col w-[18%]">
-                      <span className="font-semibold text-sm text-gray-700">Date Created</span>
+                      <span className="font-semibold text-sm text-gray-700">Date Completed</span>
                       <span className="mt-1">
                         {job.date_created
-                          ? new Date(job.date_created).toLocaleString("en-US", {
+                          ? new Date(job.date_completed).toLocaleString("en-US", {
                               month: "short",
                               day: "numeric",
                               year: "numeric",
@@ -158,18 +135,6 @@ export default function InProcess() {
                       </span>
                     </div>
                   </div>
-
-                  <button
-                    disabled={startingId === job.process_id}
-                    className={`${
-                      startingId === job.process_id
-                        ? "bg-gray-400 text-white cursor-wait"
-                        : "bg-[#6B0000] text-white hover:bg-[#510000]"
-                    } px-5 py-1.5 rounded-full transition font-medium ml-4`}
-                    onClick={() => handleCompleteJob(job.process_id)}
-                  >
-                    {startingId === job.process_id ? "Completing..." : "Complete"}
-                  </button>
                 </div>
               ))}
             </div>

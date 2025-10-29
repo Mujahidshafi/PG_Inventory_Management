@@ -52,6 +52,7 @@ function AdminMenu() {
         <Link href="/orders" className={buttonStyle}>Orders</Link>
         <Link href="/search" className={buttonStyle}>Search</Link>
         <Link href="/accountsManager" className={buttonStyle}>Accounts Manager</Link>
+        <Link href="/jobHistory" className={buttonStyle}>Job History</Link>
         <Link href="/qsageJob" className={buttonStyle}>Qsage Job</Link>
         <Link href="/sortexJob" className={buttonStyle}>Sortex Job</Link>
         <Link href="/CropMenu" className={buttonStyle}>Crop Menu</Link>
