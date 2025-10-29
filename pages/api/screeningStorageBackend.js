@@ -6,16 +6,16 @@ export default async function handler(req, res) {
     try {
       if (id) {
         const { data, error } = await supabase
-          .from("screening_storage")
+          .from("screening_storage_shed")
           .select("*")
-          .eq("Process_ID", id)
+          .eq("ID", id)
           .single();
 
         if (error) return res.status(500).json({ error: error.message });
         return res.status(200).json(data);
       } else {
         const { data, error } = await supabase
-          .from("screening_storage")
+          .from("screening_storage_shed")
           .select("*");
 
         if (error) return res.status(500).json({ error: error.message });
@@ -26,6 +26,30 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: "Server error" });
     }
   }
+  if (req.method === "POST") {
+    const{lot = "", product ="", supplier = ""} = (req.body ?? {});
+    let query = supabase.from("screening_storage_shed").select("*").order("Date_Stored", { ascending: false });
+    if(typeof lot === "string" && lot.trim()){
+      query = query.ilike("Lot_Number", `%${lot.trim()}%`);
+    }
+    if(typeof product === "string" && product.trim()){
+      query = query.ilike("Product", `%${product.trim()}%`);
+    }
+    /*if(typeof supplier === "string" && supplier.trim()){
+      query = query.ilike("Supplier", `%${supplier.trim()}%`);
+    }*/
+    if(typeof supplier === "string"){
+      if(supplier === "_NULL_"){
+        query = query.or("Supplier.is.null,Supplier.eq.");
+      } else if(supplier.trim()){
+        query = query.ilike("Supplier", `%${supplier.trim()}%`);
+      }
+    }
+
+    const { data, error } = await query;
+    if (error) return res.status(500).json({ error: error.message });
+    return res.status(200).json(data);
+  }
 
   if (req.method === "PUT") {
     const { id } = req.query;
@@ -34,9 +58,9 @@ export default async function handler(req, res) {
     if (!id) return res.status(400).json({ error: "Missing id" });
 
     const { error } = await supabase
-      .from("screening_storage")
+      .from("screening_storage_shed")
       .update(body)
-      .eq("Process_ID", id);
+      .eq("ID", id);
 
     if (error) return res.status(500).json({ error: error.message });
     return res.status(200).json({ success: true });
@@ -47,9 +71,9 @@ export default async function handler(req, res) {
     if (!id) return res.status(400).json({ error: "Missing id" });
 
     const { error } = await supabase
-      .from("screening_storage")
+      .from("screening_storage_shed")
       .delete()
-      .eq("Process_ID", id);
+      .eq("ID", id);
 
     if (error) return res.status(500).json({ error: error.message });
     return res.status(204).end();

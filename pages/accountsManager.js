@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Button from "../components/button"; 
 import Layout from "../components/layout";
 import { useSupabaseClient } from '@supabase/auth-helpers-react';
+import { useSession } from '@supabase/auth-helpers-react';
 import Link from "next/link";
 
 function AccountsManager() {
@@ -66,7 +67,7 @@ function AccountsManager() {
   if (loading) return <Layout title="Accounts Manager">Loading...</Layout>;
 
   return (
-    <Layout title="Accounts Manager" onSettingsClick={() => setShowSettings(!showSettings)}>
+    <Layout title="Accounts Manager" showBack={true} onSettingsClick={() => setShowSettings(!showSettings)}>
       {/* Users Table */}
       <div className="my-6 overflow-x-auto max-h-[600px]">
         <table className="min-w-full bg-[#3D5147] text-white rounded-lg shadow-lg my-6">

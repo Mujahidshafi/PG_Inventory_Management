@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import Layout from "../components/layout";
 import { supabase } from "../lib/supabaseClient";
 
@@ -7,31 +7,56 @@ export default function Jobs() {
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const jobsPerPage = 4;
+  const [startingId, setStartingId] = useState(null);
 
-  useEffect(() => {
-    async function fetchJobs() {
-      const { data, error } = await supabase
-      //SQL
-        .from("create_job") //FROM create_job
-        .select("*") //SELECT *
-        .order("process_id", { ascending: false }); //ORDER BY process_id DESC
+  // SQL - only show jobs that are not running and not complete
+  const fetchJobs = useCallback(async () => {
+    const { data, error } = await supabase
+      .from("create_job") // FROM create_job
+      .select("*") // SELECT *
+      .eq("is_running", false) // WHERE is_running = FALSE
+      .eq("is_complete", false) // WHERE is_complete = FALSE
+      .order("date_created", { ascending: false }); // ORDER BY date_created DESC
 
-      if (error) {
-        console.error("Error fetching jobs:", error.message);
-      } else {
-        setJobs(data);
-      }
-
-      setLoading(false);
+    if (error) {
+      console.error("Error fetching jobs:", error.message);
+    } else {
+      setJobs(data);
     }
 
-    fetchJobs();
+    setLoading(false);
   }, []);
+
+  useEffect(() => {
+    fetchJobs();
+  }, [fetchJobs]);
 
   // Page Logic
   const totalPages = Math.ceil(jobs.length / jobsPerPage);
   const startIndex = (currentPage - 1) * jobsPerPage;
   const currentJobs = jobs.slice(startIndex, startIndex + jobsPerPage);
+
+  const handleRunJob = async (processId) => {
+    try {
+      setStartingId(processId);
+      const res = await fetch("/api/jobsBackend", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ processId }),
+      });
+
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        console.error("Failed to start job:", body?.message || res.statusText);
+      } else {
+        await fetchJobs();
+      }
+    } catch (e) {
+      console.error("Error starting job:", e);
+    } finally {
+      setStartingId(null);
+    }
+  };
 
   const handleNext = () => {
     if (currentPage < totalPages) {
@@ -100,29 +125,49 @@ export default function Jobs() {
                       <span className="mt-1">{job.process_id || "N/A"}</span>
                     </div>
 
-                    <div className="flex flex-col w-[20%]">
+                    <div className="flex flex-col w-[18%]">
                       <span className="font-semibold text-sm text-gray-700">Product Description</span>
                       <span className="mt-1">{job.product_description || "N/A"}</span>
                     </div>
 
-                    <div className="flex flex-col w-[20%]">
+                    <div className="flex flex-col w-[15%]">
                       <span className="font-semibold text-sm text-gray-700">Location</span>
                       <span className="mt-1">{job.location || "N/A"}</span>
                     </div>
 
-                    <div className="flex flex-col w-[15%]">
+                    <div className="flex flex-col w-[13%]">
                       <span className="font-semibold text-sm text-gray-700">Amount</span>
                       <span className="mt-1">
                         {job.amount ? `${Number(job.amount).toLocaleString()} lbs` : "N/A"}
                       </span>
                     </div>
+
+                    <div className="flex flex-col w-[18%]">
+                      <span className="font-semibold text-sm text-gray-700">Date Created</span>
+                      <span className="mt-1">
+                        {job.date_created
+                          ? new Date(job.date_created).toLocaleString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })
+                          : "N/A"}
+                      </span>
+                    </div>
                   </div>
 
                   <button
-                    className="bg-[#6B0000] text-white px-5 py-1.5 rounded-full hover:bg-[#510000] transition font-medium ml-4"
-                    onClick={() => console.log(`Run job ${job.process_id}`)}
+                    disabled={startingId === job.process_id}
+                    className={`${
+                      startingId === job.process_id
+                        ? "bg-gray-400 text-white cursor-wait"
+                        : "bg-[#6B0000] text-white hover:bg-[#510000]"
+                    } px-5 py-1.5 rounded-full transition font-medium ml-4`}
+                    onClick={() => handleRunJob(job.process_id)}
                   >
-                    Run
+                    {startingId === job.process_id ? "Starting..." : "Run"}
                   </button>
                 </div>
               ))}

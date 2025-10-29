@@ -2,7 +2,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import Layout from "../components/layout";
-import Selector from "../components/Selector";
 
 // ---- API delete helpers (unchanged logic) ----
 async function deleteStorageLocation(id) {
@@ -59,24 +58,26 @@ async function deleteProductItem(id) {
   }
 }
 
-// ---- fetch helper for dropdowns ----
+// ---- fetch helper for dropdowns (forces array) ----
 async function fetchList(apiRoute, setData) {
   try {
     const res = await fetch(apiRoute);
-    const data = await res.json();
-    setData(data || []);
+    const json = await res.json();
+    const arr = Array.isArray(json) ? json : Array.isArray(json?.data) ? json.data : [];
+    setData(arr);
   } catch (err) {
     console.error("Error fetching:", err);
+    setData([]);
   }
 }
 
 function DeleteItems() {
-  // selected ids
+  // selected ids (text inputs)
   const [storageLocationId, setStorageLocationId] = useState("");
   const [saleItemId, setSaleItemId] = useState("");
   const [productItemId, setProductItemId] = useState("");
 
-  // lists
+  // lists for suggestions
   const [storageLocations, setStorageLocations] = useState([]);
   const [saleItems, setSaleItems] = useState([]);
   const [productItems, setProducts] = useState([]);
@@ -86,6 +87,9 @@ function DeleteItems() {
     fetchList("/api/fetchSaleList", setSaleItems);
     fetchList("/api/fetchProductList", setProducts);
   }, []);
+
+  const inputClass =
+    "border p-2 rounded border-gray-400 placeholder-gray-400 w-full";
 
   const btn =
     "bg-[#5D1214] text-white px-6 py-2 rounded-[10px] text-base font-semibold text-center hover:bg-[#3D5147] transition-all duration-300 disabled:opacity-60";
@@ -104,14 +108,27 @@ function DeleteItems() {
               <h2 className="text-black font-semibold text-lg text-center md:text-left">
                 Delete Storage Location
               </h2>
-              <Selector
+
+              <input
+                className={inputClass}
+                list="storageLocationList"
+                placeholder="Type or paste Storage Location ID"
                 value={storageLocationId}
-                onChange={setStorageLocationId}
-                options={storageLocations.map((loc) => ({
-                  value: loc.id,
-                  label: loc.storage_location_name,
-                }))}
+                onChange={(e) => setStorageLocationId(e.target.value)}
               />
+              {/* Suggestions */}
+              <datalist id="storageLocationList">
+                {(Array.isArray(storageLocations) ? storageLocations : []).map((loc) => (
+                  <option
+                    key={loc.id}
+                    value={loc.id}
+                    label={loc.storage_location_name}
+                  >
+                    {loc.storage_location_name}
+                  </option>
+                ))}
+              </datalist>
+
               <button
                 className={btn}
                 disabled={!storageLocationId}
@@ -132,14 +149,22 @@ function DeleteItems() {
               <h2 className="text-black font-semibold text-lg text-center md:text-left">
                 Delete Product
               </h2>
-              <Selector
+
+              <input
+                className={inputClass}
+                list="productList"
+                placeholder="Type or paste Product ID"
                 value={productItemId}
-                onChange={setProductItemId}
-                options={productItems.map((item) => ({
-                  value: item.id,
-                  label: item.name,
-                }))}
+                onChange={(e) => setProductItemId(e.target.value)}
               />
+              <datalist id="productList">
+                {(Array.isArray(productItems) ? productItems : []).map((item) => (
+                  <option key={item.id} value={item.id} label={item.name}>
+                    {item.name}
+                  </option>
+                ))}
+              </datalist>
+
               <button
                 className={btn}
                 disabled={!productItemId}
@@ -160,14 +185,26 @@ function DeleteItems() {
               <h2 className="text-black font-semibold text-lg text-center md:text-left">
                 Delete Sale Item
               </h2>
-              <Selector
+
+              <input
+                className={inputClass}
+                list="saleItemList"
+                placeholder="Type or paste Sale Item ID"
                 value={saleItemId}
-                onChange={setSaleItemId}
-                options={saleItems.map((item) => ({
-                  value: item.id,
-                  label: item.product_quantity,
-                }))}
+                onChange={(e) => setSaleItemId(e.target.value)}
               />
+              <datalist id="saleItemList">
+                {(Array.isArray(saleItems) ? saleItems : []).map((item) => (
+                  <option
+                    key={item.id}
+                    value={item.id}
+                    label={String(item.product_quantity)}
+                  >
+                    {String(item.product_quantity)}
+                  </option>
+                ))}
+              </datalist>
+
               <button
                 className={btn}
                 disabled={!saleItemId}
