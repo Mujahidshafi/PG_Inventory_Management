@@ -1,6 +1,7 @@
 // pages/qsageJob.js
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
+import Layout from "../components/layout";
 
 /* =========================================================
    Helpers
@@ -1147,9 +1148,10 @@ const handleComplete = async () => {
      Render
      ========================================================= */
   return (
-    <div className="min-h-screen bg-gray-100 py-8">
+    <Layout title="Qsage Cleaning Process" showBack={true}>
+    <div className="w-full flex justify-center">
+    <div className="bg-white w-[70%] h-[600px] overflow-y-auto rounded-lg shadow p-6">
       <div className="mx-auto max-w-6xl p-6">
-        <h1 className="mb-6 text-2xl font-bold text-center">Qsage Cleaning Process</h1>
 
         {/* ================= Header + Summary Side by Side ================ */}
 <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1250,7 +1252,7 @@ const handleComplete = async () => {
         </button>
         <button
           type="button"
-          className="flex-1 rounded-xl bg-black px-3 py-2 text-sm font-semibold text-white hover:opacity-90"
+          className="flex-1 rounded-xl bg-[#5D1214] px-3 py-2 text-sm font-semibold text-white hover:opacity-90"
           onClick={handleComplete}
         >
           Complete Job
@@ -1386,7 +1388,7 @@ const handleComplete = async () => {
             />
             <button
               type="button"
-              className="rounded-lg bg-black text-white px-4 py-2"
+              className="rounded-lg bg-[#5D1214] text-white px-4 py-2"
               onClick={() => handleAddBoxSource(newBoxId)}
             >
               + Add Box Source
@@ -1654,6 +1656,8 @@ const handleComplete = async () => {
           Tip: Your work autosaves every minute when idle.
         </p>
       </div>
+      </div>
     </div>
+    </Layout>
   );
 }

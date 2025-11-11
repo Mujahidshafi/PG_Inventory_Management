@@ -36,7 +36,7 @@ function AdminMenu() {
   }
 
   return (
-    <Layout title="Admin Menu" onSettingsClick={() => setShowSettings(!showSettings)}>
+    <Layout title="Admin Menu" onSettingsClick={() => setShowSettings(!showSettings)} onLogout={handleLogout}>
       {/* Admin Buttons */}
       <div className="grid grid-cols-4 gap-8">
         <Link href="/newFieldRun" className={buttonStyle}>New Field Run</Link>

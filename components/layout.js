@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import { useSupabaseClient, useSession } from "@supabase/auth-helpers-react";
 import Image from "next/image";
 
-const Layout = ({ title, children, showBack, backRoute }) => {
+const Layout = ({ title, children, showBack, backRoute, onLogout }) => {
   const router = useRouter();
   const supabase = useSupabaseClient();
   const session = useSession();
@@ -85,7 +85,7 @@ const Layout = ({ title, children, showBack, backRoute }) => {
           </p>
           <button
             className="w-full bg-[#3D5147] hover:bg-[#2c3a35] text-white py-1 px-2 rounded-md font-[amiri]"
-            onClick={handleLogout}
+            onClick={onLogout ? onLogout : handleLogout}
           >
             Log Out ↪
           </button>
@@ -97,9 +97,6 @@ const Layout = ({ title, children, showBack, backRoute }) => {
         {children}
 
         {/* Copyright */}
-        <p className="absolute bottom-2 left-6 text-sm text-[#3D5147] opacity-70 font-[amiri]">
-          © 2025 Pleasant Grove Farms
-        </p>
       </div>
     </div>
   );

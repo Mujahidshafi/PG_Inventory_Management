@@ -164,7 +164,7 @@ export default function InProcess() {
                     className={`${
                       startingId === job.process_id
                         ? "bg-gray-400 text-white cursor-wait"
-                        : "bg-[#6B0000] text-white hover:bg-[#510000]"
+                        : "bg-[#5D1214] text-white hover:bg-red-950"
                     } px-5 py-1.5 rounded-full transition font-medium ml-4`}
                     onClick={() => handleCompleteJob(job.process_id)}
                   >
