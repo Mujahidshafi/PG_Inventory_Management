@@ -9,12 +9,18 @@ const normalize = (s) => s.trim().replace(/\s+/g, " ");
 export default function CropMenu() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // add form
   const [name, setName] = useState("");
   const [cropCode, setCropCode] = useState("");
+
   const [msg, setMsg] = useState("");
   const [isPending, startTransition] = useTransition();
 
-  // Load crops from Supabase
+  // track which checkbox is saving (so we can disable only that one)
+  const [pendingIds, setPendingIds] = useState(new Set());
+
+  // load crops from Supabase
   const load = async () => {
     setLoading(true);
     const { data, error } = await supabase
@@ -29,6 +35,8 @@ export default function CropMenu() {
 
   useEffect(() => {
     load();
+
+    // realtime refresh if the table changes (nice to have)
     const channel = supabase
       .channel("crop_types_changes")
       .on(
@@ -41,7 +49,7 @@ export default function CropMenu() {
     return () => supabase.removeChannel(channel);
   }, []);
 
-  // Add a new crop to DB
+  // add a new crop
   const addCrop = (e) => {
     e.preventDefault();
     setMsg("");
@@ -73,22 +81,51 @@ export default function CropMenu() {
     });
   };
 
-  // Toggle visibility (this is the boolean)
+  // toggle checkbox with optimistic UI
   const toggleVisible = async (id, checked) => {
+    setMsg("");
+
+    // 1) instantly flip in UI so it feels fast
+    setRows((prev) =>
+      prev.map((r) => (r.id === id ? { ...r, show_in_dropdown: !!checked } : r))
+    );
+
+    // 2) mark this exact row as saving (disable its checkbox)
+    setPendingIds((p) => {
+      const next = new Set(p);
+      next.add(id);
+      return next;
+    });
+
+    // 3) write to DB
     const { error } = await supabase
       .from("crop_types")
-      .update({ show_in_dropdown: checked })
+      .update({ show_in_dropdown: !!checked })
       .eq("id", id);
 
+    // 4) if DB failed, revert and show message
     if (error) {
       console.error(error);
       setMsg("Error updating checkbox.");
+      setRows((prev) =>
+        prev.map((r) =>
+          r.id === id ? { ...r, show_in_dropdown: !checked } : r
+        )
+      );
     }
+
+    // 5) unmark pending
+    setPendingIds((p) => {
+      const next = new Set(p);
+      next.delete(id);
+      return next;
+    });
   };
 
-  // Delete crop from DB
+  // delete a crop
   const deleteCrop = async (id, cropName) => {
     if (!confirm(`Delete "${cropName}"?`)) return;
+
     const { error } = await supabase.from("crop_types").delete().eq("id", id);
 
     if (error) {
@@ -179,6 +216,9 @@ export default function CropMenu() {
                     <input
                       type="checkbox"
                       checked={!!r.show_in_dropdown}
+                      disabled={pendingIds.has(r.id)}
+                      data-testid={`show-${r.id}`}
+                      aria-label={`Show ${r.name} in dropdown`}
                       onChange={(e) => toggleVisible(r.id, e.target.checked)}
                     />
                   </div>
