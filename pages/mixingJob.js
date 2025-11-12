@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { supabase } from "../lib/supabaseClient";
 import Layout from "../components/layout";
 
@@ -13,6 +13,25 @@ function MixingJob() {
   const [state, setState] = useState(DEFAULT_STATE);
   const [newBoxId, setNewBoxId] = useState("");
   const [loading, setLoading] = useState(false);
+  const [employees, setEmployees] = useState([]);
+  const [selectedEmployee, setSelectedEmployee] = useState("");
+
+  useEffect(() => {
+    const fetchEmployees = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("employees")
+          .select("name")
+          .eq("active", true);
+
+        if (error) throw error;
+        setEmployees(data || []);
+      } catch (err) {
+        console.error("Error fetching employees:", err);
+      }
+    };
+    fetchEmployees();
+  }, []);
 
   // 🔹 Fetch box details by Box_ID from any source table
   const handleAddBox = async () => {
@@ -198,6 +217,7 @@ function MixingJob() {
         total_weight: totalUsedWeight,
         notes: state.notes?.trim() || null,
         boxes: updatedBoxes,
+        employee: selectedEmployee || null,
       });
 
       if (reportError) {
@@ -224,6 +244,22 @@ function MixingJob() {
   return (
     <Layout title="Mixing Process (CO₂ Bins)" showBack={true}>
     <div className="max-w-5xl mx-auto p-6">
+
+      <div>
+        <label className="block text-sm font-medium mb-1">Employee</label>
+        <select
+          className="border rounded-lg px-3 py-2 w-full"
+          value={selectedEmployee}
+          onChange={(e) => setSelectedEmployee(e.target.value)}
+        >
+          <option value="">Select an employee...</option>
+          {employees.map((emp) => (
+            <option key={emp.name} value={emp.name}>
+              {emp.name}
+            </option>
+          ))}
+        </select>
+      </div>
 
       {/* Process Info */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
