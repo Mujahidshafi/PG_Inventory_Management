@@ -1,0 +1,28 @@
+//Make fake data to import to tests
+
+let idCounter = 1;
+
+function makeFakeJob(overrides = {}) {
+  const count = idCounter++;
+
+  const lotNumberIndex = ((count - 1) % 12) + 1;
+  const lot_number = `P${lotNumberIndex}`;
+
+  return {
+    count,
+    process_id: String(Math.floor(Math.random() * 90000) + 10000),
+    job_type: ["Sortex", "Bagging", "Qsage", "Mill"][count % 4],
+    product_description: ["WC", "YC", "WCYC"][count % 3],
+    location: `Silo ${1 + (count % 3)}`,
+    lot_number,
+    amount: String(100 + count * 50),
+    is_complete: false,
+    is_running: true,
+    date_created: new Date(Date.now() - count * 3600000).toISOString(),
+    ...overrides,
+  };
+}
+
+const fakeJobs = Array.from({ length: 10 }, () => makeFakeJob());
+
+module.exports = { makeFakeJob, fakeJobs };
