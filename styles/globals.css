@@ -1,18 +1,16 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-/* Custom CSS variables */
+/* --- Custom CSS variables --- */
 :root {
   --background: #ffffff;
-  --foreground: #171717; /* black text */
+  --foreground: #171717;
   --font-sans: 'Helvetica', Helvetica, sans-serif;
   --font-mono: 'Courier New', monospace;
 }
 
-/* Apply CSS variables */
+/* --- Global body styles --- */
 body {
   background-color: var(--background);
-  color: var(--foreground); /* always black */
+  color: var(--foreground);
   font-family: var(--font-sans);
 }
