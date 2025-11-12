@@ -16,6 +16,12 @@ function Login() {
     setLoading(true);
     setError(null);
 
+    if (!email || !password) {
+      setError("Please enter both email and password.");
+      setLoading(false);
+      return;
+    }
+
     const {
       data: { user },
       error: signInError,
@@ -66,6 +72,11 @@ function Login() {
           quality={100}
         />
         <div className="absolute inset-0 bg-black/20"></div>
+        <div>
+          <p className="absolute bottom-2 left-6 text-sm text-white opacity-80 font-[amiri] z-[9999]">
+            © 2025 Pleasant Grove Farms
+          </p>
+        </div>
       </div>
 
       {/* Login Form */}
@@ -85,7 +96,7 @@ function Login() {
         {/* Form */}
         <div className="flex items-center flex-col justify-center w-[424px] h-[605px] bg-[#3D5147] rounded-3xl">
           <span className="text-white text-[40px] font-[amiri] my-7">Sign In</span>
-
+          
           <span className="text-white text-[20px] font-[amiri] my-4">Email</span>
           <input
             className="p-4 w-[300px] bg-white text-black border rounded-lg my-4"
@@ -96,13 +107,16 @@ function Login() {
 
           <span className="text-white text-[20px] font-[amiri] my-4">Password</span>
           <input
+            type="password"
             className="p-4 w-[300px] bg-white text-black border rounded-lg my-4"
             placeholder="Password"
-            type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleLogin();
+            }}
           />
-
+          <span className="text-white font-[amiri] text-[15px] underline">Warning: For Authorized Users Only</span>
           <Button
             label={loading ? "Logging in..." : "Log In"}
             color="red"
