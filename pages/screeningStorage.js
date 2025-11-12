@@ -36,17 +36,17 @@ function ScreeningStorage() {
     });
     const json = await res.json();
       if (Array.isArray(json)) {
-        const list = json.map((r) => ({
-          id: r.ID,
-          boxId: r.Box_ID,
-          supplier: r.Supplier,
-          lotNumber: r.Lot_Number,
-          processId: r.Process_ID,
-          product: r.Product,
-          amount: r.Amount,
-          dateStored: new Date(r.Date_Stored).toLocaleString(),
-          type: r.Type,
-          notes: r.Notes,
+        const list = json.map((item) => ({
+          id: item.ID,
+          boxId: item.Box_ID,
+          supplier: item.Supplier,
+          lotNumber: item.Lot_Number,
+          processId: item.Process_ID,
+          product: item.Product,
+          amount: item.Amount,
+          dateStored: new Date(item.Date_Stored).toLocaleString(),
+          type: item.Type,
+          notes: item.Notes,
         }));
         setData(list);
         //const uniqueProducts = Array.from(new Set(json.map(r => r.Product))).filter(p => p);
@@ -83,8 +83,8 @@ function ScreeningStorage() {
           .not("Product", "is", null);
         if (data && alive) {
           const uniqueProducts = Array.from(
-            new Set(data.flatMap(r => 
-              String(r.Product || "")
+            new Set(data.flatMap(item => 
+              String(item.Product || "")
               .split(",")
               .map(s => s.trim())
               .filter(Boolean)
@@ -103,7 +103,7 @@ function ScreeningStorage() {
           .select("Supplier")
           .not("Supplier", "is", null);
         if (data && alive) {
-          const uniqueSupplier = Array.from(new Set(data.map(r => r.Supplier))).filter(p => p);
+          const uniqueSupplier = Array.from(new Set(data.map(item => item.Supplier))).filter(Boolean);
           setSuppliers(uniqueSupplier);
         }
       })();
@@ -299,28 +299,28 @@ useEffect(() => {
                 </div>
               </div>
             
-              <div className="relative inline-block">
+              <div class="relative inline-block">
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     setOpenId((id) => (id === index ? null : index));
                   }}
-                  className="p-1 rounded hover:bg-black/5"
+                  class="p-1 rounded hover:bg-black/5"
                 >
                   <img
                     src="/more_horiz.png"
                     alt="more"
-                    className="w-[30px] h-[30px] object-contain"
+                    class="w-[30px] h-[30px] object-contain"
                   />
                 </button>
 
                 {openId === index && (
                   <div
                     onClick={(e) => e.stopPropagation()}
-                    className="absolute right-0 mt-2 bg-white border rounded shadow-md z-50"
+                    class="absolute right-0 mt-2 bg-white border rounded shadow-md z-50"
                   >
                     <button
-                      className="block w-full px-4 py-2 text-left text-green-600 hover:bg-gray-100"
+                      class="block w-full px-4 py-2 text-left text-green-600 hover:bg-gray-100"
                       onClick={() => {
                         setOpenId(null);
                         router.push(`/screeningStorageModify?id=${encodeURIComponent(item.id)}`);
@@ -329,7 +329,7 @@ useEffect(() => {
                       Modify
                     </button>
                     <button
-                      className="block w-full px-4 py-2 text-left text-red-600 hover:bg-gray-100"
+                      class="block w-full px-4 py-2 text-left text-red-600 hover:bg-gray-100"
                       onClick={() => {
                         setOpenId(null);
                         handleDelete(item.id);
@@ -339,7 +339,7 @@ useEffect(() => {
                     </button>
                     <button
                       type="button"
-                      className="block w-full px-4 py-2 text-left text-indigo-600 hover:bg-gray-100"
+                      class="block w-full px-4 py-2 text-left text-indigo-600 hover:bg-gray-100"
                       onClick={() => {
                         setOpenId(null);
                         setNotesOpenFor(item.id);
@@ -380,31 +380,31 @@ useEffect(() => {
         </div>
         {notesOpenFor && (
           <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
             onClick={() => setNotesOpenFor(null)}
           >
             <div
-              className="w-[520px] max-w-[90vw] rounded-xl bg-white p-4 shadow-xl"
+              class="w-[520px] max-w-[90vw] rounded-xl bg-white p-4 shadow-xl"
               onClick={(e) => e.stopPropagation()}
             >
-              <h3 className="text-lg font-semibold mb-2">Add Notes</h3>
+              <h3 class="text-lg font-semibold mb-2">Add Notes</h3>
               <textarea
-                className="w-full h-[160px] border rounded-md p-2 resize-none"
+                class="w-full h-[160px] border rounded-md p-2 resize-none"
                 placeholder="Enter notes…"
                 value={notesText}
                 onChange={(e) => setNotesText(e.target.value)}
               />
-              <div className="mt-4 flex justify-end gap-2">
+              <div class="mt-4 flex justify-end gap-2">
                 <button
                   type="button"
-                  className="px-4 py-2 rounded-md border"
+                  class="px-4 py-2 rounded-md border"
                   onClick={() => setNotesOpenFor(null)}
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
-                  className="px-4 py-2 rounded-md bg-[#5D1214] text-white hover:bg-[#2C3A35]"
+                  class="px-4 py-2 rounded-md bg-[#5D1214] text-white hover:bg-[#2C3A35]"
                   onClick={handleSaveNotes}
                 >
                   Save
