@@ -9,6 +9,12 @@ export default async function handler(req, res) {
       .insert([{ name }]);
 
     if (error) {
+      if (error.code === "23505") {
+        return res
+        .status(400)
+        .json({error: `Customer "${name}" already exists.`})
+      }
+
       return res.status(500).json({ error: error.message });
     }
 
