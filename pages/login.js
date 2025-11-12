@@ -113,7 +113,6 @@ function Login() {
               if (e.key === "Enter") handleLogin();
             }}
           />
-          <span className="text-white font-[amiri] text-[15px] underline">Warning: For Authorized Users Only</span>
           <Button
             label={loading ? "Logging in..." : "Log In"}
             color="red"
