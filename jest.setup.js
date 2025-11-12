@@ -1,45 +1,56 @@
 import '@testing-library/jest-dom';
-import { jest } from '@jest/globals';
 
-process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://dummy.supabase.co';
-process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'dummy-anon-key';
-
-jest.mock('./lib/supabaseClient', () => ({
-  supabase: {
-    from: jest.fn(() => ({
-      select: jest.fn().mockResolvedValue({ data: [], error: null }),
-      insert: jest.fn().mockResolvedValue({ data: [], error: null }),
-      update: jest.fn().mockResolvedValue({ data: [], error: null }),
-      delete: jest.fn().mockResolvedValue({ data: [], error: null }),
-      eq: jest.fn().mockResolvedValue({ data: [], error: null }),
-    })),
-    auth: {
-      signInWithPassword: jest.fn().mockResolvedValue({ data: null, error: null }),
-      resetPasswordForEmail: jest.fn().mockImplementation(async (email) => ({
-        data: null,
-        error: email ? null : { message: 'Email is empty' },
-      })),
-    },
-  },
-}));
-
-jest.mock('@supabase/auth-helpers-react', () => ({
-  useSession: jest.fn(() => ({
-    data: { user: { id: '123' }, session: 'dummy-session' },
-    status: 'authenticated',
-  })),
-  useSupabaseClient: jest.fn(() => ({
-    from: jest.fn(() => ({
-      select: jest.fn().mockResolvedValue({ data: [], error: null }),
-      update: jest.fn().mockResolvedValue({ data: [], error: null }),
-      delete: jest.fn().mockResolvedValue({ data: [], error: null }),
-    })),
-  })),
-}));
-
+// mock next router
 jest.mock('next/router', () => ({
-  useRouter: jest.fn(() => ({
+  useRouter: () => ({
     push: jest.fn(),
+    replace: jest.fn(),
+    back: jest.fn(),
+    prefetch: jest.fn(() => Promise.resolve()),
     query: {},
-  })),
+    pathname: '/',
+    asPath: '/',
+    events: { on: jest.fn(), off: jest.fn(), emit: jest.fn() },
+  }),
 }));
+
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({ push: jest.fn(), replace: jest.fn() }),
+  usePathname: () => '/',
+  useSearchParams: () => new URLSearchParams(),
+}));
+
+global.IntersectionObserver = class {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+};
+
+jest.mock('next/image', () => ({
+  __esModule: true,
+  default: () => null,
+}));
+
+// fake supabase keys for tests
+process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://fake.local';
+process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'fake';
+
+const originalError = console.error;
+
+beforeAll(() => {
+  console.error = (...args) => {
+    const msg = args[0];
+    if (
+      /Warning.*not wrapped in act/.test(msg) || // older React versions
+      /An update to .* was not wrapped in act/.test(msg) || // React 18 phrasing
+      /Warning.*Can't perform a React state update on an unmounted component/.test(msg)
+    ) {
+      return;
+    }
+    originalError.call(console, ...args);
+  };
+});
+
+afterAll(() => {
+  console.error = originalError;
+});

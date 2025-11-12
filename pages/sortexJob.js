@@ -1411,6 +1411,8 @@ export default function SortexCleaningPage() {
           is selected.
         </p>
       </div>
+      </div>
     </div>
+    </Layout>
   );
 }

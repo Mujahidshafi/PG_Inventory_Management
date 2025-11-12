@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "../lib/supabaseClient";
+import Layout from "../components/layout";
 
-export default function MixingJob() {
+function MixingJob() {
   const DEFAULT_STATE = {
     processID: "",
     co2Bin: "",
@@ -241,8 +242,8 @@ export default function MixingJob() {
 
 
   return (
+    <Layout title="Mixing Process (CO₂ Bins)" showBack={true}>
     <div className="max-w-5xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">Mixing Process (CO₂ Bins)</h1>
 
       <div>
         <label className="block text-sm font-medium mb-1">Employee</label>
@@ -316,7 +317,7 @@ export default function MixingJob() {
         <button
           onClick={handleAddBox}
           disabled={loading}
-          className="bg-black text-white px-4 py-2 rounded-lg"
+          className="bg-[#3D5147] text-white px-4 py-2 rounded-lg"
         >
           {loading ? "Searching..." : "+ Add Box"}
         </button>
@@ -455,11 +456,14 @@ export default function MixingJob() {
       <div className="mt-6 text-right">
         <button
           onClick={handleCompleteMix}
-          className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-semibold"
+          className="bg-[#5D1214] hover:bg-red-950 text-white px-6 py-2 rounded-lg font-semibold"
         >
           Complete Mix
         </button>
       </div>
     </div>
+    </Layout>
   );
 }
+
+export default MixingJob;

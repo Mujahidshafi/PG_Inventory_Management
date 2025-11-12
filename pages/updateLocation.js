@@ -99,7 +99,7 @@ function UpdateLocation() {
 
             <button
               type="submit"
-              className="bg-red-800 text-white rounded py-2 px-4 w-full md:col-span-2 mt-4 hover:bg-[#3D5147]"
+              className="bg-[#5D1214] text-white rounded py-2 px-4 w-full md:col-span-2 mt-4 hover:bg-[#3D5147]"
             >
               Save
             </button>

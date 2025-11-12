@@ -52,7 +52,7 @@ function ScreeningStorageModify() {
       return <div>Loading...</div>;
     }
     return (
-      <Layout title="Screening Storage Modify">
+      <Layout title="Screening Storage Modify" showBack={true}>
             <div className="flex flex-wrap items-center justify-center gap-16 p-6">
               <div className="flex flex-col items-center">
                 <label className="font-bold">Field Lot Number</label>

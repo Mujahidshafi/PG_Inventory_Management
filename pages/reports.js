@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
+import Layout from "../components/layout";
 
 export default function ReportsPage() {
   const [reports, setReports] = useState([]);
@@ -178,11 +179,9 @@ export default function ReportsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
+    <Layout title="Process Reports" showBack={true}> 
+    <div className="bg-[#D9D9D9] p-6">
       <div className="mx-auto max-w-7xl">
-        <h1 className="text-2xl font-bold mb-6 text-center">
-          Process Reports
-        </h1>
 
         {/* 🔹 Filter Controls */}
         <div className="flex flex-wrap gap-3 items-end mb-6">
@@ -233,7 +232,7 @@ export default function ReportsPage() {
 
           <button
             onClick={fetchReports}
-            className="bg-black text-white rounded-lg px-4 py-2"
+            className="bg-[#3D5147] text-white rounded-lg px-4 py-2"
           >
             Refresh
           </button>
@@ -247,7 +246,7 @@ export default function ReportsPage() {
             className={`px-4 py-2 rounded-lg text-white ${
               selectedReports.length === 0
                 ? "bg-gray-400 cursor-not-allowed"
-                : "bg-red-600 hover:bg-red-700"
+                : "bg-[#5D1214] hover:bg-red-950"
             }`}
           >
             {deleting
@@ -269,7 +268,7 @@ export default function ReportsPage() {
               className={`px-4 py-2 rounded-lg text-white ${
                 !deleteYear
                   ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-red-700 hover:bg-red-800"
+                  : "bg-[#5D1214] hover:bg-red-950"
               }`}
             >
               Delete by Year
@@ -350,6 +349,7 @@ export default function ReportsPage() {
         )}
       </div>
     </div>
+    </Layout>
   );
 }
 
