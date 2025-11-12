@@ -180,7 +180,7 @@ export default function ReportsPage() {
 
   return (
     <Layout title="Process Reports" showBack={true}> 
-    <div className="bg-[#D9D9D9] p-6">
+    <div className="bg-[#D9D9D9] p-6 overflow-y-auto h-full">
       <div className="mx-auto max-w-7xl">
 
         {/* 🔹 Filter Controls */}

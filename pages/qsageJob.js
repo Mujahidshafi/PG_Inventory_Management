@@ -1484,6 +1484,5 @@ export default function QsageCleaningPage() {
         inventory.
       </p>
     </div>
-    </Layout>
   );
 }

@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { supabase } from "../lib/supabaseClient";
+import Layout from "../components/layout";
 
 const LS_KEY = "orderFulfillmentDraft_v2";
 
@@ -664,11 +665,11 @@ export default function OrderFulfillmentPage() {
 
   // ---------- UI ----------
   return (
-    <div className="min-h-screen bg-gray-100">
-      <div className="mx-auto max-w-6xl p-6">
-        <h1 className="mb-6 text-2xl font-bold text-center">
-          Order Fulfillment
-        </h1>
+    <Layout title="Order Fulfillment" showBack={true}>
+    <div className="flex justify-center items-start p-6 bg-[#D9D9D9] h-full">
+      
+      {/* Scrollable content area stays within the layout */}
+      <div className="w-full max-w-6xl flex flex-col h-[70vh] overflow-y-auto p-4">
 
         {/* Top Grid */}
         <div className="grid grid-cols-1 md:grid-cols-[2fr_1.4fr] gap-6 mb-6">
@@ -768,7 +769,7 @@ export default function OrderFulfillmentPage() {
               <button
                 type="button"
                 onClick={handleComplete}
-                className="rounded-xl bg-black text-white px-4 py-2 text-sm font-semibold hover:opacity-90"
+                className="rounded-xl bg-[#5D1214] text-white px-4 py-2 text-sm font-semibold hover:opacity-90"
               >
                 Complete Fulfillment
               </button>
@@ -860,7 +861,7 @@ export default function OrderFulfillmentPage() {
               <button
                 type="button"
                 onClick={handleAddBinRemoval}
-                className="w-full rounded-lg bg-black text-white px-3 py-2 text-sm font-semibold hover:opacity-90"
+                className="w-full rounded-lg bg-[#3D5147] text-white px-3 py-2 text-sm font-semibold hover:opacity-90"
               >
                 + Add Bin Removal
               </button>
@@ -890,7 +891,7 @@ export default function OrderFulfillmentPage() {
             <button
               type="button"
               onClick={handleScan}
-              className="rounded-lg bg-black text-white px-4 py-2 text-sm font-semibold hover:opacity-90"
+              className="rounded-lg bg-[#3D5147] text-white px-4 py-2 text-sm font-semibold hover:opacity-90"
             >
               Add
             </button>
@@ -1021,5 +1022,6 @@ export default function OrderFulfillmentPage() {
         </p>
       </div>
     </div>
+    </Layout>
   );
 }

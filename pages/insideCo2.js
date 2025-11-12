@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
+import Layout from "../components/layout";
 
 export default function ManageCo2Tanks() {
   const [tanks, setTanks] = useState([]);
@@ -105,11 +106,9 @@ export default function ManageCo2Tanks() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
+    <Layout title="Inside CO₂ Tank Management" showBack={true}>
+    <div className="bg-[#D9D9D9] h-full p-6">
       <div className="max-w-7xl mx-auto space-y-8">
-        <h1 className="text-2xl font-bold text-center">
-          Inside CO₂ Tank Management
-        </h1>
 
         {loading ? (
           <p className="text-center text-gray-500">Loading tanks...</p>
@@ -177,7 +176,7 @@ export default function ManageCo2Tanks() {
               <div className="mt-4">
                 <button
                   onClick={addTank}
-                  className="bg-black text-white px-5 py-2 rounded-lg hover:opacity-90"
+                  className="bg-[#5D1214] text-white px-5 py-2 rounded-lg hover:opacity-90"
                 >
                   Add Tank
                 </button>
@@ -282,5 +281,6 @@ export default function ManageCo2Tanks() {
         )}
       </div>
     </div>
+    </Layout>
   );
 }
