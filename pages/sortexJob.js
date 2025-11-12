@@ -1412,7 +1412,5 @@ export default function SortexCleaningPage() {
         </p>
       </div>
       </div>
-    </div>
-    </Layout>
   );
 }

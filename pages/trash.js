@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { supabase } from "../lib/supabaseClient";
+import Layout from "../components/layout";
 
 export default function ManageTrash() {
   const [records, setRecords] = useState([]);
@@ -88,9 +89,9 @@ export default function ManageTrash() {
   const uniqueLots = [...new Set(records.map((r) => r.Lot_Number))];
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
+    <Layout title="Trash Records" showBack={true}>
+    <div className="bg-[#D9D9D9] p-6 overflow-y-auto h-full">
       <div className="max-w-7xl mx-auto space-y-8">
-        <h1 className="text-2xl font-bold text-center">Trash Records</h1>
 
         {/* 🔍 Filters Section */}
         <section className="bg-white border rounded-2xl p-6 shadow-sm space-y-4">
@@ -222,5 +223,6 @@ export default function ManageTrash() {
         </section>
       </div>
     </div>
+    </Layout>
   );
 }

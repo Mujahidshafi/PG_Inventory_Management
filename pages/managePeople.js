@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
+import Layout from "../components/layout";
 
 export default function ManagePeoplePage() {
   const [employees, setEmployees] = useState([]);
@@ -108,9 +109,9 @@ export default function ManagePeoplePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
+    <Layout title="Manage Employees and Customers" showBack={true}>
+    <div className="h-full bg-[#D9D9D9] p-6">
       <div className="max-w-6xl mx-auto space-y-8">
-        <h1 className="text-2xl font-bold text-center">Manage Employees & Customers</h1>
 
         {statusMsg && <p className="text-center text-sm text-gray-600">{statusMsg}</p>}
 
@@ -132,7 +133,7 @@ export default function ManagePeoplePage() {
         />
         <button
           onClick={addEmployee}
-          className="bg-black text-white px-4 py-2 rounded-lg hover:opacity-90"
+          className="bg-[#3D5147] text-white px-4 py-2 rounded-lg hover:opacity-90"
         >
           Add
         </button>
@@ -197,7 +198,7 @@ export default function ManagePeoplePage() {
         
         <button
           onClick={addCustomer}
-          className="bg-black text-white px-4 py-2 rounded-lg hover:opacity-90"
+          className="bg-[#3D5147] text-white px-4 py-2 rounded-lg hover:opacity-90"
         >
           Add
         </button>
@@ -244,5 +245,6 @@ export default function ManagePeoplePage() {
 
       </div>
     </div>
+    </Layout>
   );
 }

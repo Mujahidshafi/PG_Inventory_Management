@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState, useRef } from "react";
 import { supabase } from "../lib/supabaseClient";
+import Layout from "../components/layout";
 
 const LS_KEY = "baggingJobDraft";
 const DEFAULT_STATE = {
@@ -548,10 +549,8 @@ export default function BaggingJob() {
   // ───────────────────────────── Render ─────────────────────────────
 
   return (
-    <div className="mx-auto max-w-6xl p-6 bg-gray-100 min-h-screen">
-      <h1 className="mb-4 text-2xl font-bold text-center">
-        Bagging Process
-      </h1>
+    <Layout title="Bagging Job" showBack={true}>
+    <div className="mx-auto max-w-6xl p-6 bg-[#D9D9D9] flex flex-col overflow-y-auto h-full">
 
       {/* Top Row: Employee + Summary */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -716,7 +715,7 @@ export default function BaggingJob() {
           <button
             type="button"
             onClick={handleAddBoxSource}
-            className="px-4 py-2 rounded-lg bg-black text-white text-sm"
+            className="px-4 py-2 rounded-lg bg-[#3D5147] text-white text-sm"
           >
             + Add Box
           </button>
@@ -803,7 +802,7 @@ export default function BaggingJob() {
           <button
             type="button"
             onClick={handleAddCo2Draw}
-            className="px-4 py-2 rounded-lg bg-black text-white text-sm"
+            className="px-4 py-2 rounded-lg bg-[#3D5147] text-white text-sm"
           >
             + Add CO₂ Input
           </button>
@@ -1017,11 +1016,12 @@ export default function BaggingJob() {
           type="button"
           onClick={handleComplete}
           disabled={processing}
-          className="px-5 py-2 rounded-xl bg-black text-white text-sm font-semibold disabled:opacity-60"
+          className="px-5 py-2 rounded-xl bg-[#5D1214] text-white text-sm font-semibold disabled:opacity-60"
         >
           {processing ? "Saving…" : "Complete Bagging Job"}
         </button>
       </div>
     </div>
+    </Layout>
   );
 }

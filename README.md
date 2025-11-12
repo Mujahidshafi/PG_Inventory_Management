@@ -74,23 +74,17 @@ Here are some visuals from our product:<br>
     <li><a href="#admin-menu-">Admin Menu</a></li>
     <li><a href="#new-field-run-">New Field Run</a></li>
     <li><a href="#transfer-">Transfer</a></li>
-    <li><a href="#update-location-">Update Location</a></li>
     <li><a href="#adddelete-items-">Add/Delete Items</a></li>
     <li><a href="#create-job-">Create Job</a></li>
     <li><a href="#mixing-job-">Mixing Job</a></li>
     <li><a href="#qsage-job-">Qsage Job</a></li>
     <li><a href="#sortex-job-">Sortex Job</a></li>
     <li><a href="#bagging-job-">Bagging Job</a></li>
-    <li><a href="#in-process-">In Processs</a></li>
-    <li><a href="#job-history-">Job History</a></li>
     <li><a href="#storage-dashboard-">Storage Dashboard</a></li>
-    <li><a href="#field-run-storage-">Field Run Storage</a></li>
-    <li><a href="#screening-storage-">Screening Storage</a></li>
     <li><a href="#clean-storage-">Clean Storage</a></li>
     <li><a href="#search-">Search</a></li>
     <li><a href="#reports-">Reports</a></li>
     <li><a href="#orders-">Orders</a></li>
-    <li><a href="#crop-menu-">Crop Menu</a></li>
   </ol>
 </details>
 
@@ -110,9 +104,6 @@ This page allows users to record a new field run — an incoming load of product
 ### Transfer: <br>
 Used to transfer a specified weight of product between storage silos.
 
-### Update Location: <br>
-Allows users to update the current storage location of ...
-
 ### Add/Delete Items: <br>
 Provides admins with tools to add or remove storage locations, customers, or other configurable items.
 
@@ -131,23 +122,11 @@ Allows admins to run, record, and complete a Qsage job.
 ### Bagging Job: <br>
 Enables admins to manage and record bagging operations for finished products.
 
-### In Process: <br>
-Displays all active or ongoing jobs currently being processed.
-
-### Job History: <br>
-Provides a history of all completed jobs with detailed records.
-
 ### Storage Dashboard: <br>
 Displays navigation to all storage categories, including field run, screening, and clean storage.
 
-### Field Run Storage: <br>
-Lists all field run storage locations along with their current contents.
-
-### Screening Storage: <br>
-Displays screening storage items organized by box ID, with search functionality for lot numbers.
-
 ### Clean Storage: <br>
-Lists clean storage items organized by product, with search filters for lot numbers.
+This is a storage page example, it lists clean storage items organized by product, with search filters for lot numbers.
 
 ### Search: <br>
 Allows admins to search by lot number, location, or product, with optional filters for year and product type.
@@ -157,9 +136,6 @@ Displays all available reports for completed jobs. Admins can search by process 
 
 ### Orders: <br>
 Allows admins to create, update, and complete orders, as well as view all active and completed orders.
-
-### Crop Menu: <br>
-Provides options for admins to add or remove products (crops) and manage dropdown availability — for example, removing a crop that is out of season.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

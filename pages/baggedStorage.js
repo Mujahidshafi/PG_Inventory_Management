@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { supabase } from "../lib/supabaseClient";
+import Layout from "../components/layout";
 
 export default function ManageBaggedStorage() {
   const [pallets, setPallets] = useState([]);
@@ -129,13 +130,9 @@ export default function ManageBaggedStorage() {
   const bagTypes = ["25lb", "50lb", "2000lb tote"];
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      <div className="max-w-7xl mx-auto space-y-8">
-        <h1 className="text-2xl font-bold text-center">
-          Bagged Storage Management
-        </h1>
-
-        
+    <Layout title="Bagged Storage Management" showBack={true}>
+    <div className="bg-[#D9D9D9] p-6 overflow-y-auto h-full">
+      <div className="max-w-7xl mx-auto space-y-8">        
 
         {/* Add New Pallet */}
         <section className="bg-white rounded-2xl border p-6 shadow-sm">
@@ -233,7 +230,7 @@ export default function ManageBaggedStorage() {
           <div className="mt-4">
             <button
               onClick={addPallet}
-              className="bg-black text-white px-5 py-2 rounded-lg hover:opacity-90"
+              className="bg-[#5D1214] text-white px-5 py-2 rounded-lg hover:opacity-90"
             >
               Add Pallet
             </button>
@@ -452,5 +449,6 @@ export default function ManageBaggedStorage() {
         </section>
       </div>
     </div>
+    </Layout>
   );
 }

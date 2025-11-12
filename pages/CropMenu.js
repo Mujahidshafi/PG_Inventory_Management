@@ -139,11 +139,8 @@ export default function CropMenu() {
 
   return (
     <Layout title="Crop Menu" showBack={true}>
-      <div className="w-full px-8 flex flex-col items-center">
-        <div className="w-full max-w-4xl bg-white p-8 rounded-xl shadow">
-          <h1 className="text-black text-3xl font-bold mb-6 text-center">
-            Crop Menu
-          </h1>
+      <div className="w-full flex justify-center items-start px-6 py-8 h-full overflow-hidden">
+        <div className="w-full max-w-4xl bg-white p-8 rounded-xl shadow flex flex-col overflow-hidden h-full">
 
           {/* Add Crop Form */}
           <form
