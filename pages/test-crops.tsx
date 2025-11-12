@@ -1,8 +1,10 @@
 import CropTypeDropdown from "../components/CropTypeDropdown"
 import AddCropForm from "../components/AddCropForm"
 import DeleteCropForm from "../components/DeleteCropForm"
+import { useState } from "react";
 
 export default function TestCropsPage() {
+  const [selectedCrop, setSelectedCrop] = useState("");
   return (
     <main style={{ padding: 24 }}>
       <h1>Crop Types Management</h1>
@@ -14,7 +16,7 @@ export default function TestCropsPage() {
       <DeleteCropForm />
 
       <h2>Choose a Crop (Dropdown)</h2>
-      <CropTypeDropdown onChange={(val) => console.log("Selected:", val)} />
+      <CropTypeDropdown value={selectedCrop} onChange={(val) => console.log("Selected:", val)} />
     </main>
   )
 }

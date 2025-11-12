@@ -4,6 +4,9 @@ import Button from "../components/button";
 import Link from "next/link";
 import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
 
+const buttonStyle = "bg-[#5D1214] text-white px-6 py-6 rounded-[15px] text-lg font-[amiri] text-center hover:bg-[#3D5147] transition-all duration-300";
+
+
 function EmployeeMenu() {
   const [showSettings, setShowSettings] = useState(false);
   const [role, setRole] = useState(null);
@@ -26,7 +29,7 @@ function EmployeeMenu() {
     };
 
     fetchRole();
-  }, [session]);
+  }, [session, supabase]);
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -58,25 +61,19 @@ function EmployeeMenu() {
       )}
 
       {/* Employee Buttons */}
-      <div className="flex flex-wrap justify-center items-center w-[100%] h-[100%]">
-        <div className="grid grid-cols-2 gap-8">
-          <Link href="/newFieldRun">
-            <Button label="New Field Run" color="red" className="min-w-[160px] h-16" />
-          </Link>
-
-          <Link href="/transfer">
-            <Button label="Transfer" color="red" className="min-w-[160px] h-16" />
-          </Link>
-
-          <Link href="/jobs">
-            <Button label="Jobs" color="red" className="min-w-[160px] h-16" />
-          </Link>
-
-          <Link href="/updateLocation">
-            <Button label="Update Location" color="red" className="min-w-[160px] h-16" />
-          </Link>
+      {/*<div className="flex flex-wrap justify-center items-center w-[100%] h-[100%]">*/}
+        <div className="grid grid-cols-4 gap-8">
+          <Link href="/newFieldRun" className={buttonStyle}>New Field Run</Link>
+          <Link href="/transfer" className={buttonStyle}>Transfer</Link>
+          <Link href="/qsageJob" className={buttonStyle}>Qsage Job</Link>
+          <Link href="/sortexJob" className={buttonStyle}>Sortex Job</Link>
+          <Link href="/mixingJob" className={buttonStyle}>Mix</Link>
+          <Link href="/baggingJob" className={buttonStyle}>Bagging Job</Link>
+          <Link href="/orderFulfillment" className={buttonStyle}>Order Fulfillment</Link>
+          <Link href="/jobs" className={buttonStyle}>Jobs</Link>
+          <Link href="/inProcess" className={buttonStyle}>In Process</Link>
         </div>
-      </div>
+      {/*</div>*/}
     </Layout>
   );
 }
