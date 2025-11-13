@@ -378,7 +378,7 @@ function ReportModal({ report, onClose }) {
   const isOrderFulfillment = report.process_type === "Order Fulfillment";
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-2xl max-w-5xl w-full relative shadow-xl max-h-[90vh] flex flex-col">
         {/* Fixed Header */}
         <div className="flex justify-between items-center border-b p-4 sticky top-0 bg-white z-10 rounded-t-2xl">
@@ -721,7 +721,7 @@ function Section({ title, data }) {
               <th className="p-1">Physical Box ID</th>
               <th className="p-1">Box #</th>
               <th className="p-1">Weight (lbs)</th>
-              <th className="p-1">Date</th>
+              <th className="p-1">Location</th>
             </tr>
           </thead>
           <tbody className="text-center">
@@ -743,9 +743,12 @@ function Section({ title, data }) {
                   <td className="p-1">{b.boxNumber ?? "—"}</td>
                   <td className="p-1">{b.weightLbs ?? b.weight ?? "—"}</td>
                   <td className="p-1">
-                    {dateValue
-                      ? new Date(dateValue).toLocaleDateString()
-                      : "—"}
+                    {b.storageLocation ||
+                    b.location ||
+                    b.Location ||
+                    b.newLocation ||
+                    b.storage_location ||
+                    "—"}
                   </td>
                 </tr>
               );
