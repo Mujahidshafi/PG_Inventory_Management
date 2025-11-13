@@ -9,16 +9,16 @@ global.fetch = jest.fn(() =>
   })
 ) as any;
 
-jest.mock("../../components/layout", () => ({
+jest.mock("../components/layout", () => ({
   __esModule: true,
   default: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="layout">{children}</div>
   ),
 }));
 
-jest.mock("../../lib/supabaseClient", () => {
+jest.mock("../lib/supabaseClient", () => {
   //Import fake jobs
-  const { fakeJobs } = require("../data/makeFakeJobs");
+  const { fakeJobs } = require("../__mocks__/makeFakeJobs");
   
   //Show fake jobs
   console.log("FAKE JOBS:", fakeJobs);
@@ -36,7 +36,7 @@ jest.mock("../../lib/supabaseClient", () => {
   };
 });
 
-import Jobs from "../../pages/jobs";
+import Jobs from "../pages/jobs";
 
 describe("Jobs page", () => {
   beforeEach(() => {
@@ -69,7 +69,7 @@ describe("Jobs page", () => {
 
     expect(global.fetch).toHaveBeenCalledTimes(1);
 
-    const { fakeJobs } = require("../data/makeFakeJobs");
+    const { fakeJobs } = require("../__mocks__/makeFakeJobs");
     const expectedProcessId = fakeJobs[0].process_id;
 
     expect(global.fetch).toHaveBeenCalledWith(

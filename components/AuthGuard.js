@@ -11,7 +11,9 @@ const adminOnlyPaths = [
   '/screeningStorage', '/screeningStorageModify', '/search', 
   '/storageDashboard', '/qsageJob', '/sortexJob', 'mixingJob',
   'deleteItems', '/orders', '/jobHistory', 'CropMenu',
-  '/editFRStorageSuppliers', 'reports'
+  '/editFRStorageSuppliers', 'reports', '/managePeople', '/physicalBoxes',
+  '/baggingJob', '/orderFulfillment', '/trash', '/insideCo2', '/baggedStorage',
+  '/rerunStorage', '/trash'
 ];
 
 const AuthGuard = ({ children }) => {

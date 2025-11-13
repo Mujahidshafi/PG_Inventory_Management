@@ -129,7 +129,7 @@ describe('MixingJob Page', () => {
   it('completes mix: upserts bin, updates/deletes boxes, creates report', async () => {
     render(<MixingJob />);
     await userEvent.type(screen.getByPlaceholderText('Enter new process ID'), 'MIX-001');
-    fireEvent.change(screen.getByRole('combobox'), { target: { value: 'Co2-1' } });
+    fireEvent.change(screen.getByLabelText(/CO₂ Bin/i), { target: { value: 'Co2-1' } });
 
     // Box 1: partial
     await userEvent.type(getBoxInput(), '1234C1');

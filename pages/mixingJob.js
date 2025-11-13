@@ -277,13 +277,14 @@ function MixingJob() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">CO₂ Bin</label>
+          <label className="block text-sm font-medium mb-1" htmlFor="co2-bin">CO₂ Bin</label>
           <select
             value={state.co2Bin}
             onChange={(e) =>
               setState((prev) => ({ ...prev, co2Bin: e.target.value }))
             }
             className="border rounded-lg px-3 py-2 w-full"
+            id="co2-bin"
           >
             <option value="">Select Bin</option>
             <option value="Co2-1">Co2-1</option>

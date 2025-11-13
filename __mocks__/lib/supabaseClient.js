@@ -1,5 +1,4 @@
 // __mocks__/lib/supabaseClient.js
-// THIS IS THE ONLY VERSION THAT WORKS 100%
 
 const mockAuth = {
   signUp: jest.fn(),
