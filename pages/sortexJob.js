@@ -157,12 +157,13 @@ function OutputBoxTable({
         <table className="w-full min-w-[720px] table-fixed text-xs">
           <thead className="bg-gray-50 text-gray-600">
             <tr>
-              <th className="px-3 py-2 w-32">Box ID</th>
-              <th className="px-3 py-2 w-32">Physical Box ID</th>
+              <th className="px-3 py-2 w-24">Box ID</th>
               <th className="px-3 py-2 w-16">Box #</th>
               <th className="px-3 py-2 w-32">Weight (lbs)</th>
-              <th className="px-3 py-2 w-40">Storage Location</th>
+              <th className="px-3 py-2 w-32">Physical Box ID</th>
               <th className="px-3 py-2 w-16">Use PB</th>
+              <th className="px-4 py-2 w-20">Net Weight (lbs)</th>
+              <th className="px-3 py-2 w-40">Storage Location</th>
               <th className="px-3 py-2 w-16">Remove</th>
             </tr>
           </thead>
@@ -191,18 +192,7 @@ function OutputBoxTable({
                       {boxId || "—"}
                     </td>
 
-                    {/* Physical Box ID */}
-                    <td className="px-3 py-2">
-                      <input
-                        className="w-full rounded border px-2 py-1"
-                        type="text"
-                        value={b.physicalBoxId || ""}
-                        onChange={(e) =>
-                          onUpdate(i, "physicalBoxId", e.target.value)
-                        }
-                        placeholder="e.g., PB0001"
-                      />
-                    </td>
+                    
 
                     {/* Box # */}
                     <td className="px-3 py-2">
@@ -243,24 +233,16 @@ function OutputBoxTable({
                       />
                     </td>
 
-                    {/* Storage Location */}
+                    {/* Physical Box ID */}
                     <td className="px-3 py-2">
                       <input
                         className="w-full rounded border px-2 py-1"
                         type="text"
-                        value={b.storageLocation || ""}
+                        value={b.physicalBoxId || ""}
                         onChange={(e) =>
-                          onUpdate(
-                            i,
-                            "storageLocation",
-                            e.target.value
-                          )
+                          onUpdate(i, "physicalBoxId", e.target.value)
                         }
-                        placeholder={
-                          kind === "clean" || kind === "reruns"
-                            ? "Refrigerator / Co2 / Other"
-                            : "e.g., Rejects Pile"
-                        }
+                        placeholder="e.g., PB0001"
                       />
                     </td>
 
@@ -285,6 +267,41 @@ function OutputBoxTable({
                         }}
                       />
                     </td>
+
+                    {/* Net Weight (auto) */}
+                    <td className="px-3 py-2 tabular-nums text-center">
+                      {(() => {
+                        const gross = Number(b.weightLbsRaw ?? b.weightLbs) || 0;
+                        const pbw = b.usePhysicalBox && b.physicalBoxId
+                          ? getPBWeight(b.physicalBoxId)
+                          : 0;
+                        const net = Math.max(gross - pbw, 0);
+                        return net.toLocaleString();
+                      })()}
+                    </td>
+
+                    {/* Storage Location */}
+                    <td className="px-3 py-2">
+                      <input
+                        className="w-full rounded border px-2 py-1"
+                        type="text"
+                        value={b.storageLocation || ""}
+                        onChange={(e) =>
+                          onUpdate(
+                            i,
+                            "storageLocation",
+                            e.target.value
+                          )
+                        }
+                        placeholder={
+                          kind === "clean" || kind === "reruns"
+                            ? "Refrigerator / Co2 / Other"
+                            : "e.g., Rejects Pile"
+                        }
+                      />
+                    </td>
+
+                    
 
                     {/* Remove */}
                     <td className="px-3 py-2 text-center">
