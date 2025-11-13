@@ -32,7 +32,7 @@ jest.mock("../lib/supabase", () => {
   };
 }, { virtual: true }); // ← IMPORTANT
 
-import CropMenu from "./CropMenu";
+import CropMenu from "../../pages/CropMenu";
 
 test("checkbox toggles on click (optimistic)", async () => {
   render(<CropMenu />);
