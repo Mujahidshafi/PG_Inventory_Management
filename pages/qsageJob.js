@@ -293,7 +293,7 @@ function BoxTable({
         <table className="w-full min-w-[820px] table-fixed">
           <thead>
             <tr className="text-left text-sm text-gray-600 bg-gray-50">
-              <th className="px-4 py-2 w-40">Box ID</th>
+              <th className="px-4 py-2 w-30">Box ID</th>
               <th className="px-4 py-2 w-20">Box #</th>
               <th className="px-4 py-2 w-40">Weight (lbs)</th>
               <th className="px-4 py-2 w-40">Physical Box ID</th>
@@ -383,31 +383,24 @@ function BoxTable({
                     </td>
 
                     {/* Storage Location */}
-                    <td className="px-4 py-2">
-                      {kind === "clean" || kind === "reruns" ? (
-                        <select
-                          className="w-full rounded-lg border px-2 py-1.5 text-sm bg-white"
-                          value={b.storageLocation || ""}
-                          onChange={(e) =>
-                            updateBox(i, "storageLocation", e.target.value)
-                          }
-                        >
-                          <option value="">Select location…</option>
-                          <option value="Refrigerator">Refrigerator</option>
-                          <option value="Refer-Trailer">Refer-Trailer</option>
-                          <option value="Inside Co2">Inside Co2</option>
-                          <option value="Other">Other</option>
-                        </select>
-                      ) : (
-                        <input
-                          className="w-full rounded-lg border px-2 py-1.5 text-sm"
-                          value={b.storageLocation || ""}
-                          onChange={(e) =>
-                            updateBox(i, "storageLocation", e.target.value)
-                          }
-                          placeholder="e.g., Storage Area"
-                        />
-                      )}
+                    <td className="px-3 py-2">
+                      <input
+                        className="w-full rounded border px-2 py-1"
+                        type="text"
+                        value={b.storageLocation || ""}
+                        onChange={(e) =>
+                          onUpdate(
+                            i,
+                            "storageLocation",
+                            e.target.value
+                          )
+                        }
+                        placeholder={
+                          kind === "clean" || kind === "reruns"
+                            ? "Refrigerator / Co2 / Other"
+                            : "e.g., Rejects Pile"
+                        }
+                      />
                     </td>
 
                     {/* Remove */}
