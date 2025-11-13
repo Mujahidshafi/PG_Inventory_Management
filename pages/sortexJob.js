@@ -7,6 +7,7 @@ import React, {
   useCallback,
 } from "react";
 import { supabase } from "../lib/supabaseClient";
+import Layout from "../components/layout";
 
 /* -------------------------------- Helpers -------------------------------- */
 
@@ -1080,7 +1081,8 @@ export default function SortexCleaningPage() {
   /* ------------------------------ Render --------------------------------- */
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <Layout title="Sortex Job" showBack={true}>
+    <div className="mx-auto max-w-6xl p-6 bg-[#D9D9D9] flex flex-col overflow-y-auto h-full">
       <div className="mx-auto max-w-6xl p-6 space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold">Sortex Cleaning Process</h1>
@@ -1206,7 +1208,7 @@ export default function SortexCleaningPage() {
               </button>
               <button
                 type="button"
-                className="rounded-xl bg-black text-white px-3 py-2 font-semibold hover:opacity-90"
+                className="rounded-xl bg-[#5D1214] text-white px-3 py-2 font-semibold hover:opacity-90"
                 onClick={handleComplete}
               >
                 Complete Job
@@ -1429,5 +1431,6 @@ export default function SortexCleaningPage() {
         </p>
       </div>
       </div>
+      </Layout>
   );
 }

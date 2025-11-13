@@ -9,16 +9,16 @@ global.fetch = jest.fn(() =>
   })
 ) as any;
 
-jest.mock("../../components/layout", () => ({
+jest.mock("../components/layout", () => ({
   __esModule: true,
   default: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="layout">{children}</div>
   ),
 }));
 
-jest.mock("../../lib/supabaseClient", () => {
+jest.mock("../lib/supabaseClient", () => {
   //Import fake jobs
-  const { fakeJobs } = require("../data/makeFakeJobs"); 
+  const { fakeJobs } = require("../__mocks__/makeFakeJobs"); 
 
   //Show fake jobs
   console.log("FAKE JOBS:", fakeJobs);
@@ -36,7 +36,7 @@ jest.mock("../../lib/supabaseClient", () => {
   };
 });
 
-import InProcess from "../../pages/inProcess";
+import InProcess from "../pages/inProcess";
 
 describe("InProcess page", () => {
   beforeEach(() => {
@@ -69,7 +69,7 @@ describe("InProcess page", () => {
 
     expect(global.fetch).toHaveBeenCalledTimes(1);
 
-    const { fakeJobs } = require("../data/makeFakeJobs");
+    const { fakeJobs } = require("../__mocks__/makeFakeJobs");
 
     expect(global.fetch).toHaveBeenCalledWith(
       "/api/inProcessBackend",

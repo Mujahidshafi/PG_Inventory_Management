@@ -21,7 +21,6 @@ beforeEach(() => {
     // Check important buttons
     expect(screen.getByRole('link', { name: /new field run/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /transfer/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /update location/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /jobs/i })).toBeInTheDocument();
   });
 });

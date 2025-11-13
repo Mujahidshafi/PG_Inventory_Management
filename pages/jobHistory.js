@@ -65,7 +65,7 @@ export default function InProcess() {
 
   return (
     <Layout
-      title="In Process Jobs"
+      title="Job History"
       showBack={true}
       onSettingsClick={() => console.log("Settings clicked")}
     >

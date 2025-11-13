@@ -36,7 +36,6 @@ describe('AdminMenu Page', () => {
     expect(screen.getByRole('link', { name: /transfer/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /mix/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /jobs/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /update location/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /create job/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /in process/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /storage dashboard/i })).toBeInTheDocument();
@@ -48,5 +47,9 @@ describe('AdminMenu Page', () => {
     expect(screen.getByRole('link', { name: /sortex job/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /crop menu/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /process reports/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /manage people/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /order fulfillment/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /bagging job/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /physical boxes/i })).toBeInTheDocument();
   });
 });
