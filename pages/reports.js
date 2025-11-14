@@ -192,7 +192,7 @@ export default function ReportsPage() {
             onChange={(e) =>
               setFilters((f) => ({ ...f, search: e.target.value }))
             }
-            className="border rounded-lg px-3 py-2 flex-1 min-w-[240px]"
+            className="border rounded-lg px-3 py-2 flex-1 bg-white min-w-[240px]"
           />
 
           <input
@@ -202,7 +202,7 @@ export default function ReportsPage() {
             onChange={(e) =>
               setFilters((f) => ({ ...f, year: e.target.value }))
             }
-            className="border rounded-lg px-3 py-2 w-32"
+            className="border rounded-lg bg-white px-3 py-2 w-32"
           />
 
           <input
@@ -212,7 +212,7 @@ export default function ReportsPage() {
             onChange={(e) =>
               setFilters((f) => ({ ...f, supplier: e.target.value }))
             }
-            className="border rounded-lg px-3 py-2 w-48"
+            className="border rounded-lg bg-white px-3 py-2 w-48"
           />
 
           <select
@@ -260,7 +260,7 @@ export default function ReportsPage() {
               placeholder="Year (e.g. 2023)"
               value={deleteYear}
               onChange={(e) => setDeleteYear(e.target.value)}
-              className="border rounded-lg px-3 py-2 w-32"
+              className="border rounded-lg bg-white px-3 py-2 w-32"
             />
             <button
               disabled={!deleteYear || deleting}

@@ -201,7 +201,7 @@ function CleanStorage() {
   ];
   const visibleData = Array.isArray(groups) ? groups : [];;
   return (
-    <Layout title="Clean Storage">
+    <Layout title="Clean Storage" showBack={true}>
       <div class="w=[100%] h=[5%] flex justify-start px-8 px-4">
         <div class="flex flex-wrap gap-3 items-end">
               

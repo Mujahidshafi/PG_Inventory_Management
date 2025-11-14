@@ -248,7 +248,7 @@ function MixingJob() {
       <div>
         <label className="block text-sm font-medium mb-1">Employee</label>
         <select
-          className="border rounded-lg px-3 py-2 w-full"
+          className="border rounded-lg bg-white px-3 py-2 w-full"
           value={selectedEmployee}
           onChange={(e) => setSelectedEmployee(e.target.value)}
         >
@@ -271,7 +271,7 @@ function MixingJob() {
             onChange={(e) =>
               setState((prev) => ({ ...prev, processID: e.target.value }))
             }
-            className="border rounded-lg px-3 py-2 w-full"
+            className="border rounded-lg bg-white px-3 py-2 w-full"
             placeholder="Enter new process ID"
           />
         </div>
@@ -283,7 +283,7 @@ function MixingJob() {
             onChange={(e) =>
               setState((prev) => ({ ...prev, co2Bin: e.target.value }))
             }
-            className="border rounded-lg px-3 py-2 w-full"
+            className="border rounded-lg px-3 py-2 w-full bg-white"
             id="co2-bin"
           >
             <option value="">Select Bin</option>
@@ -300,7 +300,7 @@ function MixingJob() {
             onChange={(e) =>
               setState((prev) => ({ ...prev, notes: e.target.value }))
             }
-            className="border rounded-lg px-3 py-2 w-full"
+            className="border rounded-lg bg-white px-3 py-2 w-full"
             placeholder="Optional notes"
           />
         </div>
@@ -313,7 +313,7 @@ function MixingJob() {
           placeholder="Enter Box ID (e.g., 1234C1)"
           value={newBoxId}
           onChange={(e) => setNewBoxId(e.target.value)}
-          className="border rounded-lg px-3 py-2 flex-1"
+          className="border rounded-lg bg-white px-3 py-2 flex-1"
         />
         <button
           onClick={handleAddBox}
