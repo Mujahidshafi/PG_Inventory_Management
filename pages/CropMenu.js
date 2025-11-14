@@ -176,7 +176,7 @@ export default function CropMenu() {
               <button
                 type="submit"
                 disabled={isPending || !name.trim() || !cropCode.trim()}
-                className="bg-[#5D1214] text-white px-6 py-2 rounded-[10px] font-semibold hover:bg-[#3D5147] transition-all duration-300 disabled:opacity-60"
+                className="bg-[#3D5147] text-white px-6 py-2 rounded-[10px] font-semibold hover:bg-[#3D5147] transition-all duration-300 disabled:opacity-60"
               >
                 {isPending ? "Adding…" : "Save"}
               </button>

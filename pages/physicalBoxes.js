@@ -179,7 +179,7 @@ export default function PhysicalBoxes() {
             placeholder="Search by Box ID..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="border rounded px-3 py-2 w-64"
+            className="border rounded bg-white px-3 py-2 w-64"
           />
           <p className="text-sm text-gray-500">
             Showing {filteredBoxes.length} of {boxes.length}

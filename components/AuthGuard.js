@@ -5,14 +5,13 @@ import { useEffect, useState } from 'react';
 const publicPaths = ['/login', '/forgotPassword', '/resetPassword'];
 const employeeOnlyPaths = ['/employeeMenu'];
 const adminOnlyPaths = [
-  '/adminMenu', '/accountsManager', '/deleteItems', '/addNewItems',
+  '/adminMenu', '/accountsManager',
   '/cleanStorageModify', '/cleanStorage', '/createAccount', '/createJob',
-  '/fieldRunModify', '/fieldRunStorage', '/inProcess', '/Sale',
+  '/fieldRunModify', '/fieldRunStorage', '/Sale',
   '/screeningStorage', '/screeningStorageModify', '/search', 
-  '/storageDashboard', '/qsageJob', '/sortexJob', 'mixingJob',
-  'deleteItems', '/orders', '/jobHistory', 'CropMenu',
+  '/storageDashboard', '/orders', '/jobHistory', 'CropMenu',
   '/editFRStorageSuppliers', 'reports', '/managePeople', '/physicalBoxes',
-  '/baggingJob', '/orderFulfillment', '/trash', '/insideCo2', '/baggedStorage',
+  '/trash', '/insideCo2', '/baggedStorage',
   '/rerunStorage', '/trash'
 ];
 

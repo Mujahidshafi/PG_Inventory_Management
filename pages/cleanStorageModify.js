@@ -159,7 +159,7 @@ export default function CleanStorageModify() {
   };
 
   return (
-    <Layout title={"Modify Clean Product"}>
+    <Layout title={"Clean Storage Modify"} showBack={true}>
       <form
         onSubmit={onSubmit}
         className="max-w-3xl mx-auto mt-8 p-6 rounded-2xl bg-white shadow"

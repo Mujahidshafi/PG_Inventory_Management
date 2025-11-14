@@ -209,7 +209,7 @@ function Search() {
               <input
                 type="text"
                 placeholder="Search"
-                className="w-full rounded-lg border p-3 pl-10 shadow-sm placeholder-gray-400"
+                className="w-full rounded-lg border p-3 pl-10 shadow-sm bg-white placeholder-gray-400"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -219,7 +219,7 @@ function Search() {
               <label htmlFor="sort" className="mr-2 text-gray-700 font-medium">Sort by:</label>
               <select
                 id="sort"
-                className="rounded border p-2 text-black"
+                className="rounded border p-2 bg-white text-black"
                 value={sortOrder}
                 onChange={(e) => setSortOrder(e.target.value)}
               >
