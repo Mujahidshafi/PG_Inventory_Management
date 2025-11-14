@@ -27,10 +27,10 @@ const Layout = ({ title, children, showBack, backRoute, onLogout }) => {
   }, [session, supabase]);
 
   const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (!error) router.push("/login");
-    else console.error("Logout error:", error.message);
+    await supabase.auth.signOut({ scope: "local" });
+    router.push("/login");
   };
+
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-white relative font-amiri">
@@ -44,7 +44,7 @@ const Layout = ({ title, children, showBack, backRoute, onLogout }) => {
               if (backRoute) router.push(backRoute);
               else router.back();
             }}
-            className="bg-[#3D5147] text-white px-6 py-2 rounded-lg shadow-md hover:bg-[#2c3a35]"
+            className="bg-[#3D5147] text-white px-6 py-2 rounded-lg shadow-md hover:bg-[#2c3a35] cursor-pointer"
           >
             Back
           </button>
@@ -68,7 +68,7 @@ const Layout = ({ title, children, showBack, backRoute, onLogout }) => {
             <img
               src="/settings.png"
               alt="Settings"
-              className="w-[40px] h-[40px] object-contain opacity-100 hover:opacity-50 transition"
+              className="w-[40px] h-[40px] object-contain opacity-100 hover:opacity-50 transition cursor-pointer"
             />
           </button>
         </div>
@@ -84,8 +84,11 @@ const Layout = ({ title, children, showBack, backRoute, onLogout }) => {
             Role: {role || "Unknown"}
           </p>
           <button
-            className="w-full bg-[#3D5147] hover:bg-[#2c3a35] text-white py-1 px-2 rounded-md font-[amiri]"
-            onClick={onLogout ? onLogout : handleLogout}
+            className="w-full bg-[#3D5147] hover:bg-[#2c3a35] text-white py-1 px-2 rounded-md font-[amiri] cursor-pointer"
+            onClick={() => {
+              console.log("Logout clicked");
+              (onLogout ?? handleLogout)();
+            }}
           >
             Log Out ↪
           </button>
@@ -93,7 +96,7 @@ const Layout = ({ title, children, showBack, backRoute, onLogout }) => {
       )}
 
       {/* Main Content */}
-      <div className="bg-[#D9D9D9] w-[95%] h-[80vh] rounded-[30px] shadow-lg flex flex-wrap justify-center items-center gap-4 p-6 font-[amiri] relative">
+      <div className="bg-[#D9D9D9] w-[95%] h-[80vh] rounded-[30px] shadow-lg flex flex-wrap justify-center items-center gap-4 p-6 font-[amiri] relative z-0">
         {children}
 
         {/* Copyright */}
