@@ -7,7 +7,7 @@ import React, {
   useCallback,
 } from "react";
 import { supabase } from "../lib/supabaseClient";
-import Layout from "../components/layout";
+import ScrollingLayout from "../components/scrollingLayout";
 
 /* -------------------------------- Helpers -------------------------------- */
 
@@ -1081,20 +1081,18 @@ export default function SortexCleaningPage() {
   /* ------------------------------ Render --------------------------------- */
 
   return (
-    <Layout title="Sortex Job" showBack={true}>
+    <ScrollingLayout title="Sortex Job" showBack={true}>
     <div className="mx-auto max-w-6xl p-6 bg-[#D9D9D9] flex flex-col overflow-y-auto h-full">
       <div className="mx-auto max-w-6xl p-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold">Sortex Cleaning Process</h1>
-          <span className="text-xs text-gray-500">
-            State autosaves locally while editing.
-          </span>
-        </div>
 
         {/* Header: left = form, right = summary */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="md:col-span-2 rounded-2xl border bg-white p-4 shadow-sm space-y-3">
+            <h1 className="mb-4 text-2xl font-bold">
+            Sortex Cleaning Process
+          </h1>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              
               <HeaderField label="Process ID">
                 <input
                   className="w-full rounded-lg border px-3 py-2 text-sm"
@@ -1213,7 +1211,11 @@ export default function SortexCleaningPage() {
               >
                 Complete Job
               </button>
+              
             </div>
+            <span className="text-xs text-gray-500">
+            State autosaves locally while editing.
+          </span>
 
             {statusMsg && (
               <div className="text-[10px] text-gray-600">
@@ -1431,6 +1433,6 @@ export default function SortexCleaningPage() {
         </p>
       </div>
       </div>
-      </Layout>
+      </ScrollingLayout>
   );
 }

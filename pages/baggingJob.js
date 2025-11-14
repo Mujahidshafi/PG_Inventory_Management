@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState, useRef } from "react";
 import { supabase } from "../lib/supabaseClient";
-import Layout from "../components/layout";
+import ScrollingLayout from "../components/scrollingLayout";
 
 const LS_KEY = "baggingJobDraft";
 const DEFAULT_STATE = {
@@ -549,7 +549,7 @@ export default function BaggingJob() {
   // ───────────────────────────── Render ─────────────────────────────
 
   return (
-    <Layout title="Bagging Job" showBack={true}>
+    <ScrollingLayout title="Bagging Job" showBack={true}>
     <div className="mx-auto max-w-6xl p-6 bg-[#D9D9D9] flex flex-col overflow-y-auto h-full">
 
       {/* Top Row: Employee + Summary */}
@@ -1022,6 +1022,6 @@ export default function BaggingJob() {
         </button>
       </div>
     </div>
-    </Layout>
+    </ScrollingLayout>
   );
 }

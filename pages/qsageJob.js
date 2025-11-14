@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
-import Layout from "../components/layout";
+import ScrollingLayout from "../components/scrollingLayout";
 
 /* -------------------- Helpers -------------------- */
 
@@ -1094,7 +1094,7 @@ export default function QsageCleaningPage() {
   }
 
   return (
-    <Layout title="Qsage Job" showBack={true}>
+    <ScrollingLayout title="Qsage Job" showBack={true}>
     <div className="mx-auto max-w-6xl p-6 bg-[#D9D9D9] flex flex-col overflow-y-auto h-full">
       {/* Header row: left = form, right = summary */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
@@ -1479,6 +1479,6 @@ export default function QsageCleaningPage() {
         inventory.
       </p>
     </div>
-    </Layout>
+    </ScrollingLayout>
   );
 }
