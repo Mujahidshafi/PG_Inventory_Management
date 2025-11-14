@@ -390,7 +390,7 @@ function BoxTable({
                         type="text"
                         value={b.storageLocation || ""}
                         onChange={(e) =>
-                          onUpdate(
+                          updateBox(
                             i,
                             "storageLocation",
                             e.target.value
@@ -434,7 +434,7 @@ function ScreeningsTabs({
   removeBox,
   physicalBoxesMap,
 }) {
-  const [active, setActive] = useState("Dust");
+  const [active, setActive] = useState("Air");
 
   const rows = screenings[active] || [];
 
@@ -481,6 +481,10 @@ export default function QsageCleaningPage() {
   const [state, setState] = useState(DEFAULT_STATE);
   const [loading, setLoading] = useState(true);
   const [statusMsg, setStatusMsg] = useState("");
+
+  const [customRows, setCustomRows] = useState([
+    { lot: "", product: "", weight: "" }
+  ]);
   const [showValidation, setShowValidation] = useState(false);
   const [bins, setBins] = useState([]);
   const [employees, setEmployees] = useState([]);
@@ -637,8 +641,51 @@ export default function QsageCleaningPage() {
 
   /* ---------- Inbound boxes ---------- */
 
+  // Add inbound by existing Box ID (auto-fetch details)
+  const addInboundFromBoxID = async (boxId) => {
+    if (!boxId) return alert("Enter a valid Box ID first.");
+    const tables = [
+      "clean_product_storage",
+      "rerun_product_storage",
+      "screening_storage_shed",
+    ];
+    let found = null;
+    for (const t of tables) {
+      const { data, error } = await supabase
+        .from(t)
+        .select("Box_ID, Lot_Number, Product, Amount")
+        .eq("Box_ID", boxId)
+        .maybeSingle();
+      if (data) {
+        found = { ...data, table: t };
+        break;
+      }
+    }
+    if (!found) return alert(`Box ID ${boxId} not found in storage.`);
+
+    setState(prev => ({
+      ...prev,
+      boxes: {
+        ...prev.boxes,
+        inbound: [
+          ...(prev.boxes?.inbound || []),
+          {
+            boxNumber: (prev.boxes?.inbound || []).length + 1,
+            weightLbs: found.Amount,
+            physicalBoxId: boxId,
+            usePhysicalBox: false,
+            sourceType: "BoxID",
+            lotNumber: found.Lot_Number || "",
+            product: found.Product || "",
+          },
+        ],
+      },
+    }));
+  };
+
+  // Regular inbound add (from selected source bins)
   const addInbound = () => {
-    setState((prev) => ({
+    setState(prev => ({
       ...prev,
       boxes: {
         ...prev.boxes,
@@ -650,11 +697,40 @@ export default function QsageCleaningPage() {
             weightLbs: "",
             physicalBoxId: "",
             usePhysicalBox: false,
+            sourceType: "Bin",
+            lotNumber: "",
+            product: "",
           },
         ],
       },
     }));
   };
+
+
+  // Add inbound manually (custom)
+  const addInboundCustom = (lotNumber, product, weightLbs) => {
+    if (!lotNumber || !product || !weightLbs)
+      return alert("Enter lot, product, and weight.");
+    setState(prev => ({
+      ...prev,
+      boxes: {
+        ...prev.boxes,
+        inbound: [
+          ...(prev.boxes?.inbound || []),
+          {
+            boxNumber: (prev.boxes?.inbound || []).length + 1,
+            weightLbs,
+            physicalBoxId: "",
+            usePhysicalBox: false,
+            sourceType: "Custom",
+            lotNumber,
+            product,
+          },
+        ],
+      },
+    }));
+  };
+
 
   const updateInbound = (index, field, value) => {
     setState((prev) => {
@@ -777,48 +853,44 @@ export default function QsageCleaningPage() {
   /* ---------- Derived values (using net weights) ---------- */
 
   const combinedLotString = useMemo(() => {
-    const fromBins =
-      (state.binsUsed || [])
-        .map((b) => b.lot_number)
-        .filter(Boolean)
-        .join(", ") || "";
-    const fromSources =
-      (state.boxSources || [])
-        .map((b) => b.lotNumber)
-        .filter(Boolean)
-        .join(", ") || "";
-    const fromCustom =
-      (state.boxes?.inbound || [])
-        .filter((b) => b.customLotNumber)
-        .map((b) => b.customLotNumber)
-        .join(", ") || "";
+    const binsLots =
+        (state.binsUsed || [])
+            .map(b => b.lot_number)
+            .filter(Boolean)
+            .flatMap(v => v.split(",").map(x => x.trim()));
 
-    return [fromBins, fromSources, fromCustom]
-      .filter((s) => s && s.trim() !== "")
-      .join(", ");
-  }, [state.binsUsed, state.boxSources, state.boxes?.inbound]);
+    const inboundLots =
+        (state.boxes?.inbound || [])
+            .map(b => b.lotNumber)
+            .filter(Boolean);
+
+    const all = [...binsLots, ...inboundLots];
+
+    const unique = [...new Set(all)];
+
+    return unique.join(", ");
+}, [state.binsUsed, state.boxes?.inbound]);
 
   const combinedProductString = useMemo(() => {
-    const fromBins =
-      (state.binsUsed || [])
-        .map((b) => b.product)
-        .filter(Boolean)
-        .join(", ") || "";
-    const fromSources =
-      (state.boxSources || [])
-        .map((b) => b.product)
-        .filter(Boolean)
-        .join(", ") || "";
-    const fromCustom =
-      (state.boxes?.inbound || [])
-        .filter((b) => b.customProduct)
-        .map((b) => b.customProduct)
-        .join(", ") || "";
+    const binsProds =
+        (state.binsUsed || [])
+            .map(b => b.product)
+            .filter(Boolean)
+            .flatMap(v => v.split(",").map(x => x.trim()));
 
-    return [fromBins, fromSources, fromCustom]
-      .filter((s) => s && s.trim() !== "")
-      .join(", ");
-  }, [state.binsUsed, state.boxSources, state.boxes?.inbound]);
+    const inboundProds =
+        (state.boxes?.inbound || [])
+            .map(b => b.product)
+            .filter(Boolean);
+
+    const all = [...binsProds, ...inboundProds];
+
+    const unique = [...new Set(all)];
+
+    return unique.join(", ");
+}, [state.binsUsed, state.boxes?.inbound]);
+
+
 
   const selectedSupplierName = useMemo(() => {
     if (!state.selectedSupplier) return "";
@@ -1095,7 +1167,7 @@ export default function QsageCleaningPage() {
 
   return (
     <ScrollingLayout title="Qsage Job" showBack={true}>
-    <div className="mx-auto max-w-6xl p-6 bg-[#D9D9D9] flex flex-col overflow-y-auto h-full">
+    <div className="mx-auto max-w-6xl p-6 bg-[#D9D9D9] flex flex-col  h-full">
       {/* Header row: left = form, right = summary */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         {/* Left: Process header */}
@@ -1413,6 +1485,133 @@ export default function QsageCleaningPage() {
         onRemove={removeInbound}
         physicalBoxesMap={physicalBoxesMap}
       />
+
+      {/* Additional inbound options */}
+      <div className="mt-6 space-y-6">
+        {/* Add from Box ID */}
+        <div className="rounded-2xl border bg-white p-4 shadow-sm">
+          <h3 className="text-base font-semibold mb-2">Add Inbound by Box ID</h3>
+          <p className="text-xs text-gray-500 mb-2">
+              Pull data from existing boxes (Clean / Rerun / Screenings).
+          </p>
+
+          <div className="flex gap-2">
+              <input
+                  id="boxIdInput"
+                  className="flex-1 rounded-lg border px-3 py-2 text-sm"
+                  placeholder="Enter Box ID (e.g., 1192C1)"
+              />
+              <button
+                  type="button"
+                  onClick={() => {
+                      const element = document.getElementById("boxIdInput");
+                      const v = element.value.trim();
+                      addInboundFromBoxID(v);
+                      element.value = "";       // <-- CLEAR INPUT AFTER ADD
+                  }}
+                  className="rounded-xl border px-3 py-2 text-sm hover:bg-gray-50"
+              >
+                  + Add Box
+              </button>
+          </div>
+      </div>
+
+        {/* CUSTOM INBOUND (MULTI-ROW) */}
+        <div className="rounded-2xl border bg-white p-4 shadow-sm">
+          <h3 className="text-base font-semibold mb-2">Add Custom Inbound</h3>
+          <p className="text-xs text-gray-500 mb-2">
+              Add as many custom inbound entries as needed.
+          </p>
+
+          {customRows.map((row, idx) => (
+            <div
+              key={idx}
+              className="grid grid-cols-1 sm:grid-cols-4 gap-2 items-center mb-2"
+            >
+              <input
+                className="rounded-lg border px-3 py-2 text-sm"
+                placeholder="Lot Number"
+                value={row.lot}
+                onChange={(e) =>
+                  setCustomRows((prev) => {
+                    const clone = [...prev];
+                    clone[idx].lot = e.target.value;
+                    return clone;
+                  })
+                }
+              />
+
+              <input
+                className="rounded-lg border px-3 py-2 text-sm"
+                placeholder="Product"
+                value={row.product}
+                onChange={(e) =>
+                  setCustomRows((prev) => {
+                    const clone = [...prev];
+                    clone[idx].product = e.target.value;
+                    return clone;
+                  })
+                }
+              />
+
+              <input
+                type="number"
+                step="any"
+                className="rounded-lg border px-3 py-2 text-sm"
+                placeholder="Weight (lbs)"
+                value={row.weight}
+                onChange={(e) =>
+                  setCustomRows((prev) => {
+                    const clone = [...prev];
+                    clone[idx].weight = e.target.value;
+                    return clone;
+                  })
+                }
+              />
+
+              <div className="flex gap-2 justify-end">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setCustomRows((prev) => prev.filter((_, i) => i !== idx))
+                  }
+                  className="rounded-lg border px-3 py-2 text-sm hover:bg-gray-50"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+          ))}
+
+          <button
+            type="button"
+            onClick={() =>
+              setCustomRows((prev) => [...prev, { lot: "", product: "", weight: "" }])
+            }
+            className="rounded-xl border px-3 py-2 text-sm hover:bg-gray-50 mb-2"
+          >
+            + Add Custom Row
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              customRows.forEach((row) => {
+                if (!row.lot || !row.product || !row.weight) return;
+
+                addInboundCustom(row.lot, row.product, row.weight);
+              });
+
+              setCustomRows([{ lot: "", product: "", weight: "" }]);
+            }}
+            className="rounded-xl bg-[#5D1214] px-3 py-2 text-sm font-semibold text-white hover:opacity-90"
+          >
+            Add to Inbound
+          </button>
+        </div>
+
+      </div>
+
 
       {/* Outputs */}
       <div className="mt-6 space-y-6">

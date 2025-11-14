@@ -281,7 +281,7 @@ export default function OrderFulfillmentPage() {
             availableWeight: safeNum(data.total_weight),
             removeWeight: safeNum(data.total_weight),
             isPartial: false,
-            newRemainingWeight: 0,
+            newRemainingWeight: "",
             bagType: data.bag_type,
           };
           setState((prev) => ({
@@ -317,7 +317,7 @@ export default function OrderFulfillmentPage() {
             availableWeight: safeNum(data.Amount),
             removeWeight: safeNum(data.Amount),
             isPartial: false,
-            newRemainingWeight: 0,
+            newRemainingWeight: "",
             location: data.Location || "",
           };
           setState((prev) => ({
@@ -353,7 +353,7 @@ export default function OrderFulfillmentPage() {
             availableWeight: safeNum(data.Amount),
             removeWeight: safeNum(data.Amount),
             isPartial: false,
-            newRemainingWeight: 0,
+            newRemainingWeight: "",
             location: data.Location || "",
           };
           setState((prev) => ({
@@ -389,7 +389,7 @@ export default function OrderFulfillmentPage() {
             availableWeight: safeNum(data.Amount),
             removeWeight: safeNum(data.Amount),
             isPartial: false,
-            newRemainingWeight: 0,
+            newRemainingWeight: "",
             type: data.Type,
           };
           setState((prev) => ({
@@ -413,36 +413,52 @@ export default function OrderFulfillmentPage() {
 
   // ---------- Update & remove items ----------
   const updateItem = (id, changes) => {
-    setState((prev) => ({
-      ...prev,
-      items: prev.items.map((it) => {
-        if (it.id !== id) return it;
+  setState((prev) => ({
+    ...prev,
+    items: prev.items.map((it) => {
+      if (it.id !== id) return it;
 
-        const next = { ...it, ...changes };
+      const next = { ...it, ...changes };
 
-        // Recompute removeWeight when partial + newRemainingWeight changes
-        if (changes.isPartial !== undefined || changes.newRemainingWeight !== undefined) {
-          if (!next.isPartial) {
-            next.newRemainingWeight = 0;
-            next.removeWeight = safeNum(next.availableWeight);
+      // Toggle Partial
+      if (changes.isPartial !== undefined) {
+        if (changes.isPartial) {
+          // Turning ON partial: blank the field; don't force 0 into the input
+          next.isPartial = true;
+          next.newRemainingWeight = "";      // <-- stays blank in the UI
+          next.removeWeight = 0;             // nothing removed until user types
+        } else {
+          // Turning OFF partial: clear field; full remove by default
+          next.isPartial = false;
+          next.newRemainingWeight = "";      // keep blank/disabled when not partial
+          next.removeWeight = safeNum(next.availableWeight);
+        }
+      }
+
+      // Editing New Remaining while Partial is ON
+      if (changes.newRemainingWeight !== undefined && next.isPartial) {
+        const v = changes.newRemainingWeight;
+        if (v === "" || v == null) {
+          // keep it blank in state and show 0 removed
+          next.newRemainingWeight = "";
+          next.removeWeight = 0;
+        } else {
+          const nr = Number(v);
+          if (Number.isFinite(nr)) {
+            // keep as string so the input displays exactly what user typed
+            next.newRemainingWeight = v;
+            next.removeWeight = Math.max(safeNum(next.availableWeight) - nr, 0);
           } else {
-            const nr = safeNum(
-              changes.newRemainingWeight !== undefined
-                ? changes.newRemainingWeight
-                : next.newRemainingWeight
-            );
-            next.newRemainingWeight = nr;
-            next.removeWeight = Math.max(
-              safeNum(next.availableWeight) - nr,
-              0
-            );
+            // invalid number: keep prior values
           }
         }
+      }
 
-        return next;
-      }),
-    }));
-  };
+      return next;
+    }),
+  }));
+};
+
 
   const removeItem = (id) => {
     setState((prev) => ({
@@ -536,7 +552,7 @@ export default function OrderFulfillmentPage() {
     const products = Array.from(prodSet).join(", ");
     const suppliers = Array.from(suppSet).join(", ");
 
-    try {
+     try {
       // 1) Apply removals
       for (const it of items) {
         const rw = safeNum(it.removeWeight);
@@ -625,6 +641,14 @@ export default function OrderFulfillmentPage() {
         }
       }
 
+      const toNumOrNull = (v) => (v === "" || v == null ? null : Number(v));
+
+      // Use converted items in the report
+      const itemsForReport = (state.items || []).map((row) => ({
+        ...row,
+        newRemainingWeight: toNumOrNull(row.newRemainingWeight),
+      }));
+
       // 2) Insert report
       const reportPayload = {
         process_id: state.processId.trim(),
@@ -636,7 +660,7 @@ export default function OrderFulfillmentPage() {
         suppliers: suppliers || null,
         notes: state.notes || null,
         total_weight: totalWeight,
-        items,
+        items: itemsForReport,
       };
 
       const { error: repErr } = await supabase
@@ -959,46 +983,31 @@ export default function OrderFulfillmentPage() {
                               removeWeight: e.target.value,
                             })
                           }
-                          disabled={it.isPartial && it.newRemainingWeight !== undefined}
+                          disabled={!!it.isPartial}
                         />
                       </td>
                       <td className="px-2 py-2 text-center">
                         <input
                           type="checkbox"
                           checked={!!it.isPartial}
-                          onChange={(e) =>
-                            updateItem(it.id, {
-                              isPartial: e.target.checked,
-                              // when toggling partial on, default newRemaining = avail - current remove
-                              newRemainingWeight: e.target.checked
-                                ? Math.max(
-                                    safeNum(it.availableWeight) -
-                                      safeNum(it.removeWeight),
-                                    0
-                                  )
-                                : 0,
-                            })
-                          }
+                          onChange={(e) => updateItem(it.id, { isPartial: e.target.checked })}
                         />
                       </td>
                       <td className="px-2 py-2 text-right">
                         <input
                           type="number"
-                          min="0"
-                          className="w-full rounded border px-1 py-1 text-right"
-                          value={
-                            it.isPartial
-                              ? it.newRemainingWeight ?? ""
-                              : ""
-                          }
+                          step="any"
+                          placeholder="Enter lbs…"
+                          disabled={!it.isPartial}
+                          value={it.isPartial ? (it.newRemainingWeight ?? "") : ""}
                           onChange={(e) =>
                             updateItem(it.id, {
-                              newRemainingWeight: e.target.value,
+                              newRemainingWeight: e.target.value === "" ? "" : e.target.value,
                             })
                           }
-                          disabled={!it.isPartial}
                         />
                       </td>
+
                       <td className="px-2 py-2 text-center">
                         <button
                           type="button"

@@ -642,6 +642,15 @@ export default function BaggingJob() {
                 >
                     Clear Draft
                 </button>
+
+                <button
+                  type="button"
+                  onClick={handleComplete}
+                  disabled={processing}
+                  className="rounded-xl bg-[#5D1214] px-3 py-2 text-sm font-semibold text-white hover:opacity-90"
+                >
+                  {processing ? "Saving…" : "Complete Job"}
+                </button>
                 </div>
 
 
@@ -1012,14 +1021,7 @@ export default function BaggingJob() {
         <div className="text-sm text-gray-600">
           {statusMsg || "Review inputs and outputs before completing."}
         </div>
-        <button
-          type="button"
-          onClick={handleComplete}
-          disabled={processing}
-          className="px-5 py-2 rounded-xl bg-[#5D1214] text-white text-sm font-semibold disabled:opacity-60"
-        >
-          {processing ? "Saving…" : "Complete Bagging Job"}
-        </button>
+        
       </div>
     </div>
     </ScrollingLayout>
