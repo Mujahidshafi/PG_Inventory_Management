@@ -124,15 +124,15 @@ Used by admins to run a mixing job involving two product boxes.
 
 ### Qsage Job: <br>
 Allows admins to run, record, and complete a Qsage job.
-
+<img width="1918" height="909" alt="Image" src="https://github.com/user-attachments/assets/aa4a8073-34d7-4024-a149-4c3cdafc9676" />
 
 ### Sortex Job: <br>
 Allows admins to run, record, and complete a Qsage job.
-
+<img width="1919" height="910" alt="Image" src="https://github.com/user-attachments/assets/7d4f91fa-6ce2-47fd-b2b9-6177eb5ab3ac" />
 
 ### Bagging Job: <br>
 Enables admins to manage and record bagging operations for finished products.
-
+<img width="1918" height="910" alt="Image" src="https://github.com/user-attachments/assets/9bfd9130-5443-4853-ac35-75a7f3d6ac06" />
 
 ### Storage Dashboard: <br>
 Displays navigation to all storage categories, including field run, screening, and clean storage.
@@ -148,11 +148,11 @@ Allows admins to search by lot number, location, or product, with optional filte
 
 ### Reports: <br>
 Displays all available reports for completed jobs. Admins can search by process ID, lot number, or product.
-<img width="1919" height="910" alt="Image" src="https://github.com/user-attachments/assets/5853e918-c12d-44e9-a3ca-f3cde0664277" />
+<img width="1919" height="909" alt="Image" src="https://github.com/user-attachments/assets/2416c733-0b8d-4cd5-aa73-13c565a13f5f" />
 
 ### Order Fulfillment: <br>
 Allows admins to create, update, and complete orders, as well as view all active and completed orders.
-<img width="1918" height="909" alt="Image" src="https://github.com/user-attachments/assets/673fdbea-595a-4051-962f-7a4d0821e444" />
+<img width="1919" height="910" alt="image" src="https://github.com/user-attachments/assets/f8eaf5e9-bf96-429d-8525-7920046bd8ba" />
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
