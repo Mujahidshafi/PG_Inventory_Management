@@ -50,12 +50,15 @@ const DEFAULT_STATE = {
 /* ------------------------------ Box Helpers ------------------------------ */
 
 const makeInboundRow = () => ({
+  sourceType: "Bin",
   binLocation: "",
   boxNumber: "",
   weightLbsRaw: "",
   weightLbs: 0,
   physicalBoxId: "",
   usePhysicalBox: false,
+  lotNumber: "", 
+  product: "", 
 });
 
 const makeOutputRow = () => ({
@@ -302,8 +305,6 @@ function OutputBoxTable({
                       />
                     </td>
 
-                    
-
                     {/* Remove */}
                     <td className="px-3 py-2 text-center">
                       <button
@@ -526,8 +527,52 @@ export default function SortexCleaningPage() {
   const [statusMsg, setStatusMsg] = useState("");
   const [showValidation, setShowValidation] = useState(false);
 
+  const [customRows, setCustomRows] = useState([
+    { lot: "", product: "", weight: "" },
+  ]);
+
+
   const dirtyRef = useRef(false);
   const saveTimer = useRef(null);
+
+  // Keep input_total synced with inbound (handles add/edit/remove)
+  useEffect(() => {
+    const sum = (state.inbound || []).reduce(
+      (acc, b) => acc + (Number(b?.weightLbs) || 0),
+      0
+    );
+    setState(prev => ({ ...prev, input_total: sum })); // <-- match your UI field name
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.inbound]);
+
+  // Keep header lot numbers / products deduped from inbound (handles edits/removals)
+  useEffect(() => {
+    const lots = new Set();
+    const prods = new Set();
+
+    for (const b of state.inbound || []) {
+      String(b?.lotNumber || "")
+        .split(",")
+        .map(s => s.trim())
+        .filter(Boolean)
+        .forEach(x => lots.add(x));
+
+      String(b?.product || "")
+        .split(",")
+        .map(s => s.trim())
+        .filter(Boolean)
+        .forEach(x => prods.add(x));
+    }
+
+    setState(prev => ({
+      ...prev,
+      // Use the same keys your JSX reads:
+      lotNumbers: Array.from(lots).join(", "),   // or lot_numbers
+      products: Array.from(prods).join(", "),
+    }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.inbound]);
+
 
   /* -------------------------- Load initial data -------------------------- */
 
@@ -663,56 +708,53 @@ export default function SortexCleaningPage() {
   }, [state.clean, state.reruns, state.rejects, state.trash, inputAmount]);
 
   const combinedLotNumbers = useMemo(() => {
-    const lots = new Set();
+  const lots = new Set();
 
-    (state.binsUsed || []).forEach((b) => {
-      if (Array.isArray(b.lot_numbers)) {
-        b.lot_numbers.forEach((ln) => lots.add(ln));
-      } else if (typeof b.lot_numbers === "string") {
-        b.lot_numbers
-          .split(",")
-          .map((s) => s.trim())
-          .forEach((ln) => ln && lots.add(ln));
-      }
-    });
+  // from bins
+  (state.binsUsed || []).forEach((b) => {
+    if (Array.isArray(b.lot_numbers)) {
+      b.lot_numbers.forEach((ln) => lots.add(String(ln).trim()));
+    } else if (typeof b.lot_numbers === "string") {
+      b.lot_numbers.split(",").map(s => s.trim()).forEach((ln) => ln && lots.add(ln));
+    }
+  });
 
-    (state.boxSources || []).forEach((b) => {
-      if (b.lotNumber) {
-        b.lotNumber
-          .split(",")
-          .map((s) => s.trim())
-          .forEach((ln) => ln && lots.add(ln));
-      }
-    });
+  // from inbound (this is what was missing)
+  (state.inbound || []).forEach((b) => {
+    String(b?.lotNumber || "")
+      .split(",")
+      .map(s => s.trim())
+      .filter(Boolean)
+      .forEach((ln) => lots.add(ln));
+  });
 
-    return Array.from(lots).join(", ");
-  }, [state.binsUsed, state.boxSources]);
+  return Array.from(lots).join(", ");
+}, [state.binsUsed, state.inbound]);
 
-  const combinedProducts = useMemo(() => {
-    const prods = new Set();
+const combinedProducts = useMemo(() => {
+  const prods = new Set();
 
-    (state.binsUsed || []).forEach((b) => {
-      if (Array.isArray(b.products)) {
-        b.products.forEach((p) => prods.add(p));
-      } else if (typeof b.products === "string") {
-        b.products
-          .split(",")
-          .map((s) => s.trim())
-          .forEach((p) => p && prods.add(p));
-      }
-    });
+  // from bins
+  (state.binsUsed || []).forEach((b) => {
+    if (Array.isArray(b.products)) {
+      b.products.forEach((p) => prods.add(String(p).trim()));
+    } else if (typeof b.products === "string") {
+      b.products.split(",").map(s => s.trim()).forEach((p) => p && prods.add(p));
+    }
+  });
 
-    (state.boxSources || []).forEach((b) => {
-      if (b.product) {
-        b.product
-          .split(",")
-          .map((s) => s.trim())
-          .forEach((p) => p && prods.add(p));
-      }
-    });
+  // from inbound (this is what was missing)
+  (state.inbound || []).forEach((b) => {
+    String(b?.product || "")
+      .split(",")
+      .map(s => s.trim())
+      .filter(Boolean)
+      .forEach((p) => prods.add(p));
+  });
 
-    return Array.from(prods).join(", ");
-  }, [state.binsUsed, state.boxSources]);
+  return Array.from(prods).join(", ");
+}, [state.binsUsed, state.inbound]);
+
 
   /* ----------------------------- Mutators -------------------------------- */
 
@@ -795,11 +837,79 @@ export default function SortexCleaningPage() {
   const updateInbound = (index, field, value) => {
     setState((prev) => {
       const inbound = [...(prev.inbound || [])];
-      inbound[index] = { ...(inbound[index] || {}), [field]: value };
+      const row = { ...(inbound[index] || {}) };
+
+      // Always set the changed field first
+      row[field] = value;
+
+      // 1) If the user selected/changed a BIN, stamp the source and pull lot/product
+      if (field === "binLocation") {
+        row.sourceType = "Bin";
+
+        // Find the bin in your loaded bins list
+        const selected = bins.find(
+          (b) => (b.location || b.bin_location) === value
+        );
+
+        if (selected) {
+          // Normalize lot_numbers/product (can be array or comma string)
+          const toList = (v) =>
+            Array.isArray(v)
+              ? v.map((s) => String(s).trim()).filter(Boolean)
+              : String(v || "")
+                  .split(",")
+                  .map((s) => s.trim())
+                  .filter(Boolean);
+
+          const lots = toList(selected.lot_number);
+          const prods = toList(selected.product);
+
+          // Store on the row so the report can show them
+          const merge = (existing, incomingArr) => {
+            const seen = new Set(
+              String(existing || "")
+                .split(",")
+                .map((s) => s.trim())
+                .filter(Boolean)
+            );
+            for (const x of incomingArr) seen.add(x);
+            return Array.from(seen).join(", ");
+          };
+
+          row.lotNumber = merge(row.lotNumber, lots);
+          row.product   = merge(row.product,   prods);
+
+          // (Optional) immediately reflect in header chips:
+          // updateHeaderLotsAndProducts(lots.join(", "), prods.join(", "));
+        }
+      }
+
+      // 2) Keep NET weight (`weightLbs`) consistent if PB/gross changes
+      //    Your inputAmount uses `weightLbsRaw` when present; this keeps things coherent
+      if (
+        field === "usePhysicalBox" ||
+        field === "physicalBoxId" ||
+        field === "weightLbsRaw"
+      ) {
+        const gross =
+          Number(
+            row.weightLbsRaw !== undefined ? row.weightLbsRaw : row.weightLbs
+          ) || 0;
+
+        let net = gross;
+        if (row.usePhysicalBox && row.physicalBoxId) {
+          const pb = findPhysicalBoxWeight(physicalBoxes, row.physicalBoxId) || 0;
+          net = Math.max(gross - pb, 0);
+        }
+        row.weightLbs = net;
+      }
+
+      inbound[index] = row;
       return { ...prev, inbound };
     });
     dirtyRef.current = true;
   };
+
 
   const removeInbound = (index) => {
     setState((prev) => {
@@ -809,6 +919,156 @@ export default function SortexCleaningPage() {
     });
     dirtyRef.current = true;
   };
+
+  async function addInboundFromBoxID(boxId) {
+    if (!boxId) return;
+
+    let found = null;
+
+    // Clean
+    const { data: clean } = await supabase
+      .from("clean_product_storage")
+      .select("*")
+      .eq("Box_ID", boxId);
+
+    if (clean?.length) {
+      const r = clean[0];
+      found = {
+        lotNumber: r.Lot_Number,
+        product: r.Product,
+        weightLbs: Number(r.Amount) || 0,
+        physicalBoxId: r.physical_box_id || "",
+        location: r.Location,
+        type: "Clean",
+      };
+    }
+
+    // Rerun
+    if (!found) {
+      const { data: rerun } = await supabase
+        .from("rerun_product_storage")
+        .select("*")
+        .eq("Box_ID", boxId);
+
+      if (rerun?.length) {
+        const r = rerun[0];
+        found = {
+          lotNumber: r.Lot_Number,
+          product: r.Product,
+          weightLbs: Number(r.Amount) || 0,
+          physicalBoxId: r.physical_box_id || "",
+          location: r.Location,
+          type: "Rerun",
+        };
+      }
+    }
+
+    // Screenings
+    if (!found) {
+      const { data: scr } = await supabase
+        .from("screening_storage_shed")
+        .select("*")
+        .eq("Box_ID", boxId);
+
+      if (scr?.length) {
+        const r = scr[0];
+        found = {
+          lotNumber: r.Lot_Number,
+          product: r.Product,
+          weightLbs: Number(r.Amount) || 0,
+          physicalBoxId: r.physical_box_id || "",
+          location: r.Location,
+          type: r.Type || "Screenings",
+        };
+      }
+    }
+
+    if (!found) {
+      alert("Box ID not found: " + boxId);
+      return;
+    }
+
+    const newInbound = {
+      sourceType: "BoxID",
+      binLocation: "",
+      boxNumber: (state.inbound?.length || 0) + 1,
+      physicalBoxId: found.physicalBoxId,
+      usePhysicalBox: false,
+      weightLbsRaw: found.weightLbs,
+      weightLbs: found.weightLbs,
+      lotNumber: found.lotNumber,
+      product: found.product,
+    };
+
+    setState(prev => ({
+      ...prev,
+      inbound: [...(prev.inbound || []), newInbound],
+    }));
+
+    // Mirror Qsage: merge header fields (no dupes) + increment total
+    updateHeaderLotsAndProducts(newInbound.lotNumber, newInbound.product);
+    addToInputTotal(newInbound.weightLbs);
+  }
+
+
+
+  async function addInboundCustom(lot, product, weight) {
+    const w = Number(weight) || 0;
+
+    const newInbound = {
+      sourceType: "Custom",
+      binLocation: "",
+      boxNumber: (state.inbound?.length || 0) + 1,
+      physicalBoxId: "",
+      usePhysicalBox: false,
+      weightLbs: w,
+      lotNumber: lot,
+      product: product,
+    };
+
+    setState(prev => ({
+      ...prev,
+      inbound: [...(prev.inbound || []), newInbound],
+    }));
+
+    // Mirror Qsage: merge header fields (no dupes) + increment total
+    updateHeaderLotsAndProducts(lot, product);
+    addToInputTotal(w);
+  }
+
+  // Join comma-separated tokens, trim & dedupe (order preserved)
+  function mergeTokens(existing, incoming) {
+    const toList = (s) =>
+      String(s || "")
+        .split(",")
+        .map(t => t.trim())
+        .filter(Boolean);
+
+    const seen = new Set(toList(existing));
+    for (const t of toList(incoming)) seen.add(t);
+    return Array.from(seen).join(", ");
+  }
+
+  // ⚠️ If your Sortex header fields are snake_case (lot_numbers/products) rename below accordingly.
+  function updateHeaderLotsAndProducts(lot, product) {
+    setState(prev => ({
+      ...prev,
+      lotNumbers: mergeTokens(prev.lotNumbers, lot),
+      products: mergeTokens(prev.products, product),
+    }));
+  }
+
+  // Increment input_total by a weight (safe numeric)
+  function addToInputTotal(amount) {
+    const w = Number(amount) || 0;
+    if (!w) return;
+    setState(prev => ({
+      ...prev,
+      input_total: Number(prev.input_total || 0) + w,
+    }));
+  }
+
+
 
   // Generic output mutators
   const addOutputBox = (kind) => {
@@ -1082,7 +1342,7 @@ export default function SortexCleaningPage() {
 
   return (
     <ScrollingLayout title="Sortex Job" showBack={true}>
-    <div className="mx-auto max-w-6xl p-6 bg-[#D9D9D9] flex flex-col overflow-y-auto h-full">
+    <div className="mx-auto max-w-6xl p-6 bg-[#D9D9D9] flex flex-col h-full">
       <div className="mx-auto max-w-6xl p-6 space-y-6">
 
         {/* Header: left = form, right = summary */}
@@ -1358,6 +1618,130 @@ export default function SortexCleaningPage() {
           onRemove={removeInbound}
           physicalBoxes={physicalBoxes}
         />
+
+        {/* Add inbound by Box ID */}
+        <div className="rounded-2xl border bg-white p-4 shadow-sm mt-6">
+          <h3 className="text-base font-semibold mb-2">Add Inbound by Box ID</h3>
+          <p className="text-xs text-gray-500 mb-2">
+            Pull weight / lot / product data from existing boxes (Clean / Rerun / Screenings).
+          </p>
+
+          <div className="flex gap-2">
+            <input
+              id="sortexBoxIdInput"
+              className="flex-1 rounded-lg border px-3 py-2 text-sm"
+              placeholder="Enter Box ID (e.g., 1192C1)"
+            />
+            <button
+              type="button"
+              onClick={async () => {
+                const el = document.getElementById("sortexBoxIdInput");
+                const value = el.value.trim();
+                if (!value) return;
+
+                await addInboundFromBoxID(value);
+                el.value = "";
+              }}
+              className="rounded-xl border px-3 py-2 text-sm hover:bg-gray-50"
+            >
+              + Add Box
+            </button>
+          </div>
+        </div>
+
+        {/* Custom inbound rows */}
+        <div className="rounded-2xl border bg-white p-4 shadow-sm mt-6">
+          <h3 className="text-base font-semibold mb-2">Add Custom Inbound</h3>
+          <p className="text-xs text-gray-500 mb-2">
+            Add any number of custom inbound entries.
+          </p>
+
+          {customRows.map((row, idx) => (
+            <div
+              key={idx}
+              className="grid grid-cols-1 sm:grid-cols-4 gap-2 items-center mb-2"
+            >
+              <input
+                className="rounded-lg border px-3 py-2 text-sm"
+                placeholder="Lot Number"
+                value={row.lot}
+                onChange={(e) =>
+                  setCustomRows((prev) => {
+                    const list = [...prev];
+                    list[idx].lot = e.target.value;
+                    return list;
+                  })
+                }
+              />
+
+              <input
+                className="rounded-lg border px-3 py-2 text-sm"
+                placeholder="Product"
+                value={row.product}
+                onChange={(e) =>
+                  setCustomRows((prev) => {
+                    const list = [...prev];
+                    list[idx].product = e.target.value;
+                    return list;
+                  })
+                }
+              />
+
+              <input
+                type="number"
+                step="any"
+                className="rounded-lg border px-3 py-2 text-sm"
+                placeholder="Weight (lbs)"
+                value={row.weight}
+                onChange={(e) =>
+                  setCustomRows((prev) => {
+                    const list = [...prev];
+                    list[idx].weight = e.target.value;
+                    return list;
+                  })
+                }
+              />
+
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setCustomRows((prev) => prev.filter((_, i) => i !== idx))
+                  }
+                  className="rounded-lg border px-3 py-2 text-sm hover:bg-gray-50"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+          ))}
+
+          <button
+            type="button"
+            onClick={() =>
+              setCustomRows((prev) => [...prev, { lot: "", product: "", weight: "" }])
+            }
+            className="rounded-xl border px-3 py-2 text-sm hover:bg-gray-50 mb-2"
+          >
+            + Add Custom Row
+          </button>
+
+          <button
+            type="button"
+            onClick={async () => {
+              for (const row of customRows) {
+                if (!row.lot || !row.product || !row.weight) continue;
+                await addInboundCustom(row.lot, row.product, row.weight);
+              }
+              setCustomRows([{ lot: "", product: "", weight: "" }]);
+            }}
+            className="rounded-xl bg-[#5D1214] px-3 py-2 text-sm font-semibold text-white hover:bg-opacity-90"
+          >
+            Add to Inbound
+          </button>
+        </div>
+
+
 
         {/* Outputs */}
         <div className="space-y-4">

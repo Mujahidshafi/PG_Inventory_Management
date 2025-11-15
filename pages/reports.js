@@ -648,7 +648,7 @@ function ReportModal({ report, onClose }) {
                 </tbody>
               </table>
 
-              <Section title="Inbound Boxes" data={inbound} />
+              <InboundSection inbound={inbound} />
               <Section title="Outputs" data={outputs} />
               <Section title="Totals (Detailed)" data={totals} />
             </>
@@ -823,6 +823,58 @@ function Section({ title, data }) {
           )}
         </div>
       ))}
+    </div>
+  );
+}
+
+function InboundSection({ inbound }) {
+  if (!Array.isArray(inbound) || inbound.length === 0) return null;
+
+  // Normalize every inbound row
+  const rows = inbound.map((b) => ({
+    sourceType: b.sourceType || "—",
+    binLocation: b.binLocation || b.bin_location || "—",
+    boxNumber: b.boxNumber || "—",
+    weightLbs: b.weightLbs || b.weight || "—",
+    physicalBoxId: b.physicalBoxId || "—",
+    usePhysicalBox: b.usePhysicalBox ? "Yes" : "No",
+    lotNumber: b.lotNumber || b.lot || "—",
+    product: b.product || b.products || "—",
+  }));
+
+  return (
+    <div className="mb-6">
+      <h3 className="font-semibold text-lg mb-2">Inbound Boxes</h3>
+
+      <table className="w-full text-xs border mb-2">
+        <thead className="bg-gray-50 text-center">
+          <tr>
+            <th className="p-1">Source Type</th>
+            <th className="p-1">Bin Location</th>
+            <th className="p-1">Box #</th>
+            <th className="p-1">Weight (lbs)</th>
+            <th className="p-1">Physical Box ID</th>
+            <th className="p-1">Use Physical Box</th>
+            <th className="p-1">Lot Number</th>
+            <th className="p-1">Product</th>
+          </tr>
+        </thead>
+
+        <tbody className="text-center">
+          {rows.map((r, i) => (
+            <tr key={i} className="border-t">
+              <td className="p-1 capitalize">{r.sourceType}</td>
+              <td className="p-1">{r.binLocation}</td>
+              <td className="p-1">{r.boxNumber}</td>
+              <td className="p-1">{r.weightLbs}</td>
+              <td className="p-1">{r.physicalBoxId}</td>
+              <td className="p-1">{r.usePhysicalBox}</td>
+              <td className="p-1">{r.lotNumber}</td>
+              <td className="p-1">{r.product}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }

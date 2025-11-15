@@ -48,9 +48,11 @@ Pleasant Grove Farms currently uses spreadsheets to manage over 3,000 acres of c
 ## Technologies
 * [![React][React.js]][React-url]
 * [![Next][Next.js]][Next-url]
-* [![PostgreSQL][PostgreSQL.js]][PostgreSQL-url]
-* [![Vercel][Vercel.js]][Vercel-url]
 * [![Tailwind][Tailwind.js]][Tailwind-url]
+* [![PostgreSQL][PostgreSQL.js]][PostgreSQL-url]
+* [![Supabase][Supabase.js]][Supabase-url]
+* [![Jest][Jest.js]][Jest-url]
+* [![Vercel][Vercel.js]][Vercel-url]
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -84,7 +86,7 @@ Here are some visuals from our product:<br>
     <li><a href="#clean-storage-">Clean Storage</a></li>
     <li><a href="#search-">Search</a></li>
     <li><a href="#reports-">Reports</a></li>
-    <li><a href="#orders-">Orders</a></li>
+    <li><a href="#order-fulfillment-">Order Fulfillment</a></li>
   </ol>
 </details>
 
@@ -94,48 +96,63 @@ This is the landing page where users can log in using their email and password.
 
 ### Employee Menu: <br>
 The employee menu provides access to limited functionality, including the New Field Run, Transfer, Jobs, and Update Location pages.
+<img width="1919" height="911" alt="Image" src="https://github.com/user-attachments/assets/5c5b3270-4a69-4911-9a64-805ac16fe559" />
 
 ### Admin Menu: <br>
 The admin menu includes all employee features plus administrative tools such as adding and deleting locations, products, sale items, and users.
+<img width="1919" height="911" alt="Image" src="https://github.com/user-attachments/assets/aca9fcbd-1c96-497f-808d-16a8e76731bb" />
 
 ### New Field Run: <br>
 This page allows users to record a new field run — an incoming load of product from the fields.
+<img width="1918" height="910" alt="Image" src="https://github.com/user-attachments/assets/df23224a-eed9-48dc-bc42-80ab7686cdc1" />
 
 ### Transfer: <br>
 Used to transfer a specified weight of product between storage silos.
+<img width="1918" height="910" alt="Image" src="https://github.com/user-attachments/assets/7eb3ac74-bab4-4c8b-8a30-4accd46f1e76" />
 
 ### Add/Delete Items: <br>
 Provides admins with tools to add or remove storage locations, customers, or other configurable items.
+<img width="1918" height="910" alt="Image" src="https://github.com/user-attachments/assets/9282b3c9-6591-4c99-84a9-d3fe8b04a91c" />
 
 ### Create Job: <br>
 Enables admins to create and schedule new jobs for later execution.
+<img width="1919" height="910" alt="Image" src="https://github.com/user-attachments/assets/43001e4c-d76d-46b1-9447-be5215d1fb4b" />
 
 ### Mixing Job: <br>
 Used by admins to run a mixing job involving two product boxes.
+<img width="1917" height="910" alt="Image" src="https://github.com/user-attachments/assets/2fc3b8e1-3266-43ff-b65b-04d485a9d67b" />
 
 ### Qsage Job: <br>
 Allows admins to run, record, and complete a Qsage job.
+<img width="1918" height="909" alt="Image" src="https://github.com/user-attachments/assets/aa4a8073-34d7-4024-a149-4c3cdafc9676" />
 
 ### Sortex Job: <br>
 Allows admins to run, record, and complete a Qsage job.
+<img width="1919" height="910" alt="Image" src="https://github.com/user-attachments/assets/7d4f91fa-6ce2-47fd-b2b9-6177eb5ab3ac" />
 
 ### Bagging Job: <br>
 Enables admins to manage and record bagging operations for finished products.
+<img width="1918" height="910" alt="Image" src="https://github.com/user-attachments/assets/9bfd9130-5443-4853-ac35-75a7f3d6ac06" />
 
 ### Storage Dashboard: <br>
 Displays navigation to all storage categories, including field run, screening, and clean storage.
+<img width="1918" height="909" alt="Image" src="https://github.com/user-attachments/assets/df0f0263-6630-4172-a363-dd488f430a1c" />
 
 ### Clean Storage: <br>
 This is a storage page example, it lists clean storage items organized by product, with search filters for lot numbers.
+<img width="1917" height="910" alt="Image" src="https://github.com/user-attachments/assets/5c0ca768-6527-42fd-beed-4ea2b662db33" />
 
 ### Search: <br>
 Allows admins to search by lot number, location, or product, with optional filters for year and product type.
+<img width="1918" height="909" alt="Image" src="https://github.com/user-attachments/assets/7441900b-bde0-4882-9d54-60c3aa1f99a3" />
 
 ### Reports: <br>
 Displays all available reports for completed jobs. Admins can search by process ID, lot number, or product.
+<img width="1919" height="909" alt="Image" src="https://github.com/user-attachments/assets/2416c733-0b8d-4cd5-aa73-13c565a13f5f" />
 
-### Orders: <br>
+### Order Fulfillment: <br>
 Allows admins to create, update, and complete orders, as well as view all active and completed orders.
+<img width="1919" height="910" alt="image" src="https://github.com/user-attachments/assets/f8eaf5e9-bf96-429d-8525-7920046bd8ba" />
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -178,7 +195,11 @@ How to deploy the app.
 [React-url]: https://reactjs.org/
 [PostgreSQL.js]: https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white
 [PostgreSQL-url]: https://www.postgresql.org/
+[Supabase.js]: https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white
+[Supabase-url]: https://supabase.com/
 [Vercel.js]: https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white
 [Vercel-url]: https://vercel.com/
 [Tailwind.js]: https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white
 [Tailwind-url]: https://tailwindcss.com/
+[Jest.js]: https://img.shields.io/badge/Jest-C21325?style=for-the-badge&logo=jest&logoColor=white
+[Jest-url]: https://jestjs.io/
