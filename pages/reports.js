@@ -166,12 +166,13 @@ export default function ReportsPage() {
           .lte("created_at", `${deleteYear}-12-31`),
       ]);
 
-        if (qDelete.error || sDelete.error)
-        alert("Error deleting by year: " + (qDelete.error?.message || sDelete.error?.message));
-        else {
-        alert(`Reports from ${deleteYear} deleted.`);
-        fetchReports();
-        }
+        const firstError = qDelete.error || sDelete.error || mDelete.error;
+        if (firstError) {
+          alert("Error deleting by year: " + firstError.message);
+        } else {
+          alert(`Reports from ${deleteYear} deleted.`);
+          fetchReports();
+        }
     } else {
       alert(`Reports from ${deleteYear} deleted.`);
       fetchReports();
@@ -357,7 +358,7 @@ export default function ReportsPage() {
    MODAL: STRUCTURED VIEW FOR QSAGE REPORT
 ================================================================= */
 
-function ReportModal({ report, onClose }) {
+export function ReportModal({ report, onClose }) {
   const inbound = safeParse(report.inbound_boxes);
   const outputs = safeParse(report.outputs);
   const totals = safeParse(report.totals);
