@@ -24,6 +24,46 @@ function NewFieldRun() {
   const [binData, setBinData] = useState(null);
   const [status, setStatus] = useState("");
 
+  // NEW: dynamic locations from DB
+  const [locations, setLocations] = useState([]);
+  const [loadingLocs, setLoadingLocs] = useState(true);
+
+  // --- Fetch all distinct locations from field_run_storage_test ---
+  useEffect(() => {
+    const fetchLocations = async () => {
+      setLoadingLocs(true);
+      const { data, error } = await supabase
+        .from("field_run_storage_test")
+        .select("location"); // only need location column
+
+      if (error) {
+        console.error("Error loading locations:", error);
+        setLocations([]);
+        setLoadingLocs(false);
+        return;
+      }
+
+      // Unique, non-empty, trimmed
+      const uniq = Array.from(
+        new Set((data || []).map(r => (r?.location || "").trim()).filter(Boolean))
+      );
+
+      // Keep preferred order first, then any not in list A→Z
+      const inOrder = uniq
+        .filter(l => siloOrder.includes(l))
+        .sort((a, b) => siloOrder.indexOf(a) - siloOrder.indexOf(b));
+
+      const notInOrder = uniq
+        .filter(l => !siloOrder.includes(l))
+        .sort((a, b) => a.localeCompare(b));
+
+      setLocations([...inOrder, ...notInOrder]);
+      setLoadingLocs(false);
+    };
+
+    fetchLocations();
+  }, []); // run once
+
   // --- Fetch single bin data when location changes ---
   const fetchSelectedBin = async (location) => {
     if (!location) {
@@ -118,7 +158,7 @@ function NewFieldRun() {
       // Refresh that bin’s data
       await fetchSelectedBin(Location);
 
-      // Reset form
+      // Reset form (keep selected location)
       setFields({
         fieldLotNumber: "",
         productDescription: "",
@@ -138,7 +178,7 @@ function NewFieldRun() {
       <div className="w-full px-8 flex flex-col items-center">
         {/* --- Input Form --- */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-5xl mb-10">
-          {/* Location Dropdown */}
+          {/* Location Dropdown (now dynamic) */}
           <div>
             <label htmlFor="location" className="block text-center -mb-5">
               Select Location
@@ -149,13 +189,24 @@ function NewFieldRun() {
               className="w-full px-3 py-2 border border-gray-400 rounded-md shadow focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white"
               value={fields.Location}
               onChange={(e) => handleChange("Location", e.target.value)}
+              disabled={loadingLocs}
             >
-              <option value="">Select a bin...</option>
-              {siloOrder.map((s) => (
-                <option key={s} value={s}>
-                  {s}
+              <option value="">
+                {loadingLocs ? "Loading bins…" : "Select a bin..."}
+              </option>
+
+              {locations.map((loc) => (
+                <option key={loc} value={loc}>
+                  {loc}
                 </option>
               ))}
+
+              {/* If a previously chosen location isn't in current results, still show it */}
+              {!loadingLocs &&
+                fields.Location &&
+                !locations.includes(fields.Location) && (
+                  <option value={fields.Location}>{fields.Location}</option>
+                )}
             </select>
           </div>
 
@@ -241,7 +292,9 @@ function NewFieldRun() {
                       <td className="p-2">{binData.weight}</td>
                       <td className="p-2">{binData.moisture ?? "—"}</td>
                       <td className="p-2">
-                        {new Date(binData.date_stored).toLocaleString()}
+                        {binData.date_stored
+                          ? new Date(binData.date_stored).toLocaleString()
+                          : "—"}
                       </td>
                     </tr>
                   </tbody>
