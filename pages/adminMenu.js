@@ -47,7 +47,6 @@ function AdminMenu() {
         <Link href="/mixingJob" className={buttonStyle}>Mix</Link>
         <Link href="/baggingJob" className={buttonStyle}>Bagging Job</Link>
         <Link href="/orderFulfillment" className={buttonStyle}>Order Fulfillment</Link>
-        <Link href="/orders" className={buttonStyle}>Orders</Link>
         <Link href="/reports" className={buttonStyle}>Process Reports</Link>
         <Link href="/createJob" className={buttonStyle}>Create Job</Link>
         <Link href="/jobs" className={buttonStyle}>Jobs</Link>
