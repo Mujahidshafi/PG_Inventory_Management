@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { supabase } from "../lib/supabaseClient";
-import Layout from "../components/layout";
+import ScrollingLayout from "../components/scrollingLayout";
 
 const LS_KEY = "orderFulfillmentDraft_v2";
 
@@ -696,11 +696,8 @@ export default function OrderFulfillmentPage() {
 
   // ---------- UI ----------
   return (
-    <Layout title="Order Fulfillment" showBack={true}>
-    <div className="flex justify-center items-start p-6 bg-[#D9D9D9] h-full">
-      
-      {/* Scrollable content area stays within the layout */}
-      <div className="w-full max-w-6xl flex flex-col h-[70vh] overflow-y-auto p-4">
+    <ScrollingLayout title="Order Fulfillment" showBack={true}>
+      <div className="mx-auto max-w-6xl p-6 bg-[#D9D9D9] flex flex-col  h-full">  
 
         {/* Top Grid */}
         <div className="grid grid-cols-1 md:grid-cols-[2fr_1.4fr] gap-6 mb-6">
@@ -1039,7 +1036,6 @@ export default function OrderFulfillmentPage() {
           applied to inventory when you click <strong>Complete Fulfillment</strong>.
         </p>
       </div>
-    </div>
-    </Layout>
+    </ScrollingLayout>
   );
 }
