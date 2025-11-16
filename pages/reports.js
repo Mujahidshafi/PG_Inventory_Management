@@ -24,12 +24,13 @@ export default function ReportsPage() {
     setLoading(true);
 
     // --- Fetch Qsage, Sortex, and Mixing reports together ---
-    const [qsageData, sortexData, mixingData, baggingData, orderData] = await Promise.all([
+    const [qsageData, sortexData, mixingData, baggingData, orderData, spiralData,] = await Promise.all([
       supabase.from("qsage_reports").select("*"),
       supabase.from("sortex_reports").select("*"),
       supabase.from("mixing_reports").select("*"),
       supabase.from("bagging_reports").select("*"),
       supabase.from("order_fulfillment_reports").select("*"),
+      supabase.from("spiral_reports").select("*"),
 
     ]);
 
@@ -37,6 +38,8 @@ export default function ReportsPage() {
     if (sortexData.error) console.error("Sortex fetch error:", sortexData.error.message);
     if (mixingData.error) console.error("Mixing fetch error:", mixingData.error.message);
     if (baggingData.error) console.error("Bagging fetch error:", baggingData.error.message);
+    if (orderData.error)   console.error("Order fetch error:", orderData.error.message);
+    if (spiralData.error)  console.error("Spiral fetch error:", spiralData.error.message);
 
     // Combine and sort newest first
     const combined = [
@@ -45,6 +48,7 @@ export default function ReportsPage() {
       ...(mixingData.data || []),
       ...(baggingData.data || []),
       ...(orderData.data || []),
+      ...(spiralData.data  || []),
     ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
     // Filter by process type if needed
@@ -80,54 +84,41 @@ export default function ReportsPage() {
   });
 
   // --- Bulk delete selected reports ---
-  async function handleDeleteSelected() {
-  if (selectedReports.length === 0) return;
-  if (!confirm(`Delete ${selectedReports.length} selected report(s)?`)) return;
-  setDeleting(true);
+    async function handleDeleteSelected() {
+    if (selectedReports.length === 0) return;
+    if (!confirm(`Delete ${selectedReports.length} selected report(s)?`)) return;
+    setDeleting(true);
 
-  // Separate selected keys by process type
-  const qsageIds = selectedReports
-    .filter((k) => k.startsWith("Qsage-"))
-    .map((k) => Number(k.split("-")[1]));
-  const sortexIds = selectedReports
-    .filter((k) => k.startsWith("Sortex-"))
-    .map((k) => Number(k.split("-")[1]));
-  const mixingIds = selectedReports
-    .filter((k) => k.startsWith("Mixing-"))
-    .map((k) => Number(k.split("-")[1]));
-  const orderIds = selectedReports
-    .filter((k) => k.startsWith("Order Fulfillment-"))
-    .map((k) => Number(k.split("-")[1]));
+    // Separate selected keys by process type
+    const qsageIds = selectedReports.filter(k => k.startsWith("Qsage-")) .map(k => Number(k.split("-")[1]));
+    const sortexIds = selectedReports.filter(k => k.startsWith("Sortex-")).map(k => Number(k.split("-")[1]));
+    const mixingIds = selectedReports.filter(k => k.startsWith("Mixing-")).map(k => Number(k.split("-")[1]));
+    const orderIds  = selectedReports.filter(k => k.startsWith("Order Fulfillment-")).map(k => Number(k.split("-")[1]));
+    const spiralIds = selectedReports.filter(k => k.startsWith("Spiral-")).map(k => Number(k.split("-")[1]));
 
-  // Delete from each table
-  const [qDel, sDel, mDel, oDel] = await Promise.all([
-    qsageIds.length
-      ? supabase.from("qsage_reports").delete().in("id", qsageIds)
-      : { error: null },
-    sortexIds.length
-      ? supabase.from("sortex_reports").delete().in("id", sortexIds)
-      : { error: null },
-    mixingIds.length
-      ? supabase.from("mixing_reports").delete().in("id", mixingIds)
-      : { error: null },
-    orderIds.length ? supabase.from("order_fulfillment_reports").delete().in("id", orderIds) : { error: null },
-  ]);
+    // Delete from each table
+    const [qDel, sDel, mDel, oDel, spDel] = await Promise.all([
+      qsageIds.length  ? supabase.from("qsage_reports").delete().in("id", qsageIds)   : { error: null },
+      sortexIds.length ? supabase.from("sortex_reports").delete().in("id", sortexIds) : { error: null },
+      mixingIds.length ? supabase.from("mixing_reports").delete().in("id", mixingIds) : { error: null },
+      orderIds.length  ? supabase.from("order_fulfillment_reports").delete().in("id", orderIds) : { error: null },
+      spiralIds.length ? supabase.from("spiral_reports").delete().in("id", spiralIds) : { error: null },
+    ]);
 
-  if (qDel.error || sDel.error || mDel.error || oDel.error) {
-    alert(
-      "Error deleting reports: " +
-        (qDel.error?.message || sDel.error?.message || mDel.error?.message)
-    );
-  } else {
-    alert("Reports deleted successfully!");
-    setReports((prev) =>
-      prev.filter((r) => !selectedReports.includes(`${r.process_type}-${r.id}`))
-    );
-    setSelectedReports([]);
+    if (qDel.error || sDel.error || mDel.error || oDel.error || spDel.error) {
+      alert(
+        "Error deleting reports: " +
+        (qDel.error?.message || sDel.error?.message || mDel.error?.message || oDel.error?.message || spDel.error?.message)
+      );
+    } else {
+      alert("Reports deleted successfully!");
+      setReports(prev => prev.filter(r => !selectedReports.includes(`${r.process_type}-${r.id}`)));
+      setSelectedReports([]);
+    }
+
+    setDeleting(false);
   }
 
-  setDeleting(false);
-}
 
   // --- Delete by year ---
   async function handleDeleteByYear() {
@@ -161,6 +152,21 @@ export default function ReportsPage() {
           .lte("created_at", `${deleteYear}-12-31`),
         supabase
           .from("mixing_reports")
+          .delete()
+          .gte("created_at", `${deleteYear}-01-01`)
+          .lte("created_at", `${deleteYear}-12-31`),
+        supabase
+          .from("bagging_reports")
+          .delete()
+          .gte("created_at", `${deleteYear}-01-01`)
+          .lte("created_at", `${deleteYear}-12-31`),
+          supabase
+          .from("order_fulfillment_reports")
+          .delete()
+          .gte("created_at", `${deleteYear}-01-01`)
+          .lte("created_at", `${deleteYear}-12-31`),
+          supabase
+          .from("spiral_reports")
           .delete()
           .gte("created_at", `${deleteYear}-01-01`)
           .lte("created_at", `${deleteYear}-12-31`),
@@ -225,10 +231,12 @@ export default function ReportsPage() {
             >
             <option value="All">All Processes</option>
             <option value="Qsage">Qsage</option>
+            <option value="Spiral">Spiral</option>
             <option value="Sortex">Sortex</option>
             <option value="Mixing">Mixing</option>
             <option value="Bagging">Bagging</option>
             <option value="Order Fulfillment">Order Fulfillment</option>
+            
           </select>
 
           <button
@@ -495,24 +503,31 @@ export function ReportModal({ report, onClose }) {
                     <th className="p-2">Bags</th>
                     <th className="p-2">Weight (lbs)</th>
                     <th className="p-2">Location</th>
+                    <th className="p-2">Created</th> {/* NEW */}
                   </tr>
                 </thead>
                 <tbody className="text-center">
-                  {report.outputs.map((p, i) => (
-                    <tr key={i} className="border-t">
-                      <td className="p-2">{p.pallet_id}</td>
-                      <td className="p-2">{p.product}</td>
-                      <td className="p-2">{p.bag_type}</td>
-                      <td className="p-2">{p.num_bags}</td>
-                      <td className="p-2">{p.total_weight}</td>
-                      <td className="p-2">{p.storage_location}</td>
-                    </tr>
-                  ))}
+                  {report.outputs.map((p, i) => {
+                    const created =
+                      p.created_at || p.createdAt || p.date || p.timestamp || p.Date_Created || null;
+                    return (
+                      <tr key={i} className="border-t">
+                        <td className="p-2">{p.pallet_id}</td>
+                        <td className="p-2">{p.product}</td>
+                        <td className="p-2">{p.bag_type}</td>
+                        <td className="p-2">{p.num_bags}</td>
+                        <td className="p-2">{p.total_weight}</td>
+                        <td className="p-2">{p.storage_location}</td>
+                        <td className="p-2">{created ? new Date(created).toLocaleString() : "—"}</td> {/* NEW */}
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             ) : (
               <p className="text-sm italic text-gray-500">No pallet data recorded.</p>
             )}
+
           </>
         ) : null}
 
@@ -533,31 +548,55 @@ export function ReportModal({ report, onClose }) {
                     <th className="p-2">Removed (lbs)</th>
                     <th className="p-2">Partial?</th>
                     <th className="p-2">Remaining (lbs)</th>
+                    <th className="p-2">Scanned</th>
                   </tr>
                 </thead>
                 <tbody className="text-center">
-                  {report.items.map((item, i) => (
-                    <tr key={i} className="border-t">
-                      <td className="p-2 capitalize">{item.sourceType || "—"}</td>
-                      <td className="p-2">{item.identifier || "—"}</td>
-                      <td className="p-2">{item.lotNumbers || "—"}</td>
-                      <td className="p-2">{item.products || "—"}</td>
-                      <td className="p-2">{item.supplier || "—"}</td>
-                      <td className="p-2">{item.availableWeight ?? 0}</td>
-                      <td className="p-2 font-semibold text-blue-700">
-                        {item.removeWeight ?? 0}
-                      </td>
-                      <td className="p-2">{item.isPartial ? "Yes" : "No"}</td>
-                      <td className="p-2">{item.newRemainingWeight ?? 0}</td>
-                    </tr>
-                  ))}
+                  {report.items.map((item, i) => {
+                    // pick the first available timestamp field
+                    const rawScanned =
+                      item.scannedAt ??
+                      item.scanned_at ??
+                      item.added_at ??
+                      item.timestamp ??
+                      item.date ??
+                      null;
+
+                    // safely parse date
+                    const scannedDate = rawScanned ? new Date(rawScanned) : null;
+                    const scannedStr =
+                      scannedDate && !Number.isNaN(scannedDate.getTime())
+                        ? scannedDate.toLocaleString()
+                        : "—";
+
+                    // safe number formatting
+                    const fmtNum = (v) =>
+                      v === "" || v == null ? "0" : Number(v).toLocaleString();
+
+                    return (
+                      <tr key={i} className="border-t">
+                        <td className="p-2 capitalize">{item.sourceType || "—"}</td>
+                        <td className="p-2">{item.identifier || "—"}</td>
+                        <td className="p-2">{item.lotNumbers || "—"}</td>
+                        <td className="p-2">{item.products || "—"}</td>
+                        <td className="p-2">{item.supplier || "—"}</td>
+                        <td className="p-2">{fmtNum(item.availableWeight)}</td>
+                        <td className="p-2 font-semibold text-blue-700">
+                          {fmtNum(item.removeWeight)}
+                        </td>
+                        <td className="p-2">{item.isPartial ? "Yes" : "No"}</td>
+                        <td className="p-2">{fmtNum(item.newRemainingWeight)}</td>
+                        <td className="p-2">{scannedStr}</td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             ) : (
-              <p className="text-sm italic text-gray-500">
-                No fulfillment items recorded.
-              </p>
+              <p className="text-sm italic text-gray-500">No fulfillment items recorded.</p>
             )}
+
+
             <div className="text-right font-semibold text-base mt-2">
               Total Weight Fulfilled:{" "}
               <span className="text-green-700">
@@ -624,30 +663,35 @@ export function ReportModal({ report, onClose }) {
             <>
               {/* --- Default Qsage/Sortex Layout --- */}
               <h3 className="font-semibold text-lg mb-2">Totals</h3>
-              <table className="w-full text-sm border mb-6">
-                <thead className="bg-gray-50 text-center">
-                  <tr>
-                    <th className="p-2">Input</th>
-                    <th className="p-2">Output</th>
-                    <th className="p-2">Clean</th>
-                    <th className="p-2">Rerun</th>
-                    <th className="p-2">Screenings</th>
-                    <th className="p-2">Trash</th>
-                    <th className="p-2">Balance</th>
-                  </tr>
-                </thead>
-                <tbody className="text-center">
-                  <tr>
-                    <td className="p-2">{report.input_total}</td>
-                    <td className="p-2">{report.output_total}</td>
-                    <td className="p-2">{report.clean_total}</td>
-                    <td className="p-2">{report.rerun_total}</td>
-                    <td className="p-2">{report.screenings_total}</td>
-                    <td className="p-2">{report.trash_total}</td>
-                    <td className="p-2">{report.balance}</td>
-                  </tr>
-                </tbody>
-              </table>
+              {(() => {
+                // show only columns that exist on the report
+                const cols = [
+                  ["Input",        "input_total"],
+                  ["Output",       "output_total"],
+                  ["Clean",        "clean_total"],
+                  ["Rerun",        "rerun_total"],      // Spiral likely misses this
+                  ["Screenings",   "screenings_total"],
+                  ["Trash",        "trash_total"],      // Spiral likely misses this
+                  ["Balance",      "balance"],
+                ].filter(([, key]) => report[key] !== undefined);
+
+                return (
+                  <table className="w-full text-sm border mb-6">
+                    <thead className="bg-gray-50 text-center">
+                      <tr>{cols.map(([label]) => <th key={label} className="p-2">{label}</th>)}</tr>
+                    </thead>
+                    <tbody className="text-center">
+                      <tr>
+                        {cols.map(([, key]) => (
+                          <td key={key} className="p-2">
+                            {String(report[key] ?? "—")}
+                          </td>
+                        ))}
+                      </tr>
+                    </tbody>
+                  </table>
+                );
+              })()}
 
               <InboundSection inbound={inbound} />
               <Section title="Outputs" data={outputs} />
@@ -705,14 +749,15 @@ function Section({ title, data }) {
   }
 
   // --- Enhanced handling for Outputs (Clean, Rerun, Screenings, Trash) ---
-  if (title === "Outputs" && data) {
-    const clean = data.clean || [];
-    const reruns = data.reruns || [];
-    const screenings = data.screenings || {};
-    const trash = data.trash || [];
+    if (title === "Outputs" && data) {
+    const clean      = Array.isArray(data.clean)      ? data.clean      : (data.clean ? [data.clean] : []);
+    const reruns     = Array.isArray(data.reruns)     ? data.reruns     : (data.reruns ? [data.reruns] : []);
+    const screenings = data.screenings ?? [];
 
-    // Helper to render each box table
-    const renderBoxTable = (rows, label) => (
+    const renderBoxTable = (rows, label) => {
+    const formatDate = (d) => (d ? new Date(d).toLocaleString() : "—");
+
+    return (
       <div className="mb-4">
         {label && <h4 className="font-medium mb-1 text-gray-700">{label}</h4>}
         <table className="w-full text-xs border mb-2">
@@ -723,34 +768,36 @@ function Section({ title, data }) {
               <th className="p-1">Box #</th>
               <th className="p-1">Weight (lbs)</th>
               <th className="p-1">Location</th>
+              <th className="p-1">Date</th> {/* NEW */}
             </tr>
           </thead>
           <tbody className="text-center">
             {rows.map((b, i) => {
               const boxId =
                 b.Box_ID || b.boxId || b.box_id || b.BoxId || "—";
-              const physicalId =
-                b.physicalBoxId || b.physical_box_id || "—";
-              const dateValue =
+              const physicalId = b.physicalBoxId || b.physical_box_id || "—";
+              const loc =
+                b.storageLocation ||
+                b.location ||
+                b.Location ||
+                b.newLocation ||
+                b.storage_location ||
+                "—";
+              const dt =
                 b.date ||
                 b.created_at ||
                 b.timestamp ||
                 b.Date_Stored ||
-                null;
+                null; // supports Qsage/Sortex/Spiral variants
+
               return (
                 <tr key={i} className="border-t">
                   <td className="p-1">{boxId}</td>
                   <td className="p-1">{physicalId}</td>
                   <td className="p-1">{b.boxNumber ?? "—"}</td>
                   <td className="p-1">{b.weightLbs ?? b.weight ?? "—"}</td>
-                  <td className="p-1">
-                    {b.storageLocation ||
-                    b.location ||
-                    b.Location ||
-                    b.newLocation ||
-                    b.storage_location ||
-                    "—"}
-                  </td>
+                  <td className="p-1">{loc}</td>
+                  <td className="p-1">{formatDate(dt)}</td> {/* NEW */}
                 </tr>
               );
             })}
@@ -758,27 +805,31 @@ function Section({ title, data }) {
         </table>
       </div>
     );
+  };
+
 
     return (
       <div className="mb-6">
         <h3 className="font-semibold text-lg mb-2">Outputs</h3>
 
-        {Array.isArray(clean) && clean.length > 0 && renderBoxTable(clean, "Clean")}
-        {Array.isArray(reruns) && reruns.length > 0 && renderBoxTable(reruns, "Rerun")}
+        {clean.length  > 0 && renderBoxTable(clean,  "Clean")}
+        {reruns.length > 0 && renderBoxTable(reruns, "Rerun")}
 
-        {Object.keys(screenings).length > 0 && (
-          <div className="mb-4">
-            <h4 className="font-medium mb-1 text-gray-700">Screenings</h4>
-            {Object.entries(screenings).map(([type, boxes]) => (
-              <div key={type} className="mb-3">
-                <h5 className="font-medium text-gray-600 capitalize">{type}</h5>
-                {renderBoxTable(boxes, "")}
+        {/* Screenings can be an array (Spiral) or an object-of-arrays (other UIs) */}
+        {Array.isArray(screenings)
+          ? (screenings.length > 0 && renderBoxTable(screenings, "Screenings"))
+          : (Object.keys(screenings).length > 0 && (
+              <div className="mb-4">
+                <h4 className="font-medium mb-1 text-gray-700">Screenings</h4>
+                {Object.entries(screenings).map(([type, boxes]) => (
+                  <div key={type} className="mb-3">
+                    <h5 className="font-medium text-gray-600 capitalize">{type}</h5>
+                    {renderBoxTable(boxes, "")}
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        )}
-
-        {Array.isArray(trash) && trash.length > 0 && renderBoxTable(trash, "Trash")}
+            ))
+        }
       </div>
     );
   }

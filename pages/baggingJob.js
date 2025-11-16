@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState, useRef } from "react";
 import { supabase } from "../lib/supabaseClient";
 import ScrollingLayout from "../components/scrollingLayout";
+import { printBoxLabel } from "../lib/labelPrint";
 
 const LS_KEY = "baggingJobDraft";
 const DEFAULT_STATE = {
@@ -17,6 +18,17 @@ const DEFAULT_STATE = {
 const safeNum = (v) => (v === "" || v === null || isNaN(Number(v)) ? 0 : Number(v));
 const uniq = (arr) => Array.from(new Set(arr.filter(Boolean)));
 const todayISO = () => new Date().toISOString().slice(0, 10);
+
+const getPBMap = (arr=[]) => new Map(arr.map(p => [String(p.physical_box_id).trim(), Number(p.weight) || 0]));
+const findPBWeight = (map, id) => (id ? (map.get(String(id).trim()) || 0) : 0);
+
+const computeNet = (gross, usePB, pbId) => {
+  const g = safeNum(gross);
+  if (!usePB || !pbId) return g;
+  const pbw = findPBWeight(pbMap, pbId);
+  return Math.max(g - pbw, 0);
+};
+
 
 // Auto Pallet ID generator (simple + unique enough for now)
 const makePalletId = (index) => {
@@ -49,6 +61,25 @@ export default function BaggingJob() {
   const [processing, setProcessing] = useState(false);
 
   const [state, setState] = useState(DEFAULT_STATE);
+
+  const [physicalBoxes, setPhysicalBoxes] = useState([]);
+
+  // Build a quick lookup map: PB_ID -> weight
+  const pbMap = useMemo(
+    () => new Map(physicalBoxes.map(p => [String(p.physical_box_id).trim(), Number(p.weight) || 0])),
+    [physicalBoxes]
+  );
+
+  // helper to find a PB weight
+  const findPBWeight = (id) => (id ? (pbMap.get(String(id).trim()) || 0) : 0);
+
+  // compute net from gross - PB weight (if enabled)
+  const computeNet = (gross, usePB, pbId) => {
+    const g = safeNum(gross);
+    if (!usePB || !pbId) return g;
+    const pbw = findPBWeight(pbId);
+    return Math.max(g - pbw, 0);
+  };
 
     useEffect(() => {
         try {
@@ -111,7 +142,7 @@ export default function BaggingJob() {
   useEffect(() => {
     const load = async () => {
       try {
-        const [{ data: empData, error: empErr }, { data: binsData, error: binErr }] =
+        const [{ data: empData, error: empErr }, { data: binsData, error: binErr }, { data: pbData, error: pbErr }] =
           await Promise.all([
             supabase
               .from("employees")
@@ -119,11 +150,16 @@ export default function BaggingJob() {
               .eq("active", true)
               .order("name", { ascending: true }),
             supabase.from("inside_co2_bins").select("*"),
+            supabase.from("physical_boxes")
+              .select("physical_box_id, weight")
+              .order("physical_box_id", { ascending: true }),
           ]);
 
         if (empErr) console.error("Employees load error:", empErr);
         if (binErr) console.error("CO2 bins load error:", binErr);
+        if (pbErr) console.error("Physical boxes load error:", pbErr);
 
+        setPhysicalBoxes(pbData || []);
         setEmployees(empData || []);
         setCo2Bins(binsData || []);
       } catch (err) {
@@ -300,50 +336,76 @@ export default function BaggingJob() {
 
   // ───────────────────────────── Handlers: CO₂ Draws ─────────────────────────────
 
-  const handleAddCo2Draw = () => {
-    if (!newCo2Bin) {
-      setStatusMsg("Select a CO₂ bin.");
-      return;
-    }
-    const w = safeNum(newCo2Weight);
-    if (w <= 0) {
-      setStatusMsg("Enter a valid weight from CO₂ bin.");
-      return;
-    }
+  const updateCo2Draw = (id, changes) => {
+    setCo2Draws(prev => prev.map(row => {
+      if (row.id !== id) return row;
+      const next = { ...row, ...changes };
 
-    const bin = co2Bins.find((b) => b.co2_bin === newCo2Bin);
-    if (!bin) {
-      setStatusMsg("Selected CO₂ bin not found.");
-      return;
-    }
+      const gross = ('weightLbsRaw' in changes) ? changes.weightLbsRaw : next.weightLbsRaw;
+      const usePB = ('usePhysicalBox' in changes) ? changes.usePhysicalBox : next.usePhysicalBox;
+      const pbId  = ('physicalBoxId' in changes) ? changes.physicalBoxId : next.physicalBoxId;
 
-    // ensure we don't exceed bin total (based on already planned draws)
-    const already = co2Draws
-      .filter((d) => d.co2_bin === newCo2Bin)
-      .reduce((s, d) => s + safeNum(d.weightLbs), 0);
-
-    if (already + w > safeNum(bin.total_weight)) {
-      setStatusMsg(
-        `Cannot draw ${w} lbs from ${newCo2Bin}; exceeds available (${bin.total_weight} lbs).`
-      );
-      return;
-    }
-
-    setCo2Draws((prev) => [
-      ...prev,
-      {
-        id: `${newCo2Bin}-${Date.now()}-${prev.length + 1}`,
-        co2_bin: newCo2Bin,
-        weightLbs: w,
-        lotNumbers: bin.lot_numbers || [],
-        products: bin.products || [],
-      },
-    ]);
-    setNewCo2Weight("");
-    setStatusMsg(`Added ${w} lbs from ${newCo2Bin}.`);
+      next.weightLbs = computeNet(gross, usePB, pbId);
+      return next;
+    }));
     dirtyRef.current = true;
     markTyping();
   };
+
+  const handleAddCo2Draw = () => {
+  if (!newCo2Bin) {
+    setStatusMsg("Select a CO₂ bin.");
+    return;
+  }
+  const gross = safeNum(newCo2Weight);
+  if (gross <= 0) {
+    setStatusMsg("Enter a valid weight from CO₂ bin.");
+    return;
+  }
+
+  const bin = co2Bins.find((b) => b.co2_bin === newCo2Bin);
+  if (!bin) {
+    setStatusMsg("Selected CO₂ bin not found.");
+    return;
+  }
+
+  // ensure we don't exceed bin total (based on already planned draws)
+  const already = co2Draws
+    .filter((d) => d.co2_bin === newCo2Bin)
+    .reduce((s, d) => s + safeNum(d.weightLbs), 0); // uses NET; OK
+
+  if (already + gross > safeNum(bin.total_weight)) {
+    setStatusMsg(
+      `Cannot draw ${gross} lbs from ${newCo2Bin}; exceeds available (${bin.total_weight} lbs).`
+    );
+    return;
+  }
+
+  // start unchecked (no PB), net = gross
+  setCo2Draws((prev) => [
+    ...prev,
+    {
+      id: `${newCo2Bin}-${Date.now()}-${prev.length + 1}`,
+      co2_bin: newCo2Bin,
+
+      // NEW physical box fields
+      usePhysicalBox: false,
+      physicalBoxId: "",
+
+      // gross vs net
+      weightLbsRaw: gross,
+      weightLbs: gross,
+
+      lotNumbers: bin.lot_numbers || [],
+      products: bin.products || [],
+    },
+  ]);
+  setNewCo2Weight("");
+  setStatusMsg(`Added ${gross} lbs from ${newCo2Bin}.`);
+  dirtyRef.current = true;
+  markTyping();
+};
+
 
   const handleRemoveCo2Draw = (id) => {
     setCo2Draws((prev) => prev.filter((d) => d.id !== id));
@@ -354,6 +416,7 @@ export default function BaggingJob() {
   const addPallet = (bagType) => {
     const isTote = bagType === "2000lb tote";
         const newId = makePalletId(pallets.length); // generate once here
+        const nowIso = new Date().toISOString();
         setPallets((prev) => [
             ...prev,
             {
@@ -364,6 +427,7 @@ export default function BaggingJob() {
             totalWeight: isTote ? 2000 : "",
             storageLocation: "",
             notes: "",
+            createdAt: nowIso,
             },
         ]);
         dirtyRef.current = true;
@@ -427,6 +491,7 @@ export default function BaggingJob() {
         total_weight: total,
         storage_location: p.storageLocation || "Unknown",
         notes: p.notes || notes || null,
+        created_at: p.createdAt || new Date().toISOString(),
       };
     });
 
@@ -787,6 +852,7 @@ export default function BaggingJob() {
             Use existing inside_co2_bins records
           </span>
         </div>
+
         <div className="flex flex-col sm:flex-row gap-2 mb-3">
           <select
             className="border rounded-lg px-3 py-2 text-sm flex-1"
@@ -803,7 +869,7 @@ export default function BaggingJob() {
           <input
             type="number"
             className="border rounded-lg px-3 py-2 text-sm w-40"
-            placeholder="Weight (lbs)"
+            placeholder="Gross weight (lbs)"
             value={newCo2Weight}
             onChange={(e) => setNewCo2Weight(e.target.value)}
             min="0"
@@ -824,17 +890,17 @@ export default function BaggingJob() {
                 <th className="px-2 py-1 text-left">CO₂ Bin</th>
                 <th className="px-2 py-1 text-left">Lot #</th>
                 <th className="px-2 py-1 text-left">Products</th>
-                <th className="px-2 py-1 text-right">Weight (lbs)</th>
+                <th className="px-2 py-1 text-right">Gross (lbs)</th>
+                <th className="px-2 py-1 text-center">Use PB</th>
+                <th className="px-2 py-1 text-left">Physical Box ID</th>
+                <th className="px-2 py-1 text-right">Net (lbs)</th>
                 <th className="px-2 py-1 text-center">Remove</th>
               </tr>
             </thead>
             <tbody>
               {co2Draws.length === 0 ? (
                 <tr>
-                  <td
-                    colSpan={5}
-                    className="px-2 py-2 text-center text-gray-400"
-                  >
+                  <td colSpan={8} className="px-2 py-2 text-center text-gray-400">
                     No CO₂ inputs added.
                   </td>
                 </tr>
@@ -843,15 +909,60 @@ export default function BaggingJob() {
                   <tr key={d.id} className="border-t">
                     <td className="px-2 py-1">{d.co2_bin}</td>
                     <td className="px-2 py-1">
-                      {uniq((d.lotNumbers || []).map(String)).join(", ") ||
-                        "—"}
+                      {uniq((d.lotNumbers || []).map(String)).join(", ") || "—"}
                     </td>
                     <td className="px-2 py-1">
                       {uniq((d.products || []).map(String)).join(", ") || "—"}
                     </td>
+
+                    {/* Gross editable */}
+                    <td className="px-2 py-1 text-right">
+                      <input
+                        type="number"
+                        step="any"
+                        className="w-24 border rounded px-1 py-0.5 text-right"
+                        value={d.weightLbsRaw ?? ""}
+                        onChange={(e) =>
+                          updateCo2Draw(d.id, { weightLbsRaw: e.target.value })
+                        }
+                      />
+                    </td>
+
+                    {/* Use PB checkbox */}
+                    <td className="px-2 py-1 text-center">
+                      <input
+                        type="checkbox"
+                        checked={!!d.usePhysicalBox}
+                        onChange={(e) =>
+                          updateCo2Draw(d.id, { usePhysicalBox: e.target.checked })
+                        }
+                      />
+                    </td>
+
+                    {/* PB ID input */}
+                    <td className="px-2 py-1">
+                      <input
+                        type="text"
+                        className="w-28 border rounded px-1 py-0.5"
+                        placeholder="PB0001"
+                        value={d.physicalBoxId || ""}
+                        onChange={(e) =>
+                          updateCo2Draw(d.id, { physicalBoxId: e.target.value })
+                        }
+                        disabled={!d.usePhysicalBox}
+                      />
+                      {d.usePhysicalBox && d.physicalBoxId ? (
+                        <div className="text-[10px] text-gray-500 mt-0.5">
+                          PB wt: {findPBWeight(d.physicalBoxId)} lbs
+                        </div>
+                      ) : null}
+                    </td>
+
+                    {/* Net, read-only */}
                     <td className="px-2 py-1 text-right">
                       {safeNum(d.weightLbs).toLocaleString()}
                     </td>
+
                     <td className="px-2 py-1 text-center">
                       <button
                         type="button"
@@ -998,6 +1109,20 @@ export default function BaggingJob() {
                           }
                         />
                       </td>
+
+                      <td className="px-2 py-1 text-center space-x-2">
+                        {/* Print (goes BEFORE the X) */}
+                        <button
+                          type="button"
+                          className="text-xs px-2 py-1 border rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                          onClick={() => p?.pallet_id && printBoxLabel(p.pallet_id)}
+                          disabled={!p?.pallet_id}
+                          title="Print barcode label for this pallet"
+                        >
+                          🖨️ Print
+                        </button>
+                      </td>
+
                       <td className="px-2 py-1 text-center">
                         <button
                           type="button"

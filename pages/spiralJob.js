@@ -1,11 +1,5 @@
-// pages/sortexJob.js
-import React, {
-  useState,
-  useEffect,
-  useMemo,
-  useRef,
-  useCallback,
-} from "react";
+// pages/spiralJob.js
+import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { supabase } from "../lib/supabaseClient";
 import ScrollingLayout from "../components/scrollingLayout";
 import { printBoxLabel } from "../lib/labelPrint";
@@ -14,7 +8,8 @@ import { printBoxLabel } from "../lib/labelPrint";
 
 const todayISO = () => new Date().toISOString().slice(0, 10);
 const safeNum = (v) => (v === "" || v === null ? 0 : Number(v) || 0);
-const LS_KEY = "sortexCleaningDraft_v3";
+// bump key to avoid conflicts with older drafts that had reruns in state
+const LS_KEY = "spiralCleaningDraft_v2_noReruns";
 
 const siloOrder = [
   "HQ-1","HQ-2","HQ-3","HQ-4","HQ-5","HQ-6","HQ-7","HQ-8","HQ-9","HQ-10",
@@ -26,9 +21,7 @@ const siloOrder = [
 // Generate box id prefix per output type
 const BOX_PREFIX = {
   clean: "C",
-  reruns: "R",
-  rejects: "SR", // Sortex Rejects
-  trash: "T",
+  screenings: "SCR", // Spiral Screenings use SCR
 };
 
 /* ----------------------------- Default State ----------------------------- */
@@ -39,27 +32,25 @@ const DEFAULT_STATE = {
   selectedEmployee: "",
   selectedSupplier: "",
   notes: "",
-  binsUsed: [],           // [{ bin_location, lot_numbers, products }]
-  boxSources: [],         // scanned box sources
-  inbound: [],            // inbound boxes (pre-mill)
+  binsUsed: [],   // [{ bin_location, lot_numbers, products }]
+  boxSources: [], // scanned box sources (kept if you use it later)
+  inbound: [],    // inbound boxes (pre-mill)
   clean: [],
-  reruns: [],
-  rejects: [],
-  trash: [],
+  screenings: [],
 };
 
 /* ------------------------------ Box Helpers ------------------------------ */
 
 const makeInboundRow = () => ({
-  sourceType: "Bin",
+  sourceType: "Bin", // "Bin" | "BoxID" | "Custom"
   binLocation: "",
   boxNumber: "",
   weightLbsRaw: "",
   weightLbs: 0,
   physicalBoxId: "",
   usePhysicalBox: false,
-  lotNumber: "", 
-  product: "", 
+  lotNumber: "",
+  product: "",
 });
 
 const makeOutputRow = () => ({
@@ -103,17 +94,10 @@ function Stat({ name, value }) {
 }
 
 /**
- * Generic output table for Clean / Reruns / Rejects / Trash
- * Shows:
- * - Box ID (computed)
- * - Physical Box ID
- * - Box #
- * - Weight (lbs) (gross, but we compute net when saving)
- * - Storage Location (for clean/reruns; free text for others)
- * Reuses same logic as Qsage.
+ * Output table for Clean / Screenings
  */
 function OutputBoxTable({
-  kind,              // "clean" | "reruns" | "rejects" | "trash"
+  kind,              // "clean" | "screenings"
   title,
   color,
   rows,
@@ -176,10 +160,7 @@ function OutputBoxTable({
           <tbody>
             {!rows || rows.length === 0 ? (
               <tr>
-                <td
-                  colSpan={7}
-                  className="px-4 py-6 text-center text-gray-500"
-                >
+                <td colSpan={9} className="px-4 py-6 text-center text-gray-500">
                   No boxes yet. Click “Add Box”.
                 </td>
               </tr>
@@ -198,8 +179,6 @@ function OutputBoxTable({
                       {boxId || "—"}
                     </td>
 
-                    
-
                     {/* Box # */}
                     <td className="px-3 py-2">
                       <input
@@ -212,7 +191,7 @@ function OutputBoxTable({
                       />
                     </td>
 
-                    {/* Weight input (gross). We compute net later. */}
+                    {/* Weight input (gross). Net computed immediately */}
                     <td className="px-3 py-2">
                       <input
                         className="w-full rounded border px-2 py-1 tabular-nums"
@@ -278,9 +257,10 @@ function OutputBoxTable({
                     <td className="px-3 py-2 tabular-nums text-center">
                       {(() => {
                         const gross = Number(b.weightLbsRaw ?? b.weightLbs) || 0;
-                        const pbw = b.usePhysicalBox && b.physicalBoxId
-                          ? getPBWeight(b.physicalBoxId)
-                          : 0;
+                        const pbw =
+                          b.usePhysicalBox && b.physicalBoxId
+                            ? getPBWeight(b.physicalBoxId)
+                            : 0;
                         const net = Math.max(gross - pbw, 0);
                         return net.toLocaleString();
                       })()}
@@ -293,33 +273,30 @@ function OutputBoxTable({
                         type="text"
                         value={b.storageLocation || ""}
                         onChange={(e) =>
-                          onUpdate(
-                            i,
-                            "storageLocation",
-                            e.target.value
-                          )
+                          onUpdate(i, "storageLocation", e.target.value)
                         }
                         placeholder={
-                          kind === "clean" || kind === "reruns"
+                          kind === "clean"
                             ? "Refrigerator / Co2 / Other"
-                            : "e.g., Rejects Pile"
+                            : "Screening Shed"
                         }
                       />
                     </td>
 
+                    {/* Print (barcode for Box_ID) */}
                     <td className="px-4 py-2 text-center space-x-2">
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        if (!boxId) return;
-                        await printBoxLabel(boxId);
-                      }}
-                      className="rounded-lg border px-2 py-1 text-sm hover:bg-gray-50"
-                      title="Print barcode label"
-                    >
-                      🖨️ Print
-                    </button>
-                  </td>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          if (!boxId) return;
+                          await printBoxLabel(boxId);
+                        }}
+                        className="rounded-lg border px-2 py-1 text-sm hover:bg-gray-50"
+                        title="Print barcode label"
+                      >
+                        🖨️ Print
+                      </button>
+                    </td>
 
                     {/* Remove */}
                     <td className="px-3 py-2 text-center">
@@ -344,14 +321,7 @@ function OutputBoxTable({
 
 /* ---------------------------- Inbound Table UI --------------------------- */
 
-function InboundTable({
-  binsUsed,
-  rows,
-  onAdd,
-  onUpdate,
-  onRemove,
-  physicalBoxes,
-}) {
+function InboundTable({ binsUsed, rows, onAdd, onUpdate, onRemove, physicalBoxes }) {
   const getPBWeight = useCallback(
     (id) => findPhysicalBoxWeight(physicalBoxes, id),
     [physicalBoxes]
@@ -362,7 +332,7 @@ function InboundTable({
       <div className="flex items-center justify-between border-b px-4 py-3">
         <div className="flex items-center gap-2">
           <div className="h-2 w-2 rounded-full bg-sky-500" />
-          <h3 className="text-base font-semibold">Inbound (Pre-Sortex)</h3>
+          <h3 className="text-base font-semibold">Inbound (Pre-Spiral)</h3>
         </div>
         <button
           type="button"
@@ -390,30 +360,16 @@ function InboundTable({
           <tbody>
             {!rows || rows.length === 0 ? (
               <tr>
-                <td
-                  colSpan={7}
-                  className="px-4 py-6 text-center text-gray-500"
-                >
-                  No inbound boxes yet. Add a source bin and click “Add
-                  Inbound Box”.
+                <td colSpan={7} className="px-4 py-6 text-center text-gray-500">
+                  No inbound boxes yet. Add a source bin and click “Add Inbound Box”.
                 </td>
               </tr>
             ) : (
               rows.map((b, i) => {
                 const gross =
-                  Number(
-                    b.weightLbsRaw !== undefined
-                      ? b.weightLbsRaw
-                      : b.weightLbs
-                  ) || 0;
-                const pbw =
-                  b.usePhysicalBox && b.physicalBoxId
-                    ? getPBWeight(b.physicalBoxId)
-                    : 0;
-                const net = Math.max(
-                  b.weightLbs !== undefined ? b.weightLbs : gross - pbw,
-                  0
-                );
+                  Number(b.weightLbsRaw !== undefined ? b.weightLbsRaw : b.weightLbs) || 0;
+                const pbw = b.usePhysicalBox && b.physicalBoxId ? getPBWeight(b.physicalBoxId) : 0;
+                const net = Math.max(b.weightLbs !== undefined ? b.weightLbs : gross - pbw, 0);
 
                 return (
                   <tr key={i} className="border-t">
@@ -422,16 +378,11 @@ function InboundTable({
                       <select
                         className="w-full rounded border px-2 py-1"
                         value={b.binLocation || ""}
-                        onChange={(e) =>
-                          onUpdate(i, "binLocation", e.target.value)
-                        }
+                        onChange={(e) => onUpdate(i, "binLocation", e.target.value)}
                       >
                         <option value="">Select bin…</option>
                         {binsUsed?.map((bin, idx) => (
-                          <option
-                            key={idx}
-                            value={bin.bin_location || bin.location}
-                          >
+                          <option key={idx} value={bin.bin_location || bin.location}>
                             {bin.bin_location || bin.location}
                           </option>
                         ))}
@@ -444,9 +395,7 @@ function InboundTable({
                         className="w-full rounded border px-2 py-1 text-center"
                         type="number"
                         value={b.boxNumber || i + 1}
-                        onChange={(e) =>
-                          onUpdate(i, "boxNumber", e.target.value)
-                        }
+                        onChange={(e) => onUpdate(i, "boxNumber", e.target.value)}
                       />
                     </td>
 
@@ -456,11 +405,7 @@ function InboundTable({
                         className="w-full rounded border px-2 py-1 tabular-nums"
                         type="number"
                         step="any"
-                        value={
-                          b.weightLbsRaw !== undefined
-                            ? b.weightLbsRaw
-                            : b.weightLbs || ""
-                        }
+                        value={b.weightLbsRaw !== undefined ? b.weightLbsRaw : b.weightLbs || ""}
                         onChange={(e) => {
                           const raw = e.target.value;
                           const g = Number(raw) || 0;
@@ -482,9 +427,7 @@ function InboundTable({
                         type="text"
                         placeholder="PB0001"
                         value={b.physicalBoxId || ""}
-                        onChange={(e) =>
-                          onUpdate(i, "physicalBoxId", e.target.value)
-                        }
+                        onChange={(e) => onUpdate(i, "physicalBoxId", e.target.value)}
                       />
                     </td>
 
@@ -534,7 +477,7 @@ function InboundTable({
 
 /* ============================ Main Page ================================== */
 
-export default function SortexCleaningPage() {
+export default function SpiralCleaningPage() {
   const [state, setState] = useState(DEFAULT_STATE);
   const [employees, setEmployees] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
@@ -543,10 +486,7 @@ export default function SortexCleaningPage() {
   const [statusMsg, setStatusMsg] = useState("");
   const [showValidation, setShowValidation] = useState(false);
 
-  const [customRows, setCustomRows] = useState([
-    { lot: "", product: "", weight: "" },
-  ]);
-
+  const [customRows, setCustomRows] = useState([{ lot: "", product: "", weight: "" }]);
 
   const dirtyRef = useRef(false);
   const saveTimer = useRef(null);
@@ -557,7 +497,7 @@ export default function SortexCleaningPage() {
       (acc, b) => acc + (Number(b?.weightLbs) || 0),
       0
     );
-    setState(prev => ({ ...prev, input_total: sum })); // <-- match your UI field name
+    setState((prev) => ({ ...prev, input_total: sum }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.inbound]);
 
@@ -569,26 +509,24 @@ export default function SortexCleaningPage() {
     for (const b of state.inbound || []) {
       String(b?.lotNumber || "")
         .split(",")
-        .map(s => s.trim())
+        .map((s) => s.trim())
         .filter(Boolean)
-        .forEach(x => lots.add(x));
+        .forEach((x) => lots.add(x));
 
       String(b?.product || "")
         .split(",")
-        .map(s => s.trim())
+        .map((s) => s.trim())
         .filter(Boolean)
-        .forEach(x => prods.add(x));
+        .forEach((x) => prods.add(x));
     }
 
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
-      // Use the same keys your JSX reads:
-      lotNumbers: Array.from(lots).join(", "),   // or lot_numbers
+      lotNumbers: Array.from(lots).join(", "),
       products: Array.from(prods).join(", "),
     }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.inbound]);
-
 
   /* -------------------------- Load initial data -------------------------- */
 
@@ -638,7 +576,9 @@ export default function SortexCleaningPage() {
             : null;
         if (raw) {
           const parsed = JSON.parse(raw);
-          setState({ ...DEFAULT_STATE, ...parsed });
+          // drop any legacy rerun keys if present
+          const { reruns, ...rest } = parsed || {};
+          setState({ ...DEFAULT_STATE, ...rest });
         }
       } catch (e) {
         console.warn("Failed to load draft:", e);
@@ -680,9 +620,7 @@ export default function SortexCleaningPage() {
   const inputAmount = useMemo(() => {
     return (state.inbound || []).reduce((sum, b) => {
       const gross =
-        Number(
-          b.weightLbsRaw !== undefined ? b.weightLbsRaw : b.weightLbs
-        ) || 0;
+        Number(b.weightLbsRaw !== undefined ? b.weightLbsRaw : b.weightLbs) || 0;
       if (b.usePhysicalBox && b.physicalBoxId) {
         const pb = getPBWeight(b.physicalBoxId);
         return sum + Math.max(gross - pb, 0);
@@ -694,9 +632,7 @@ export default function SortexCleaningPage() {
   const sumOutputs = (arr = []) =>
     arr.reduce((acc, b) => {
       const gross =
-        Number(
-          b.weightLbsRaw !== undefined ? b.weightLbsRaw : b.weightLbs
-        ) || 0;
+        Number(b.weightLbsRaw !== undefined ? b.weightLbsRaw : b.weightLbs) || 0;
       if (b.usePhysicalBox && b.physicalBoxId) {
         const pb = getPBWeight(b.physicalBoxId);
         return acc + Math.max(gross - pb, 0);
@@ -706,71 +642,62 @@ export default function SortexCleaningPage() {
 
   const totals = useMemo(() => {
     const clean = sumOutputs(state.clean);
-    const reruns = sumOutputs(state.reruns);
-    const rejects = sumOutputs(state.rejects);
-    const trash = sumOutputs(state.trash);
-    const outputTotal = clean + reruns + rejects + trash;
+    const screenings = sumOutputs(state.screenings);
+    const outputTotal = clean + screenings;
     const balance = inputAmount - outputTotal;
 
     return {
       inputAmount,
       outputTotal,
       clean,
-      reruns,
-      rejects,
-      trash,
+      screenings,
       balance,
     };
-  }, [state.clean, state.reruns, state.rejects, state.trash, inputAmount]);
+  }, [state.clean, state.screenings, inputAmount]);
 
   const combinedLotNumbers = useMemo(() => {
-  const lots = new Set();
+    const lots = new Set();
+    (state.binsUsed || []).forEach((b) => {
+      if (Array.isArray(b.lot_numbers)) {
+        b.lot_numbers.forEach((ln) => lots.add(String(ln).trim()));
+      } else if (typeof b.lot_numbers === "string") {
+        b.lot_numbers
+          .split(",")
+          .map((s) => s.trim())
+          .forEach((ln) => ln && lots.add(ln));
+      }
+    });
+    (state.inbound || []).forEach((b) => {
+      String(b?.lotNumber || "")
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean)
+        .forEach((ln) => lots.add(ln));
+    });
+    return Array.from(lots).join(", ");
+  }, [state.binsUsed, state.inbound]);
 
-  // from bins
-  (state.binsUsed || []).forEach((b) => {
-    if (Array.isArray(b.lot_numbers)) {
-      b.lot_numbers.forEach((ln) => lots.add(String(ln).trim()));
-    } else if (typeof b.lot_numbers === "string") {
-      b.lot_numbers.split(",").map(s => s.trim()).forEach((ln) => ln && lots.add(ln));
-    }
-  });
-
-  // from inbound (this is what was missing)
-  (state.inbound || []).forEach((b) => {
-    String(b?.lotNumber || "")
-      .split(",")
-      .map(s => s.trim())
-      .filter(Boolean)
-      .forEach((ln) => lots.add(ln));
-  });
-
-  return Array.from(lots).join(", ");
-}, [state.binsUsed, state.inbound]);
-
-const combinedProducts = useMemo(() => {
-  const prods = new Set();
-
-  // from bins
-  (state.binsUsed || []).forEach((b) => {
-    if (Array.isArray(b.products)) {
-      b.products.forEach((p) => prods.add(String(p).trim()));
-    } else if (typeof b.products === "string") {
-      b.products.split(",").map(s => s.trim()).forEach((p) => p && prods.add(p));
-    }
-  });
-
-  // from inbound (this is what was missing)
-  (state.inbound || []).forEach((b) => {
-    String(b?.product || "")
-      .split(",")
-      .map(s => s.trim())
-      .filter(Boolean)
-      .forEach((p) => prods.add(p));
-  });
-
-  return Array.from(prods).join(", ");
-}, [state.binsUsed, state.inbound]);
-
+  const combinedProducts = useMemo(() => {
+    const prods = new Set();
+    (state.binsUsed || []).forEach((b) => {
+      if (Array.isArray(b.products)) {
+        b.products.forEach((p) => prods.add(String(p).trim()));
+      } else if (typeof b.products === "string") {
+        b.products
+          .split(",")
+          .map((s) => s.trim())
+          .forEach((p) => p && prods.add(p));
+      }
+    });
+    (state.inbound || []).forEach((b) => {
+      String(b?.product || "")
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean)
+        .forEach((p) => prods.add(p));
+    });
+    return Array.from(prods).join(", ");
+  }, [state.binsUsed, state.inbound]);
 
   /* ----------------------------- Mutators -------------------------------- */
 
@@ -784,12 +711,7 @@ const combinedProducts = useMemo(() => {
       ...prev,
       binsUsed: [
         ...(prev.binsUsed || []),
-        {
-          bin_location: "",
-          lot_numbers: [],
-          products: [],
-          weight: 0,
-        },
+        { bin_location: "", lot_numbers: [], products: [], weight: 0 },
       ],
     }));
     dirtyRef.current = true;
@@ -831,7 +753,6 @@ const combinedProducts = useMemo(() => {
     dirtyRef.current = true;
   };
 
-
   const removeBin = (index) => {
     setState((prev) => {
       const binsUsed = [...(prev.binsUsed || [])];
@@ -843,10 +764,7 @@ const combinedProducts = useMemo(() => {
 
   // Inbound mutations
   const addInbound = () => {
-    setState((prev) => ({
-      ...prev,
-      inbound: [...(prev.inbound || []), makeInboundRow()],
-    }));
+    setState((prev) => ({ ...prev, inbound: [...(prev.inbound || []), makeInboundRow()] }));
     dirtyRef.current = true;
   };
 
@@ -858,17 +776,10 @@ const combinedProducts = useMemo(() => {
       // Always set the changed field first
       row[field] = value;
 
-      // 1) If the user selected/changed a BIN, stamp the source and pull lot/product
       if (field === "binLocation") {
         row.sourceType = "Bin";
-
-        // Find the bin in your loaded bins list
-        const selected = bins.find(
-          (b) => (b.location || b.bin_location) === value
-        );
-
+        const selected = bins.find((b) => (b.location || b.bin_location) === value);
         if (selected) {
-          // Normalize lot_numbers/product (can be array or comma string)
           const toList = (v) =>
             Array.isArray(v)
               ? v.map((s) => String(s).trim()).filter(Boolean)
@@ -880,7 +791,6 @@ const combinedProducts = useMemo(() => {
           const lots = toList(selected.lot_number);
           const prods = toList(selected.product);
 
-          // Store on the row so the report can show them
           const merge = (existing, incomingArr) => {
             const seen = new Set(
               String(existing || "")
@@ -893,25 +803,12 @@ const combinedProducts = useMemo(() => {
           };
 
           row.lotNumber = merge(row.lotNumber, lots);
-          row.product   = merge(row.product,   prods);
-
-          // (Optional) immediately reflect in header chips:
-          // updateHeaderLotsAndProducts(lots.join(", "), prods.join(", "));
+          row.product = merge(row.product, prods);
         }
       }
 
-      // 2) Keep NET weight (`weightLbs`) consistent if PB/gross changes
-      //    Your inputAmount uses `weightLbsRaw` when present; this keeps things coherent
-      if (
-        field === "usePhysicalBox" ||
-        field === "physicalBoxId" ||
-        field === "weightLbsRaw"
-      ) {
-        const gross =
-          Number(
-            row.weightLbsRaw !== undefined ? row.weightLbsRaw : row.weightLbs
-          ) || 0;
-
+      if (field === "usePhysicalBox" || field === "physicalBoxId" || field === "weightLbsRaw") {
+        const gross = Number(row.weightLbsRaw !== undefined ? row.weightLbsRaw : row.weightLbs) || 0;
         let net = gross;
         if (row.usePhysicalBox && row.physicalBoxId) {
           const pb = findPhysicalBoxWeight(physicalBoxes, row.physicalBoxId) || 0;
@@ -926,7 +823,6 @@ const combinedProducts = useMemo(() => {
     dirtyRef.current = true;
   };
 
-
   const removeInbound = (index) => {
     setState((prev) => {
       const inbound = [...(prev.inbound || [])];
@@ -936,17 +832,16 @@ const combinedProducts = useMemo(() => {
     dirtyRef.current = true;
   };
 
+  // Add inbound by existing Box ID (Clean / Screenings only)
   async function addInboundFromBoxID(boxId) {
     if (!boxId) return;
 
     let found = null;
 
-    // Clean
     const { data: clean } = await supabase
       .from("clean_product_storage")
       .select("*")
       .eq("Box_ID", boxId);
-
     if (clean?.length) {
       const r = clean[0];
       found = {
@@ -959,33 +854,11 @@ const combinedProducts = useMemo(() => {
       };
     }
 
-    // Rerun
-    if (!found) {
-      const { data: rerun } = await supabase
-        .from("rerun_product_storage")
-        .select("*")
-        .eq("Box_ID", boxId);
-
-      if (rerun?.length) {
-        const r = rerun[0];
-        found = {
-          lotNumber: r.Lot_Number,
-          product: r.Product,
-          weightLbs: Number(r.Amount) || 0,
-          physicalBoxId: r.physical_box_id || "",
-          location: r.Location,
-          type: "Rerun",
-        };
-      }
-    }
-
-    // Screenings
     if (!found) {
       const { data: scr } = await supabase
         .from("screening_storage_shed")
         .select("*")
         .eq("Box_ID", boxId);
-
       if (scr?.length) {
         const r = scr[0];
         found = {
@@ -1016,21 +889,13 @@ const combinedProducts = useMemo(() => {
       product: found.product,
     };
 
-    setState(prev => ({
-      ...prev,
-      inbound: [...(prev.inbound || []), newInbound],
-    }));
-
-    // Mirror Qsage: merge header fields (no dupes) + increment total
+    setState((prev) => ({ ...prev, inbound: [...(prev.inbound || []), newInbound] }));
     updateHeaderLotsAndProducts(newInbound.lotNumber, newInbound.product);
     addToInputTotal(newInbound.weightLbs);
   }
 
-
-
   async function addInboundCustom(lot, product, weight) {
     const w = Number(weight) || 0;
-
     const newInbound = {
       sourceType: "Custom",
       binLocation: "",
@@ -1041,57 +906,39 @@ const combinedProducts = useMemo(() => {
       lotNumber: lot,
       product: product,
     };
-
-    setState(prev => ({
-      ...prev,
-      inbound: [...(prev.inbound || []), newInbound],
-    }));
-
-    // Mirror Qsage: merge header fields (no dupes) + increment total
+    setState((prev) => ({ ...prev, inbound: [...(prev.inbound || []), newInbound] }));
     updateHeaderLotsAndProducts(lot, product);
     addToInputTotal(w);
   }
 
-  // Join comma-separated tokens, trim & dedupe (order preserved)
-  function mergeTokens(existing, incoming) {
+  const mergeTokens = (s1, s2) => {
     const toList = (s) =>
       String(s || "")
         .split(",")
-        .map(t => t.trim())
+        .map((t) => t.trim())
         .filter(Boolean);
-
-    const seen = new Set(toList(existing));
-    for (const t of toList(incoming)) seen.add(t);
+    const seen = new Set(toList(s1));
+    for (const t of toList(s2)) seen.add(t);
     return Array.from(seen).join(", ");
-  }
+  };
 
-  // ⚠️ If your Sortex header fields are snake_case (lot_numbers/products) rename below accordingly.
   function updateHeaderLotsAndProducts(lot, product) {
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       lotNumbers: mergeTokens(prev.lotNumbers, lot),
       products: mergeTokens(prev.products, product),
     }));
   }
 
-  // Increment input_total by a weight (safe numeric)
   function addToInputTotal(amount) {
     const w = Number(amount) || 0;
     if (!w) return;
-    setState(prev => ({
-      ...prev,
-      input_total: Number(prev.input_total || 0) + w,
-    }));
+    setState((prev) => ({ ...prev, input_total: Number(prev.input_total || 0) + w }));
   }
-
-
 
   // Generic output mutators
   const addOutputBox = (kind) => {
-    setState((prev) => ({
-      ...prev,
-      [kind]: [...(prev[kind] || []), makeOutputRow()],
-    }));
+    setState((prev) => ({ ...prev, [kind]: [...(prev[kind] || []), makeOutputRow()] }));
     dirtyRef.current = true;
   };
 
@@ -1118,19 +965,15 @@ const combinedProducts = useMemo(() => {
   const validate = () => {
     const errors = [];
     if (!state.processID.trim()) errors.push("Process ID is required.");
-    if (!state.selectedEmployee)
-      errors.push("Employee must be selected.");
-    if (inputAmount <= 0)
-      errors.push("Inbound input must be greater than 0.");
+    if (!state.selectedEmployee) errors.push("Employee must be selected.");
+    if (inputAmount <= 0) errors.push("Inbound input must be greater than 0.");
 
     const anyOutputs =
       (state.clean || []).length ||
-      (state.reruns || []).length ||
-      (state.rejects || []).length ||
-      (state.trash || []).length;
+      (state.screenings || []).length;
 
     if (!anyOutputs)
-      errors.push("Add at least one output box (Clean, Rerun, Rejects, or Trash).");
+      errors.push("Add at least one output box (Clean or Screenings).");
 
     return errors;
   };
@@ -1150,20 +993,9 @@ const combinedProducts = useMemo(() => {
       const normalizedInbound = (state.inbound || [])
         .filter((b) => safeNum(b.weightLbs || b.weightLbsRaw) > 0)
         .map((b, idx) => {
-          const gross =
-            Number(
-              b.weightLbsRaw !== undefined
-                ? b.weightLbsRaw
-                : b.weightLbs
-            ) || 0;
-          const pbw =
-            b.usePhysicalBox && b.physicalBoxId
-              ? getPBWeight(b.physicalBoxId)
-              : 0;
-          const net = Math.max(
-            b.weightLbs !== undefined ? b.weightLbs : gross - pbw,
-            0
-          );
+          const gross = Number(b.weightLbsRaw !== undefined ? b.weightLbsRaw : b.weightLbs) || 0;
+          const pbw = b.usePhysicalBox && b.physicalBoxId ? getPBWeight(b.physicalBoxId) : 0;
+          const net = Math.max(b.weightLbs !== undefined ? b.weightLbs : gross - pbw, 0);
           return {
             ...b,
             index: idx,
@@ -1177,33 +1009,15 @@ const combinedProducts = useMemo(() => {
         const prefix = BOX_PREFIX[kind] || "";
         return (state[kind] || [])
           .filter(
-            (b) =>
-              safeNum(
-                b.weightLbs !== undefined
-                  ? b.weightLbs
-                  : b.weightLbsRaw
-              ) > 0
+            (b) => safeNum(b.weightLbs !== undefined ? b.weightLbs : b.weightLbsRaw) > 0
           )
           .map((b, idx) => {
             const boxNumber = b.boxNumber || idx + 1;
-            const gross =
-              Number(
-                b.weightLbsRaw !== undefined
-                  ? b.weightLbsRaw
-                  : b.weightLbs
-              ) || 0;
-            const pbw =
-              b.usePhysicalBox && b.physicalBoxId
-                ? getPBWeight(b.physicalBoxId)
-                : 0;
-            const net = Math.max(
-              b.weightLbs !== undefined ? b.weightLbs : gross - pbw,
-              0
-            );
+            const gross = Number(b.weightLbsRaw !== undefined ? b.weightLbsRaw : b.weightLbs) || 0;
+            const pbw = b.usePhysicalBox && b.physicalBoxId ? getPBWeight(b.physicalBoxId) : 0;
+            const net = Math.max(b.weightLbs !== undefined ? b.weightLbs : gross - pbw, 0);
             const Box_ID =
-              state.processID && prefix
-                ? `${state.processID}${prefix}${boxNumber}`
-                : null;
+              state.processID && prefix ? `${state.processID}${prefix}${boxNumber}` : null;
 
             return {
               ...b,
@@ -1212,16 +1026,13 @@ const combinedProducts = useMemo(() => {
               physicalBoxWeight: pbw,
               weightLbs: net,
               Box_ID,
-              date: new Date().toISOString(), // ✅ add this
+              date: new Date().toISOString(),
             };
           });
-
       };
 
       const cleanOut = normOutputsForKind("clean");
-      const rerunOut = normOutputsForKind("reruns");
-      const rejectOut = normOutputsForKind("rejects");
-      const trashOut = normOutputsForKind("trash");
+      const screeningsOut = normOutputsForKind("screenings");
 
       // Insert into storage tables
       const lotNumberStr = combinedLotNumbers || "";
@@ -1244,22 +1055,8 @@ const combinedProducts = useMemo(() => {
         });
       }
 
-      // Reruns
-      for (const b of rerunOut) {
-        await supabase.from("rerun_product_storage").insert({
-          Process_ID: state.processID,
-          Box_ID: b.Box_ID,
-          Location: b.storageLocation || "",
-          Lot_Number: lotNumberStr,
-          Product: productStr,
-          Amount: b.weightLbs,
-          Supplier: supplier,
-          Notes: notes,
-        });
-      }
-
-      // Rejects -> screening_storage_shed with Type='Rejects'
-      for (const b of rejectOut) {
+      // Screenings → screening_storage_shed with Type='Screenings'
+      for (const b of screeningsOut) {
         await supabase.from("screening_storage_shed").insert({
           Process_ID: state.processID,
           Box_ID: b.Box_ID,
@@ -1267,20 +1064,7 @@ const combinedProducts = useMemo(() => {
           Lot_Number: lotNumberStr,
           Product: productStr,
           Amount: b.weightLbs,
-          Type: "Rejects",
-          Supplier: supplier,
-          Notes: notes,
-        });
-      }
-
-      // Trash
-      for (const b of trashOut) {
-        await supabase.from("trash").insert({
-          Process_ID: state.processID,
-          Location: b.storageLocation || "Trash Shed",
-          Lot_Number: lotNumberStr,
-          Product: productStr,
-          Amount: b.weightLbs,
+          Type: "Screenings",
           Supplier: supplier,
           Notes: notes,
         });
@@ -1291,8 +1075,7 @@ const combinedProducts = useMemo(() => {
         const byBin = {};
         normalizedInbound.forEach((b) => {
           if (!b.binLocation) return;
-          byBin[b.binLocation] =
-            (byBin[b.binLocation] || 0) + b.netWeight;
+          byBin[b.binLocation] = (byBin[b.binLocation] || 0) + b.netWeight;
         });
 
         for (const [location, removed] of Object.entries(byBin)) {
@@ -1311,10 +1094,14 @@ const combinedProducts = useMemo(() => {
         }
       }
 
-      // Insert Sortex report snapshot
-      await supabase.from("sortex_reports").insert({
+      // Prepare inbound_custom snapshot (any row added via "Custom")
+      const inboundCustom = normalizedInbound.filter((r) => r.sourceType === "Custom");
+
+      // Insert Spiral report snapshot (no reruns anywhere)
+      await supabase.from("spiral_reports").insert({
         process_id: state.processID,
-        process_type: "Sortex",
+        process_type: "Spiral",
+        employee,
         suppliers: supplier,
         lot_numbers: lotNumberStr,
         products: productStr,
@@ -1322,21 +1109,16 @@ const combinedProducts = useMemo(() => {
         input_total: totals.inputAmount,
         output_total: totals.outputTotal,
         clean_total: totals.clean,
-        rerun_total: totals.reruns,
-        screenings_total: totals.rejects,
-        trash_total: totals.trash,
+        screenings_total: totals.screenings,
         balance: totals.balance,
         bins_used: state.binsUsed,
         inbound_boxes: normalizedInbound,
+        inbound_custom: inboundCustom,
         outputs: {
           clean: cleanOut,
-          reruns: rerunOut,
-          trash: trashOut,
-          screenings: { rejects: rejectOut }, // ✅ nested structure for reports
+          screenings: screeningsOut,
         },
-
         totals,
-        employee,
       });
 
       // Clear state + localStorage
@@ -1347,9 +1129,9 @@ const combinedProducts = useMemo(() => {
       dirtyRef.current = false;
       setStatusMsg("Job completed and saved.");
       setShowValidation(false);
-      alert("Sortex job completed and saved.");
+      alert("Spiral job completed and saved.");
     } catch (err) {
-      console.error("Error completing Sortex job:", err);
+      console.error("Error completing Spiral job:", err);
       alert("Error completing job: " + err.message);
     }
   };
@@ -1357,482 +1139,370 @@ const combinedProducts = useMemo(() => {
   /* ------------------------------ Render --------------------------------- */
 
   return (
-    <ScrollingLayout title="Sortex Job" showBack={true}>
-    <div className="mx-auto max-w-6xl p-6 bg-[#D9D9D9] flex flex-col h-full">
-      <div className="mx-auto max-w-6xl p-6 space-y-6">
+    <ScrollingLayout title="Spiral Job" showBack={true}>
+      <div className="mx-auto max-w-6xl p-6 bg-[#D9D9D9] flex flex-col h-full">
+        <div className="mx-auto max-w-6xl p-6 space-y-6">
+          {/* Header: left = form, right = summary */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="md:col-span-2 rounded-2xl border bg-white p-4 shadow-sm space-y-3">
+              <h1 className="mb-4 text-2xl font-bold">Spiral Cleaning Process</h1>
 
-        {/* Header: left = form, right = summary */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="md:col-span-2 rounded-2xl border bg-white p-4 shadow-sm space-y-3">
-            <h1 className="mb-4 text-2xl font-bold">
-            Sortex Cleaning Process
-          </h1>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              
-              <HeaderField label="Process ID">
-                <input
-                  className="w-full rounded-lg border px-3 py-2 text-sm"
-                  value={state.processID}
-                  onChange={(e) =>
-                    setField("processID", e.target.value)
-                  }
-                  placeholder="e.g., STX-2025-11-001"
-                />
-              </HeaderField>
+              <div className="grid grid-cols-1 sm-grid-cols-3 sm:grid-cols-3 gap-3">
+                <HeaderField label="Process ID">
+                  <input
+                    className="w-full rounded-lg border px-3 py-2 text-sm"
+                    value={state.processID}
+                    onChange={(e) => setField("processID", e.target.value)}
+                    placeholder="e.g., SPR-2025-11-001"
+                  />
+                </HeaderField>
 
-              <HeaderField label="Job Date">
-                <input
-                  type="date"
-                  className="w-full rounded-lg border px-3 py-2 text-sm"
-                  value={state.jobDate}
-                  onChange={(e) =>
-                    setField("jobDate", e.target.value)
-                  }
-                />
-              </HeaderField>
+                <HeaderField label="Job Date">
+                  <input
+                    type="date"
+                    className="w-full rounded-lg border px-3 py-2 text-sm"
+                    value={state.jobDate}
+                    onChange={(e) => setField("jobDate", e.target.value)}
+                  />
+                </HeaderField>
 
-              <HeaderField label="Employee">
-                <select
-                  className="w-full rounded-lg border px-3 py-2 text-sm"
-                  value={state.selectedEmployee}
-                  onChange={(e) =>
-                    setField("selectedEmployee", e.target.value)
-                  }
-                >
-                  <option value="">Select employee…</option>
-                  {employees.map((e) => (
-                    <option key={e.name} value={e.name}>
-                      {e.name}
-                    </option>
-                  ))}
-                </select>
-              </HeaderField>
+                <HeaderField label="Employee">
+                  <select
+                    className="w-full rounded-lg border px-3 py-2 text-sm"
+                    value={state.selectedEmployee}
+                    onChange={(e) => setField("selectedEmployee", e.target.value)}
+                  >
+                    <option value="">Select employee…</option>
+                    {employees.map((e) => (
+                      <option key={e.name} value={e.name}>
+                        {e.name}
+                      </option>
+                    ))}
+                  </select>
+                </HeaderField>
 
-              <HeaderField label="Supplier">
-                <select
-                  className="w-full rounded-lg border px-3 py-2 text-sm"
-                  value={state.selectedSupplier}
-                  onChange={(e) =>
-                    setField("selectedSupplier", e.target.value)
-                  }
-                >
-                  <option value="">Select supplier…</option>
-                  {suppliers.map((s) => (
-                    <option key={s.name} value={s.name}>
-                      {s.name}
-                    </option>
-                  ))}
-                </select>
-              </HeaderField>
+                <HeaderField label="Supplier">
+                  <select
+                    className="w-full rounded-lg border px-3 py-2 text-sm"
+                    value={state.selectedSupplier}
+                    onChange={(e) => setField("selectedSupplier", e.target.value)}
+                  >
+                    <option value="">Select supplier…</option>
+                    {suppliers.map((s) => (
+                      <option key={s.name} value={s.name}>
+                        {s.name}
+                      </option>
+                    ))}
+                  </select>
+                </HeaderField>
 
-              <HeaderField label="Lot Numbers (auto)">
-                <input
-                  className="w-full rounded-lg border px-3 py-2 text-xs bg-gray-50"
-                  value={combinedLotNumbers}
-                  readOnly
-                />
-              </HeaderField>
+                <HeaderField label="Lot Numbers (auto)">
+                  <input
+                    className="w-full rounded-lg border px-3 py-2 text-xs bg-gray-50"
+                    value={combinedLotNumbers}
+                    readOnly
+                  />
+                </HeaderField>
 
-              <HeaderField label="Products (auto)">
-                <input
-                  className="w-full rounded-lg border px-3 py-2 text-xs bg-gray-50"
-                  value={combinedProducts}
-                  readOnly
-                />
-              </HeaderField>
-            </div>
-
-            <div className="flex flex-wrap gap-2 text-xs">
-              <button
-                type="button"
-                className="rounded-xl border px-3 py-2 hover:bg-gray-50"
-                onClick={() => {
-                  try {
-                    window.localStorage.setItem(
-                      LS_KEY,
-                      JSON.stringify(state)
-                    );
-                    setStatusMsg("Draft saved.");
-                  } catch {
-                    setStatusMsg("Could not save draft.");
-                  }
-                }}
-              >
-                Save Draft
-              </button>
-              <button
-                type="button"
-                className="rounded-xl border px-3 py-2 hover:bg-gray-50"
-                onClick={() => {
-                  if (
-                    window.confirm(
-                      "Clear this Sortex draft? This cannot be undone."
-                    )
-                  ) {
-                    setState(DEFAULT_STATE);
-                    try {
-                      window.localStorage.removeItem(LS_KEY);
-                    } catch {}
-                    setStatusMsg("Draft cleared.");
-                    dirtyRef.current = false;
-                  }
-                }}
-              >
-                Clear Draft
-              </button>
-              <button
-                type="button"
-                className="rounded-xl bg-[#5D1214] text-white px-3 py-2 font-semibold hover:opacity-90"
-                onClick={handleComplete}
-              >
-                Complete Job
-              </button>
-              
-            </div>
-            <span className="text-xs text-gray-500">
-            State autosaves locally while editing.
-          </span>
-
-            {statusMsg && (
-              <div className="text-[10px] text-gray-600">
-                {statusMsg}
+                <HeaderField label="Products (auto)">
+                  <input
+                    className="w-full rounded-lg border px-3 py-2 text-xs bg-gray-50"
+                    value={combinedProducts}
+                    readOnly
+                  />
+                </HeaderField>
               </div>
-            )}
 
-            {showValidation && (
-              <div className="mt-2 rounded border border-amber-300 bg-amber-50 px-3 py-2 text-[10px] text-amber-900">
-                Please ensure Process ID, Employee, inbound, and outputs
-                are correctly filled.
-              </div>
-            )}
-          </div>
-
-          {/* Summary */}
-          <div className="rounded-2xl border bg-white p-4 shadow-sm flex flex-col gap-2">
-            <h3 className="text-sm font-semibold mb-1">
-              Summary (Net Weights)
-            </h3>
-            <div className="grid grid-cols-2 gap-2">
-              <Stat
-                name="Inbound (lbs)"
-                value={totals.inputAmount.toLocaleString()}
-              />
-              <Stat
-                name="Outputs Total (lbs)"
-                value={totals.outputTotal.toLocaleString()}
-              />
-              <Stat
-                name="Clean (lbs)"
-                value={totals.clean.toLocaleString()}
-              />
-              <Stat
-                name="Rerun (lbs)"
-                value={totals.reruns.toLocaleString()}
-              />
-              <Stat
-                name="Rejects (lbs)"
-                value={totals.rejects.toLocaleString()}
-              />
-              <Stat
-                name="Trash (lbs)"
-                value={totals.trash.toLocaleString()}
-              />
-              <Stat
-                name="Balance (lbs)"
-                value={totals.balance.toLocaleString()}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Bins Used */}
-        <div className="rounded-2xl border bg-white p-4 shadow-sm mb-4">
-          <div className="flex justify-between items-center mb-3">
-            <h3 className="text-sm font-semibold">Source Bins</h3>
-            <button
-              type="button"
-              onClick={addBin}
-              className="rounded-xl border px-3 py-1.5 text-xs hover:bg-gray-50"
-            >
-              + Add Bin
-            </button>
-          </div>
-          {(!state.binsUsed || state.binsUsed.length === 0) && (
-            <p className="text-xs text-gray-500">
-              No bins added yet. Add bins to track which field-run
-              locations feed this Sortex run.
-            </p>
-          )}
-          <div className="space-y-2">
-            {(state.binsUsed || []).map((bin, i) => (
-              <div
-                key={i}
-                className="grid grid-cols-1 md:grid-cols-5 gap-2 items-center border-t pt-2 mt-1"
-              >
-                <select
-                  className="rounded border px-2 py-1 text-xs"
-                  value={bin.bin_location || ""}
-                  onChange={(e) =>
-                    updateBin(i, "bin_location", e.target.value)
-                  }
-                >
-                  <option value="">Select bin…</option>
-                  {bins.map((b) => (
-                    <option key={b.location} value={b.location}>
-                      {b.location}
-                    </option>
-                  ))}
-                </select>
-                <input
-                  className="rounded border px-2 py-1 text-[10px]"
-                  placeholder="Lots (comma-separated)"
-                  value={
-                    Array.isArray(bin.lot_numbers)
-                      ? bin.lot_numbers.join(", ")
-                      : bin.lot_numbers || ""
-                  }
-                  onChange={(e) =>
-                    updateBin(i, "lot_numbers", e.target.value)
-                  }
-                />
-                <input
-                  className="rounded border px-2 py-1 text-[10px]"
-                  placeholder="Products (comma-separated)"
-                  value={
-                    Array.isArray(bin.products)
-                      ? bin.products.join(", ")
-                      : bin.products || ""
-                  }
-                  onChange={(e) =>
-                    updateBin(i, "products", e.target.value)
-                  }
-                />
-                <input
-                  className="rounded border px-2 py-1 text-[10px]"
-                  placeholder="Current weight (info only)"
-                  value={bin.weight || ""}
-                  readOnly
-                />
+              <div className="flex flex-wrap gap-2 text-xs">
                 <button
                   type="button"
-                  onClick={() => removeBin(i)}
-                  className="justify-self-start md:justify-self-end rounded border px-2 py-1 text-[10px] hover:bg-gray-50"
+                  className="rounded-xl border px-3 py-2 hover:bg-gray-50"
+                  onClick={() => {
+                    try {
+                      window.localStorage.setItem(LS_KEY, JSON.stringify(state));
+                      setStatusMsg("Draft saved.");
+                    } catch {
+                      setStatusMsg("Could not save draft.");
+                    }
+                  }}
                 >
-                  ✕ Remove
+                  Save Draft
+                </button>
+                <button
+                  type="button"
+                  className="rounded-xl border px-3 py-2 hover:bg-gray-50"
+                  onClick={() => {
+                    if (window.confirm("Clear this Spiral draft? This cannot be undone.")) {
+                      setState(DEFAULT_STATE);
+                      try {
+                        window.localStorage.removeItem(LS_KEY);
+                      } catch {}
+                      setStatusMsg("Draft cleared.");
+                      dirtyRef.current = false;
+                    }
+                  }}
+                >
+                  Clear Draft
+                </button>
+                <button
+                  type="button"
+                  className="rounded-xl bg-[#5D1214] text-white px-3 py-2 font-semibold hover:opacity-90"
+                  onClick={handleComplete}
+                >
+                  Complete Job
                 </button>
               </div>
-            ))}
+              <span className="text-xs text-gray-500">State autosaves locally while editing.</span>
+
+              {statusMsg && <div className="text-[10px] text-gray-600">{statusMsg}</div>}
+
+              {showValidation && (
+                <div className="mt-2 rounded border border-amber-300 bg-amber-50 px-3 py-2 text-[10px] text-amber-900">
+                  Please ensure Process ID, Employee, inbound, and outputs are correctly filled.
+                </div>
+              )}
+            </div>
+
+            {/* Summary */}
+            <div className="rounded-2xl border bg-white p-4 shadow-sm flex flex-col gap-2">
+              <h3 className="text-sm font-semibold mb-1">Summary (Net Weights)</h3>
+              <div className="grid grid-cols-2 gap-2">
+                <Stat name="Inbound (lbs)" value={totals.inputAmount.toLocaleString()} />
+                <Stat name="Outputs Total (lbs)" value={totals.outputTotal.toLocaleString()} />
+                <Stat name="Clean (lbs)" value={totals.clean.toLocaleString()} />
+                <Stat name="Screenings (lbs)" value={totals.screenings.toLocaleString()} />
+                <Stat name="Balance (lbs)" value={totals.balance.toLocaleString()} />
+              </div>
+            </div>
           </div>
-        </div>
 
-        {/* Inbound */}
-        <InboundTable
-          binsUsed={state.binsUsed || []}
-          rows={state.inbound || []}
-          onAdd={addInbound}
-          onUpdate={updateInbound}
-          onRemove={removeInbound}
-          physicalBoxes={physicalBoxes}
-        />
+          {/* Bins Used */}
+          <div className="rounded-2xl border bg-white p-4 shadow-sm mb-4">
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="text-sm font-semibold">Source Bins</h3>
+              <button
+                type="button"
+                onClick={addBin}
+                className="rounded-xl border px-3 py-1.5 text-xs hover:bg-gray-50"
+              >
+                + Add Bin
+              </button>
+            </div>
+            {(!state.binsUsed || state.binsUsed.length === 0) && (
+              <p className="text-xs text-gray-500">
+                No bins added yet. Add bins to track which field-run locations feed this Spiral run.
+              </p>
+            )}
+            <div className="space-y-2">
+              {(state.binsUsed || []).map((bin, i) => (
+                <div key={i} className="grid grid-cols-1 md:grid-cols-5 gap-2 items-center border-t pt-2 mt-1">
+                  <select
+                    className="rounded border px-2 py-1 text-xs"
+                    value={bin.bin_location || ""}
+                    onChange={(e) => updateBin(i, "bin_location", e.target.value)}
+                  >
+                    <option value="">Select bin…</option>
+                    {bins.map((b) => (
+                      <option key={b.location} value={b.location}>
+                        {b.location}
+                      </option>
+                    ))}
+                  </select>
+                  <input
+                    className="rounded border px-2 py-1 text-[10px]"
+                    placeholder="Lots (comma-separated)"
+                    value={Array.isArray(bin.lot_numbers) ? bin.lot_numbers.join(", ") : bin.lot_numbers || ""}
+                    onChange={(e) => updateBin(i, "lot_numbers", e.target.value)}
+                  />
+                  <input
+                    className="rounded border px-2 py-1 text-[10px]"
+                    placeholder="Products (comma-separated)"
+                    value={Array.isArray(bin.products) ? bin.products.join(", ") : bin.products || ""}
+                    onChange={(e) => updateBin(i, "products", e.target.value)}
+                  />
+                  <input
+                    className="rounded border px-2 py-1 text-[10px]"
+                    placeholder="Current weight (info only)"
+                    value={bin.weight || ""}
+                    readOnly
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeBin(i)}
+                    className="justify-self-start md:justify-self-end rounded border px-2 py-1 text-[10px] hover:bg-gray-50"
+                  >
+                    ✕ Remove
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
 
-        {/* Add inbound by Box ID */}
-        <div className="rounded-2xl border bg-white p-4 shadow-sm mt-6">
-          <h3 className="text-base font-semibold mb-2">Add Inbound by Box ID</h3>
-          <p className="text-xs text-gray-500 mb-2">
-            Pull weight / lot / product data from existing boxes (Clean / Rerun / Screenings).
-          </p>
+          {/* Inbound */}
+          <InboundTable
+            binsUsed={state.binsUsed || []}
+            rows={state.inbound || []}
+            onAdd={addInbound}
+            onUpdate={updateInbound}
+            onRemove={removeInbound}
+            physicalBoxes={physicalBoxes}
+          />
 
-          <div className="flex gap-2">
-            <input
-              id="sortexBoxIdInput"
-              className="flex-1 rounded-lg border px-3 py-2 text-sm"
-              placeholder="Enter Box ID (e.g., 1192C1)"
-            />
+          {/* Add inbound by Box ID */}
+          <div className="rounded-2xl border bg-white p-4 shadow-sm mt-6">
+            <h3 className="text-base font-semibold mb-2">Add Inbound by Box ID</h3>
+            <p className="text-xs text-gray-500 mb-2">
+              Pull weight / lot / product data from existing boxes (Clean / Screenings).
+            </p>
+
+            <div className="flex gap-2">
+              <input
+                id="spiralBoxIdInput"
+                className="flex-1 rounded-lg border px-3 py-2 text-sm"
+                placeholder="Enter Box ID (e.g., 1192C1)"
+              />
+              <button
+                type="button"
+                onClick={async () => {
+                  const el = document.getElementById("spiralBoxIdInput");
+                  const value = el.value.trim();
+                  if (!value) return;
+                  await addInboundFromBoxID(value);
+                  el.value = "";
+                }}
+                className="rounded-xl border px-3 py-2 text-sm hover:bg-gray-50"
+              >
+                + Add Box
+              </button>
+            </div>
+          </div>
+
+          {/* Custom inbound rows */}
+          <div className="rounded-2xl border bg-white p-4 shadow-sm mt-6">
+            <h3 className="text-base font-semibold mb-2">Add Custom Inbound</h3>
+            <p className="text-xs text-gray-500 mb-2">Add any number of custom inbound entries.</p>
+
+            {customRows.map((row, idx) => (
+              <div key={idx} className="grid grid-cols-1 sm:grid-cols-4 gap-2 items-center mb-2">
+                <input
+                  className="rounded-lg border px-3 py-2 text-sm"
+                  placeholder="Lot Number"
+                  value={row.lot}
+                  onChange={(e) =>
+                    setCustomRows((prev) => {
+                      const list = [...prev];
+                      list[idx].lot = e.target.value;
+                      return list;
+                    })
+                  }
+                />
+
+                <input
+                  className="rounded-lg border px-3 py-2 text-sm"
+                  placeholder="Product"
+                  value={row.product}
+                  onChange={(e) =>
+                    setCustomRows((prev) => {
+                      const list = [...prev];
+                      list[idx].product = e.target.value;
+                      return list;
+                    })
+                  }
+                />
+
+                <input
+                  type="number"
+                  step="any"
+                  className="rounded-lg border px-3 py-2 text-sm"
+                  placeholder="Weight (lbs)"
+                  value={row.weight}
+                  onChange={(e) =>
+                    setCustomRows((prev) => {
+                      const list = [...prev];
+                      list[idx].weight = e.target.value;
+                      return list;
+                    })
+                  }
+                />
+
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setCustomRows((prev) => prev.filter((_, i) => i !== idx))}
+                    className="rounded-lg border px-3 py-2 text-sm hover:bg-gray-50"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+            ))}
+
+            <button
+              type="button"
+              onClick={() => setCustomRows((prev) => [...prev, { lot: "", product: "", weight: "" }])}
+              className="rounded-xl border px-3 py-2 text-sm hover:bg-gray-50 mb-2"
+            >
+              + Add Custom Row
+            </button>
+
             <button
               type="button"
               onClick={async () => {
-                const el = document.getElementById("sortexBoxIdInput");
-                const value = el.value.trim();
-                if (!value) return;
-
-                await addInboundFromBoxID(value);
-                el.value = "";
+                for (const row of customRows) {
+                  if (!row.lot || !row.product || !row.weight) continue;
+                  await addInboundCustom(row.lot, row.product, row.weight);
+                }
+                setCustomRows([{ lot: "", product: "", weight: "" }]);
               }}
-              className="rounded-xl border px-3 py-2 text-sm hover:bg-gray-50"
+              className="rounded-xl bg-[#5D1214] px-3 py-2 text-sm font-semibold text-white hover:bg-opacity-90"
             >
-              + Add Box
+              Add to Inbound
             </button>
           </div>
-        </div>
 
-        {/* Custom inbound rows */}
-        <div className="rounded-2xl border bg-white p-4 shadow-sm mt-6">
-          <h3 className="text-base font-semibold mb-2">Add Custom Inbound</h3>
-          <p className="text-xs text-gray-500 mb-2">
-            Add any number of custom inbound entries.
+          {/* Outputs */}
+          <div className="space-y-4">
+            <OutputBoxTable
+              kind="clean"
+              title="Clean Output"
+              color="bg-emerald-500"
+              rows={state.clean || []}
+              processID={state.processID}
+              onAdd={() => addOutputBox("clean")}
+              onUpdate={(i, f, v) => updateOutputBox("clean", i, f, v)}
+              onRemove={(i) => removeOutputBox("clean", i)}
+              physicalBoxes={physicalBoxes}
+            />
+            <OutputBoxTable
+              kind="screenings"
+              title="Screenings"
+              color="bg-amber-500"
+              rows={state.screenings || []}
+              processID={state.processID}
+              onAdd={() => addOutputBox("screenings")}
+              onUpdate={(i, f, v) => updateOutputBox("screenings", i, f, v)}
+              onRemove={(i) => removeOutputBox("screenings", i)}
+              physicalBoxes={physicalBoxes}
+            />
+          </div>
+
+          {/* Notes */}
+          <div className="mt-6 rounded-2xl border bg-white p-4 shadow-sm">
+            <HeaderField label="Notes">
+              <textarea
+                className="w-full rounded-lg border px-3 py-2 text-sm min-h-[80px]"
+                value={state.notes}
+                onChange={(e) => setField("notes", e.target.value)}
+                placeholder="Additional details about this Spiral process…"
+              />
+            </HeaderField>
+          </div>
+
+          <p className="mt-4 text-[10px] text-gray-500">
+            Net weights use physical box deduction whenever a Physical Box is selected.
           </p>
-
-          {customRows.map((row, idx) => (
-            <div
-              key={idx}
-              className="grid grid-cols-1 sm:grid-cols-4 gap-2 items-center mb-2"
-            >
-              <input
-                className="rounded-lg border px-3 py-2 text-sm"
-                placeholder="Lot Number"
-                value={row.lot}
-                onChange={(e) =>
-                  setCustomRows((prev) => {
-                    const list = [...prev];
-                    list[idx].lot = e.target.value;
-                    return list;
-                  })
-                }
-              />
-
-              <input
-                className="rounded-lg border px-3 py-2 text-sm"
-                placeholder="Product"
-                value={row.product}
-                onChange={(e) =>
-                  setCustomRows((prev) => {
-                    const list = [...prev];
-                    list[idx].product = e.target.value;
-                    return list;
-                  })
-                }
-              />
-
-              <input
-                type="number"
-                step="any"
-                className="rounded-lg border px-3 py-2 text-sm"
-                placeholder="Weight (lbs)"
-                value={row.weight}
-                onChange={(e) =>
-                  setCustomRows((prev) => {
-                    const list = [...prev];
-                    list[idx].weight = e.target.value;
-                    return list;
-                  })
-                }
-              />
-
-              <div className="flex justify-end">
-                <button
-                  type="button"
-                  onClick={() =>
-                    setCustomRows((prev) => prev.filter((_, i) => i !== idx))
-                  }
-                  className="rounded-lg border px-3 py-2 text-sm hover:bg-gray-50"
-                >
-                  ✕
-                </button>
-              </div>
-            </div>
-          ))}
-
-          <button
-            type="button"
-            onClick={() =>
-              setCustomRows((prev) => [...prev, { lot: "", product: "", weight: "" }])
-            }
-            className="rounded-xl border px-3 py-2 text-sm hover:bg-gray-50 mb-2"
-          >
-            + Add Custom Row
-          </button>
-
-          <button
-            type="button"
-            onClick={async () => {
-              for (const row of customRows) {
-                if (!row.lot || !row.product || !row.weight) continue;
-                await addInboundCustom(row.lot, row.product, row.weight);
-              }
-              setCustomRows([{ lot: "", product: "", weight: "" }]);
-            }}
-            className="rounded-xl bg-[#5D1214] px-3 py-2 text-sm font-semibold text-white hover:bg-opacity-90"
-          >
-            Add to Inbound
-          </button>
         </div>
-
-
-
-        {/* Outputs */}
-        <div className="space-y-4">
-          <OutputBoxTable
-            kind="clean"
-            title="Clean Output"
-            color="bg-emerald-500"
-            rows={state.clean || []}
-            processID={state.processID}
-            onAdd={() => addOutputBox("clean")}
-            onUpdate={(i, f, v) =>
-              updateOutputBox("clean", i, f, v)
-            }
-            onRemove={(i) => removeOutputBox("clean", i)}
-            physicalBoxes={physicalBoxes}
-          />
-          <OutputBoxTable
-            kind="reruns"
-            title="Rerun Output"
-            color="bg-sky-500"
-            rows={state.reruns || []}
-            processID={state.processID}
-            onAdd={() => addOutputBox("reruns")}
-            onUpdate={(i, f, v) =>
-              updateOutputBox("reruns", i, f, v)
-            }
-            onRemove={(i) => removeOutputBox("reruns", i)}
-            physicalBoxes={physicalBoxes}
-          />
-          <OutputBoxTable
-            kind="rejects"
-            title="Rejects"
-            color="bg-amber-500"
-            rows={state.rejects || []}
-            processID={state.processID}
-            onAdd={() => addOutputBox("rejects")}
-            onUpdate={(i, f, v) =>
-              updateOutputBox("rejects", i, f, v)
-            }
-            onRemove={(i) => removeOutputBox("rejects", i)}
-            physicalBoxes={physicalBoxes}
-          />
-          <OutputBoxTable
-            kind="trash"
-            title="Trash"
-            color="bg-rose-500"
-            rows={state.trash || []}
-            processID={state.processID}
-            onAdd={() => addOutputBox("trash")}
-            onUpdate={(i, f, v) =>
-              updateOutputBox("trash", i, f, v)
-            }
-            onRemove={(i) => removeOutputBox("trash", i)}
-            physicalBoxes={physicalBoxes}
-          />
-        </div>
-
-        {/* Notes */}
-      <div className="mt-6 rounded-2xl border bg-white p-4 shadow-sm">
-        <HeaderField label="Notes">
-          <textarea
-            className="w-full rounded-lg border px-3 py-2 text-sm min-h-[80px]"
-            value={state.notes}
-            onChange={(e) => setField("notes", e.target.value)}
-            placeholder="Additional details about this Qsage process…"
-          />
-        </HeaderField>
       </div>
-
-        <p className="mt-4 text-[10px] text-gray-500">
-          Net weights use physical box deduction whenever a Physical Box
-          is selected.
-        </p>
-      </div>
-      </div>
-      </ScrollingLayout>
+    </ScrollingLayout>
   );
 }
