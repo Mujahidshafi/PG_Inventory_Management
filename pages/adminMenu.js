@@ -36,16 +36,18 @@ function AdminMenu() {
   }
 
   return (
-    <Layout title="Admin Menu" onSettingsClick={() => setShowSettings(!showSettings)}>
+    <Layout title="Admin Menu" onSettingsClick={() => setShowSettings(!showSettings)} onLogout={handleLogout}>
       {/* Admin Buttons */}
       <div className="grid grid-cols-4 gap-8">
         <Link href="/newFieldRun" className={buttonStyle}>New Field Run</Link>
         <Link href="/transfer" className={buttonStyle}>Transfer</Link>
+        <Link href="/qsageJob" className={buttonStyle}>Qsage Job</Link>
+        <Link href="/sortexJob" className={buttonStyle}>Sortex Job</Link>
         <Link href="/mixingJob" className={buttonStyle}>Mix</Link>
-        <Link href="/addNewItems" className={buttonStyle}>Add New Items</Link>
-        <Link href="/deleteItems" className={buttonStyle}>Delete Items</Link>
+        <Link href="/baggingJob" className={buttonStyle}>Bagging Job</Link>
+        <Link href="/orderFulfillment" className={buttonStyle}>Order Fulfillment</Link>
+        <Link href="/reports" className={buttonStyle}>Process Reports</Link>
         <Link href="/jobs" className={buttonStyle}>Jobs</Link>
-        <Link href="/updateLocation" className={buttonStyle}>Update Location</Link>
         <Link href="/createJob" className={buttonStyle}>Create Job</Link>
         <Link href="/inProcess" className={buttonStyle}>In Process</Link>
         <Link href="/storageDashboard" className={buttonStyle}>Storage Dashboard</Link>
@@ -53,11 +55,10 @@ function AdminMenu() {
         <Link href="/search" className={buttonStyle}>Search</Link>
         <Link href="/accountsManager" className={buttonStyle}>Accounts Manager</Link>
         <Link href="/jobHistory" className={buttonStyle}>Job History</Link>
-        <Link href="/qsageJob" className={buttonStyle}>Qsage Job</Link>
-        <Link href="/sortexJob" className={buttonStyle}>Sortex Job</Link>
         <Link href="/CropMenu" className={buttonStyle}>Crop Menu</Link>
         <Link href="/editFRStorageSuppliers" className={buttonStyle}>Add/Delete</Link>
-        <Link href="/reports" className={buttonStyle}>Process Reports</Link>
+        <Link href="/managePeople" className={buttonStyle}>Manage People</Link>
+        <Link href="/physicalBoxes" className={buttonStyle}>Physical Boxes</Link>
 
       </div>
     </Layout>

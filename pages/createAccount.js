@@ -82,7 +82,7 @@ function CreateAccount() {
   };
 
   return (
-    <Layout title="Create New Account" onSettingsClick={() => setShowSettings(!showSettings)}>
+    <Layout title="Create New Account" showBack={true} onSettingsClick={() => setShowSettings(!showSettings)}>
       <div className="flex flex-col items-center justify-center my-10">
         <div className="flex flex-row gap-x-10 justify-center">
 

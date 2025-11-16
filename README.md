@@ -37,7 +37,6 @@ What makes our team’s solution unique:
     <li><a href="#developer-instructions">🧪 Developer Instructions</a></li>
     <li><a href="#testing">🧪 Testing</a></li>
     <li><a href="#deployment">🚀 Deployment</a></li>
-    <li><a href="#timeline">⏱ Timeline</a></li>
     <li><a href="#contributors">👥 Contributors</a></li>
   </ol>
 </details>
@@ -66,60 +65,110 @@ Pleasant Grove Farms currently uses spreadsheets to manage over 3,000 acres of c
 
   
 ## Front End Visuals
-We used Figma to create a prototype for the project, here are some examples from that prototype:<br>
-Login Interface:
-![Image](https://github.com/user-attachments/assets/1d0cc273-ae7f-460b-b0f4-80cd45ae5da5)
+Here are some visuals from our product:<br>
+<details>
+  <summary>Visuals</summary>
+  <ol>
+    <li><a href="#login-page-">Login Page</a></li>
+    <li><a href="#employee-menu-">Employee Menu</a></li>
+    <li><a href="#admin-menu-">Admin Menu</a></li>
+    <li><a href="#new-field-run-">New Field Run</a></li>
+    <li><a href="#transfer-">Transfer</a></li>
+    <li><a href="#adddelete-items-">Add/Delete Items</a></li>
+    <li><a href="#create-job-">Create Job</a></li>
+    <li><a href="#mixing-job-">Mixing Job</a></li>
+    <li><a href="#qsage-job-">Qsage Job</a></li>
+    <li><a href="#sortex-job-">Sortex Job</a></li>
+    <li><a href="#bagging-job-">Bagging Job</a></li>
+    <li><a href="#storage-dashboard-">Storage Dashboard</a></li>
+    <li><a href="#clean-storage-">Clean Storage</a></li>
+    <li><a href="#search-">Search</a></li>
+    <li><a href="#reports-">Reports</a></li>
+    <li><a href="#orders-">Orders</a></li>
+  </ol>
+</details>
 
-Admin Dashboard:
-![Image](https://github.com/user-attachments/assets/18c533b2-bd04-4f16-9873-79229cf34af0)
+### Login Page: <br>
+This is the landing page where users can log in using their email and password.
+<img width="1915" height="913" alt="Image" src="https://github.com/user-attachments/assets/7d737a41-f881-4e60-897c-e54f43534293" />
 
-Search Page:
-![Image](https://github.com/user-attachments/assets/3b3113f3-6f48-40ee-9ebd-0853505de361)
+### Employee Menu: <br>
+The employee menu provides access to limited functionality, including the New Field Run, Transfer, Jobs, and Update Location pages.
 
-Running Job Page:
-![Image](https://github.com/user-attachments/assets/68829f99-d86c-4911-97d4-56d9a658e5ca)
+### Admin Menu: <br>
+The admin menu includes all employee features plus administrative tools such as adding and deleting locations, products, sale items, and users.
+
+### New Field Run: <br>
+This page allows users to record a new field run — an incoming load of product from the fields.
+
+### Transfer: <br>
+Used to transfer a specified weight of product between storage silos.
+
+### Add/Delete Items: <br>
+Provides admins with tools to add or remove storage locations, customers, or other configurable items.
+
+### Create Job: <br>
+Enables admins to create and schedule new jobs for later execution.
+
+### Mixing Job: <br>
+Used by admins to run a mixing job involving two product boxes.
+
+### Qsage Job: <br>
+Allows admins to run, record, and complete a Qsage job.
+
+### Sortex Job: <br>
+Allows admins to run, record, and complete a Qsage job.
+
+### Bagging Job: <br>
+Enables admins to manage and record bagging operations for finished products.
+
+### Storage Dashboard: <br>
+Displays navigation to all storage categories, including field run, screening, and clean storage.
+
+### Clean Storage: <br>
+This is a storage page example, it lists clean storage items organized by product, with search filters for lot numbers.
+
+### Search: <br>
+Allows admins to search by lot number, location, or product, with optional filters for year and product type.
+
+### Reports: <br>
+Displays all available reports for completed jobs. Admins can search by process ID, lot number, or product.
+
+### Orders: <br>
+Allows admins to create, update, and complete orders, as well as view all active and completed orders.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Back End Visuals
-This is our current Entity Relationship Diagram:
-
-![Image](https://github.com/user-attachments/assets/1c78b170-6c83-4049-b365-7082498c1206)
+This is our Entity Relationship Diagram:
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Developer Instructions
+How to download and setup to run.
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Testing 
+Links or a description of how to test.
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Deployment 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-## Timeline
-Current Timeline Estimate:
-| Sprint #       | Planned Tasks                                                                                                                                              |
-|----------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Sprint 05      | Back End Structure Creation and Front End Retouch/Linking                                                                                                  |
-| Sprint 06      | Back End Creation for Login/New Field Run/Create Job/<br>Update Location/Transfer Pages                                                                    |
-| Sprint 07      | Back End Creation for Search/Add New Items/Delete Items/<br>Run Job/View Job Pages                                                                         |
-| Sprint 08      | Back End Creation for Search Modify/Search History/<br>Field Run Storage/Clean Storage/Screening Storage Pages and<br>Front End Creation for Search History|
-| Sprint 09      | Back End Creation for Field Run Modify/Clean Storage Modify/<br>Screening Storage Modify/Sale Page/In Process Pages<br>and any other needed modifications  |
-
-Key Milestones:
- * The creation of our database is essential for the continuation of our project, and due to that it is placed in Sprint 05
- * Several of our pages depend on data produced by other pages. For example:
-   * New Field Run- allows the user to input data to begin manipulating
-   * Create Job- allows for job creation, which can then be viewed/manipulated through the View Job, Run Job, and In Process Pages
-   * Search- supports the Search History and Search Modify pages
- * These pages are planned for earlier on due to their dependencies to prevent possible functional issues
-
+How to deploy the app.
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Contributors
-
 [![Contributors](https://contrib.rocks/image?repo=Mujahidshafi/PG_Inventory_Management)](https://github.com/Mujahidshafi/PG_Inventory_Management/graphs/contributors)
+
+### Team Contacts
+
+- [Mujahid Shafi](https://github.com/Mujahidshafi) — [Email](mailto:muja.shafi@gmail.com)
+- [Amber Aring](https://github.com/aaring25) — [Email](mailto:aring.amber@gmail.com)
+- [Purity Maina](https://github.com/p-maina) — [Email](mailto:puritymainam@gmail.com)
+- [Gene Arellano](https://github.com/genearellano) — [Email](mailto:kenare1431@gmail.com)
+- [Anjoe Mateo](https://github.com/anmateo) — [Email](mailto:useramateo@gmail.com)
+- [Lamba Mujadedi](https://github.com/lambamojo) — [Email](mailto:lambamojo123@gmail.com)
+- [Subhanullah Lalzai](https://github.com/Subhan-4) — [Email](mailto:subhanullahmomand3@gmail.com)
+- [Hamzah Ramzan](https://github.com/Bahamas360) — [Email](mailto:mramzan331@gmail.com)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

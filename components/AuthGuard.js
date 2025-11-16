@@ -1,15 +1,20 @@
 import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
+
 const publicPaths = ['/login', '/forgotPassword', '/resetPassword'];
 const employeeOnlyPaths = ['/employeeMenu'];
 const adminOnlyPaths = [
-    '/adminMenu', '/accountsManager', '/deleteItems', '/addNewItems',
-    '/cleanStorageModify', '/cleanStorage', '/createAccount', '/createJob',
-    '/fieldRunModify', '/fieldRunStorage', '/inProcess', '/Sale',
-    '/screeningStorage', '/screeningStorageModify', '/search', '/searchHistory',
-    '/searchModify', '/storageDashboard'
-  ];
+  '/adminMenu', '/accountsManager', '/deleteItems', '/addNewItems',
+  '/cleanStorageModify', '/cleanStorage', '/createAccount', '/createJob',
+  '/fieldRunModify', '/fieldRunStorage', '/inProcess', '/Sale',
+  '/screeningStorage', '/screeningStorageModify', '/search', 
+  '/storageDashboard', '/qsageJob', '/sortexJob', 'mixingJob',
+  'deleteItems', '/orders', '/jobHistory', 'CropMenu',
+  '/editFRStorageSuppliers', 'reports', '/managePeople', '/physicalBoxes',
+  '/baggingJob', '/orderFulfillment', '/trash', '/insideCo2', '/baggedStorage',
+  '/rerunStorage', '/trash'
+];
 
 const AuthGuard = ({ children }) => {
   const session = useSession();
@@ -32,14 +37,20 @@ const AuthGuard = ({ children }) => {
         .eq('id', session.user.id)
         .single();
 
-      if (error) console.error('Error fetching role:', error);
-      else setRole(data.role);
+      if (error) {
+        console.error('Error fetching role:', error);
+      } else if (data && data.role) {
+        setRole(data.role);
+      } else {
+        console.warn('No role found for user:', session.user.id);
+        setRole(null);
+      }
 
       setLoading(false);
     };
 
     fetchRole();
-  }, [session,supabase]);
+  }, [session, supabase]);
 
   // Redirect logic
   useEffect(() => {

@@ -73,9 +73,6 @@ function Login() {
         />
         <div className="absolute inset-0 bg-black/20"></div>
         <div>
-          <p className="absolute bottom-2 left-6 text-sm text-white opacity-80 font-[amiri] z-[9999]">
-            © 2025 Pleasant Grove Farms
-          </p>
         </div>
       </div>
 
@@ -116,7 +113,6 @@ function Login() {
               if (e.key === "Enter") handleLogin();
             }}
           />
-          <span className="text-white font-[amiri] text-[15px] underline">Warning: For Authorized Users Only</span>
           <Button
             label={loading ? "Logging in..." : "Log In"}
             color="red"

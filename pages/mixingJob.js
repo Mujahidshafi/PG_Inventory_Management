@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { supabase } from "../lib/supabaseClient";
+import Layout from "../components/layout";
 
-export default function MixingJob() {
+function MixingJob() {
   const DEFAULT_STATE = {
     processID: "",
     co2Bin: "",
@@ -12,6 +13,25 @@ export default function MixingJob() {
   const [state, setState] = useState(DEFAULT_STATE);
   const [newBoxId, setNewBoxId] = useState("");
   const [loading, setLoading] = useState(false);
+  const [employees, setEmployees] = useState([]);
+  const [selectedEmployee, setSelectedEmployee] = useState("");
+
+  useEffect(() => {
+    const fetchEmployees = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("employees")
+          .select("name")
+          .eq("active", true);
+
+        if (error) throw error;
+        setEmployees(data || []);
+      } catch (err) {
+        console.error("Error fetching employees:", err);
+      }
+    };
+    fetchEmployees();
+  }, []);
 
   // 🔹 Fetch box details by Box_ID from any source table
   const handleAddBox = async () => {
@@ -197,6 +217,7 @@ export default function MixingJob() {
         total_weight: totalUsedWeight,
         notes: state.notes?.trim() || null,
         boxes: updatedBoxes,
+        employee: selectedEmployee || null,
       });
 
       if (reportError) {
@@ -221,8 +242,24 @@ export default function MixingJob() {
 
 
   return (
+    <Layout title="Mixing Process (CO₂ Bins)" showBack={true}>
     <div className="max-w-5xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">Mixing Process (CO₂ Bins)</h1>
+
+      <div>
+        <label className="block text-sm font-medium mb-1">Employee</label>
+        <select
+          className="border rounded-lg px-3 py-2 w-full"
+          value={selectedEmployee}
+          onChange={(e) => setSelectedEmployee(e.target.value)}
+        >
+          <option value="">Select an employee...</option>
+          {employees.map((emp) => (
+            <option key={emp.name} value={emp.name}>
+              {emp.name}
+            </option>
+          ))}
+        </select>
+      </div>
 
       {/* Process Info */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -240,13 +277,14 @@ export default function MixingJob() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">CO₂ Bin</label>
+          <label className="block text-sm font-medium mb-1" htmlFor="co2-bin">CO₂ Bin</label>
           <select
             value={state.co2Bin}
             onChange={(e) =>
               setState((prev) => ({ ...prev, co2Bin: e.target.value }))
             }
             className="border rounded-lg px-3 py-2 w-full"
+            id="co2-bin"
           >
             <option value="">Select Bin</option>
             <option value="Co2-1">Co2-1</option>
@@ -280,7 +318,7 @@ export default function MixingJob() {
         <button
           onClick={handleAddBox}
           disabled={loading}
-          className="bg-black text-white px-4 py-2 rounded-lg"
+          className="bg-[#3D5147] text-white px-4 py-2 rounded-lg"
         >
           {loading ? "Searching..." : "+ Add Box"}
         </button>
@@ -419,11 +457,14 @@ export default function MixingJob() {
       <div className="mt-6 text-right">
         <button
           onClick={handleCompleteMix}
-          className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-semibold"
+          className="bg-[#5D1214] hover:bg-red-950 text-white px-6 py-2 rounded-lg font-semibold"
         >
           Complete Mix
         </button>
       </div>
     </div>
+    </Layout>
   );
 }
+
+export default MixingJob;

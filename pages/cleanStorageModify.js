@@ -11,25 +11,32 @@ const btn =
 
 export default function CleanStorageModify() {
   const router = useRouter();
+  const { id } = router.query;  
 
   const [locations, setLocations] = useState([]);
-  const [suggestions, setSuggestions] = useState([]); // from crop_types
+  const [suggestions, setSuggestions] = useState([]);
+  const [customers, setCustomers] = useState([]);
   const [form, setForm] = useState({
     crop_type: "",
+    crop_code: "",
     weight_kg: "",
-    quality: "A",
+    supplier: "",
     notes: "",
     location_id: "",
+    date: "",
+    box: "",
+    process: "",
+    lot_number: "",
+
   });
   const [saveToCatalog, setSaveToCatalog] = useState(true);
   const [saving, setSaving] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
-  // Load storage locations + crop type suggestions
   useEffect(() => {
     (async () => {
       try {
-        const [{ data: locs, error: locErr }, { data: crops, error: cropErr }] =
+        const [{ data: locs, error: locErr }, { data: crops, error: cropErr }, { data: custs, error: custErr }] =
           await Promise.all([
             supabase
               .from("storage_location_list")
@@ -37,25 +44,30 @@ export default function CleanStorageModify() {
               .order("storage_location_name", { ascending: true }),
             supabase
               .from("crop_types")
-              .select("id, name")
+              .select("id, name, crop_code")
               .order("name", { ascending: true }),
+            supabase
+              .from("customers")
+              .select("customer_id, name")
+              .order("name", { ascending: true })
           ]);
 
         if (locErr) throw locErr;
         if (cropErr) throw cropErr;
+        if (custErr) throw custErr;
 
         if (locs) setLocations(locs);
-        if (crops) setSuggestions(crops.map((c) => c.name));
+        if (crops) setSuggestions(crops);
+        if (custs) setCustomers(custs);
       } catch (e) {
         setErrorMsg(e?.message || "Failed to load reference data.");
       }
     })();
   }, []);
-
   const onChange = (e) =>
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
 
-  const normalizedCrop = useMemo(() => form.crop_type.trim(), [form.crop_type]);
+  const normalizedCrop = useMemo(() => form.crop_code.trim(), [form.crop_code]);
 
   const requiredOk = useMemo(() => {
     const w = (form.weight_kg || "").toString().replace(/,/g, "").trim();
@@ -68,37 +80,43 @@ export default function CleanStorageModify() {
       weight > 0
     );
   }, [form.weight_kg, form.location_id, normalizedCrop]);
+  useEffect(() => {
+    if (!id) return;
+    (async () => {
+      try {
+        const { data, error } = await supabase
+          .from("clean_product_storage")
+          .select("*")
+          .eq("ID", id)
+          .single();
 
-  // Upsert crop name into catalog (Supabase JS v2)
-  const ensureInCatalog = async () => {
-    if (!saveToCatalog || !normalizedCrop) return;
-
-    const { error } = await supabase
-      .from("crop_types")
-      .upsert(
-        [{ name: normalizedCrop }],
-        {
-          onConflict: "name",
-          ignoreDuplicates: true, // do nothing if it already exists
+        if (error) throw error;
+        if (data) {
+          //console.log("loaded record", data)
+          setForm({
+            //crop_type: data.Product ?? "",
+            crop_code: data.Product ?? "",
+            weight_kg: (data.Amount ?? "").toString(),
+            supplier: data.Supplier ?? "",
+            notes: data.Notes ?? "",
+            location_id: data.Location ?? "",
+            date: data.Date_Stored ?? "",
+            box: data.Box_ID ?? "",
+            process: data.Process_ID ?? "",
+            lot_number: data.Lot_Number ?? "",
+          });
         }
-      );
-
-    if (!error) {
-      setSuggestions((prev) =>
-        [...new Set([...prev, normalizedCrop])].sort((a, b) =>
-          a.localeCompare(b)
-        )
-      );
-    }
-    // If there's an error, we don't fail the whole submit—catalog is a convenience.
-  };
-
+      } catch (err) {
+        console.error("Error loading record:", err);
+        setErrorMsg("Failed to load record data.");
+      }
+    })();
+  }, [id]);
+  //console.log("Form", form)
   const onSubmit = async (e) => {
     e.preventDefault();
     if (saving) return;
     setErrorMsg("");
-
-    // Validate
     const weightSanitized = (form.weight_kg || "").toString().replace(/,/g, "");
     const weight = Number(weightSanitized);
     if (!requiredOk) {
@@ -108,21 +126,28 @@ export default function CleanStorageModify() {
 
     try {
       setSaving(true);
-
-      // Add to catalog first (safe: ignores duplicates)
-      await ensureInCatalog();
-
+      const now = new Date().toISOString();
       const payload = {
-        crop_type: normalizedCrop,
-        weight_kg: weight,
-        quality: form.quality,
-        notes: (form.notes || "").trim(),
-        location_id: isNaN(Number(form.location_id))
-          ? form.location_id
-          : Number(form.location_id),
-      };
+        Product: form.crop_code,
+        Amount: weight,
+        Supplier: form.supplier,
+        Notes: (form.notes || "").trim(),
+        Location: form.location_id,
+        Box_ID: form.box,
+        Process_ID: form.process,
+        Lot_Number: form.lot_number,
+        Date_Stored: form.date ? new Date(form.date).toISOString() : now,
 
-      const { error } = await supabase.from("clean_storage").insert([payload]);
+      };
+      const raw = Array.isArray(id) ? id[0] : id;
+      const hasId = !!raw;
+      const recordId = hasId && /^\d+$/.test(raw) ? Number(raw) : raw;
+      let error;
+      if (hasId) {
+        ({ error } = await supabase.from("clean_product_storage").update(payload).eq("ID", recordId));
+      } else {
+        ({ error } = await supabase.from("clean_product_storage").insert([payload]));
+      }
       if (error) throw error;
 
       router.push("/cleanStorage");
@@ -134,45 +159,41 @@ export default function CleanStorageModify() {
   };
 
   return (
-    <Layout title="Add Clean Product">
+    <Layout title={"Modify Clean Product"}>
       <form
         onSubmit={onSubmit}
         className="max-w-3xl mx-auto mt-8 p-6 rounded-2xl bg-white shadow"
       >
         <div className="grid md:grid-cols-2 gap-6">
-          {/* Product with suggestions, but free text allowed */}
+
           <div className="flex flex-col items-start">
             <label htmlFor="crop_type" className={label}>
               Product (Crop Type)
             </label>
 
             <input
-              id="crop_type"
+              id="crop_code"
               list="cropOptions"
-              name="crop_type"
+              name="crop_code"
               className={input}
               placeholder="Type or pick… (e.g., Wheat, Potatoes, Corn)"
-              value={form.crop_type}
+              value={form.crop_code}
               onChange={onChange}
               autoComplete="off"
             />
             <datalist id="cropOptions">
-              {suggestions.map((name) => (
-                <option key={name} value={name} />
+              {suggestions.map((c) => (
+                <option
+                  key={c.crop_code}
+                  value={c.crop_code}
+                  label={`${c.name}`}
+                />
               ))}
             </datalist>
 
-            <label className="mt-2 flex items-center gap-2 text-sm text-gray-700">
-              <input
-                type="checkbox"
-                checked={saveToCatalog}
-                onChange={(e) => setSaveToCatalog(e.target.checked)}
-              />
-              Save new name to catalog
-            </label>
           </div>
 
-          {/* Weight */}
+
           <div className="flex flex-col items-start">
             <label htmlFor="weight_kg" className={label}>
               Weight (kg)
@@ -191,46 +212,55 @@ export default function CleanStorageModify() {
             />
           </div>
 
-          {/* Quality */}
+
           <div className="flex flex-col items-start">
-            <label htmlFor="quality" className={label}>
-              Quality
+            <label htmlFor="customer" className={label}>
+              Customer
             </label>
-            <select
-              id="quality"
-              name="quality"
+
+            <input
+              id="supplier"
+              list="customerOptions"
+              name="supplier"
               className={input}
-              value={form.quality}
+              placeholder="Type or pick a customer…"
+              value={form.supplier}
               onChange={onChange}
-            >
-              <option value="A">A</option>
-              <option value="B">B</option>
-              <option value="C">C</option>
-            </select>
+              autoComplete="off"
+            />
+
+            <datalist id="customerOptions">
+              {customers.map((c) => (
+                <option key={c.customer_id} value={c.name} />
+              ))}
+            </datalist>
           </div>
 
-          {/* Storage Location */}
+
           <div className="flex flex-col items-start">
             <label htmlFor="location_id" className={label}>
               Storage Location
             </label>
-            <select
+
+            <input
               id="location_id"
+              list="locationOptions"
               name="location_id"
               className={input}
+              placeholder="Type or pick a location…"
               value={form.location_id}
               onChange={onChange}
-            >
-              <option value="">Select a location…</option>
+              autoComplete="off"
+            />
+
+            <datalist id="locationOptions">
               {locations.map((loc) => (
-                <option key={loc.id} value={loc.id}>
-                  {loc.storage_location_name}
-                </option>
+                <option key={loc.id} value={loc.storage_location_name} />
               ))}
-            </select>
+            </datalist>
           </div>
 
-          {/* Notes */}
+
           <div className="md:col-span-2">
             <label htmlFor="notes" className={label}>
               Notes

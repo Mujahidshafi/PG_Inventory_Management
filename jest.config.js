@@ -1,18 +1,18 @@
 const nextJest = require('next/jest')
 
+// Create the Jest config with Next.js
 const createJestConfig = nextJest({
   dir: './', // Path to your Next.js app
 })
 
 const customJestConfig = {
-  setupFilesAfterEnv: ['./jest.setup.js'],
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   testEnvironment: 'jest-environment-jsdom',
-  testPathIgnorePatterns: ['/node_modules/', '/.next/'],
-  moduleNameMapper: {
-    // Handle CSS imports (used by Tailwind)
-    '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
-    // Handle module aliases (e.g., "@/components/Button")
-    '^@/(.*)$': '<rootDir>/$1',
+  clearMocks: true,
+
+  // Transform JS/JSX with Babel (required for JSX)
+  transform: {
+    '^.+\\.(js|jsx|ts|tsx)$': ['babel-jest', { presets: ['next/babel'] }],
   },
 }
 

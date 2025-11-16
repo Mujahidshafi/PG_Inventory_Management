@@ -12,6 +12,10 @@ function StorageDashboard() {
         <Link href="/fieldRunStorage" className={buttonStyle}> Field Run Storage </Link>
         <Link href="/cleanStorage" className={buttonStyle}> Clean Storage </Link>
         <Link href="/screeningStorage" className={buttonStyle}> Screening Storage </Link>
+        <Link href="/insideCo2" className={buttonStyle}> Inside Co2 Tanks </Link>
+        <Link href="/baggedStorage" className={buttonStyle}> Bagged Storage </Link>
+        <Link href="/rerunStorage" className={buttonStyle}> Rerun Storage </Link>
+        <Link href="/trash" className={buttonStyle}> Trash Storage </Link>
          </div>
       </Layout>
   );

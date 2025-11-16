@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
+import Layout from "../components/layout";
 
 export default function ReportsPage() {
   const [reports, setReports] = useState([]);
@@ -7,7 +8,7 @@ export default function ReportsPage() {
     search: "",
     year: "",
     supplier: "",
-    processType: "Qsage",
+    processType: "All",
   });
   const [selectedReport, setSelectedReport] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -23,21 +24,27 @@ export default function ReportsPage() {
     setLoading(true);
 
     // --- Fetch Qsage, Sortex, and Mixing reports together ---
-    const [qsageData, sortexData, mixingData] = await Promise.all([
+    const [qsageData, sortexData, mixingData, baggingData, orderData] = await Promise.all([
       supabase.from("qsage_reports").select("*"),
       supabase.from("sortex_reports").select("*"),
       supabase.from("mixing_reports").select("*"),
+      supabase.from("bagging_reports").select("*"),
+      supabase.from("order_fulfillment_reports").select("*"),
+
     ]);
 
     if (qsageData.error) console.error("Qsage fetch error:", qsageData.error.message);
     if (sortexData.error) console.error("Sortex fetch error:", sortexData.error.message);
     if (mixingData.error) console.error("Mixing fetch error:", mixingData.error.message);
+    if (baggingData.error) console.error("Bagging fetch error:", baggingData.error.message);
 
     // Combine and sort newest first
     const combined = [
       ...(qsageData.data || []),
       ...(sortexData.data || []),
       ...(mixingData.data || []),
+      ...(baggingData.data || []),
+      ...(orderData.data || []),
     ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
     // Filter by process type if needed
@@ -53,10 +60,13 @@ export default function ReportsPage() {
 
   const filteredReports = reports.filter((r) => {
     const term = filters.search.toLowerCase();
+    const normalize = (val) =>
+      Array.isArray(val) ? val.join(", ").toLowerCase() : (val || "").toLowerCase();
+
     const searchMatch =
-      r.process_id?.toLowerCase().includes(term) ||
-      r.lot_numbers?.toLowerCase().includes(term) ||
-      r.products?.toLowerCase().includes(term);
+      normalize(r.process_id).includes(term) ||
+      normalize(r.lot_numbers).includes(term) ||
+      normalize(r.products).includes(term);
 
     const supplierMatch = filters.supplier
       ? r.suppliers?.toLowerCase().includes(filters.supplier.toLowerCase())
@@ -85,9 +95,12 @@ export default function ReportsPage() {
   const mixingIds = selectedReports
     .filter((k) => k.startsWith("Mixing-"))
     .map((k) => Number(k.split("-")[1]));
+  const orderIds = selectedReports
+    .filter((k) => k.startsWith("Order Fulfillment-"))
+    .map((k) => Number(k.split("-")[1]));
 
   // Delete from each table
-  const [qDel, sDel, mDel] = await Promise.all([
+  const [qDel, sDel, mDel, oDel] = await Promise.all([
     qsageIds.length
       ? supabase.from("qsage_reports").delete().in("id", qsageIds)
       : { error: null },
@@ -97,9 +110,10 @@ export default function ReportsPage() {
     mixingIds.length
       ? supabase.from("mixing_reports").delete().in("id", mixingIds)
       : { error: null },
+    orderIds.length ? supabase.from("order_fulfillment_reports").delete().in("id", orderIds) : { error: null },
   ]);
 
-  if (qDel.error || sDel.error || mDel.error) {
+  if (qDel.error || sDel.error || mDel.error || oDel.error) {
     alert(
       "Error deleting reports: " +
         (qDel.error?.message || sDel.error?.message || mDel.error?.message)
@@ -165,11 +179,9 @@ export default function ReportsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
+    <Layout title="Process Reports" showBack={true}> 
+    <div className="bg-[#D9D9D9] p-6 overflow-y-auto h-full">
       <div className="mx-auto max-w-7xl">
-        <h1 className="text-2xl font-bold mb-6 text-center">
-          Process Reports
-        </h1>
 
         {/* 🔹 Filter Controls */}
         <div className="flex flex-wrap gap-3 items-end mb-6">
@@ -214,11 +226,13 @@ export default function ReportsPage() {
             <option value="Qsage">Qsage</option>
             <option value="Sortex">Sortex</option>
             <option value="Mixing">Mixing</option>
+            <option value="Bagging">Bagging</option>
+            <option value="Order Fulfillment">Order Fulfillment</option>
           </select>
 
           <button
             onClick={fetchReports}
-            className="bg-black text-white rounded-lg px-4 py-2"
+            className="bg-[#3D5147] text-white rounded-lg px-4 py-2"
           >
             Refresh
           </button>
@@ -232,7 +246,7 @@ export default function ReportsPage() {
             className={`px-4 py-2 rounded-lg text-white ${
               selectedReports.length === 0
                 ? "bg-gray-400 cursor-not-allowed"
-                : "bg-red-600 hover:bg-red-700"
+                : "bg-[#5D1214] hover:bg-red-950"
             }`}
           >
             {deleting
@@ -254,7 +268,7 @@ export default function ReportsPage() {
               className={`px-4 py-2 rounded-lg text-white ${
                 !deleteYear
                   ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-red-700 hover:bg-red-800"
+                  : "bg-[#5D1214] hover:bg-red-950"
               }`}
             >
               Delete by Year
@@ -275,6 +289,7 @@ export default function ReportsPage() {
           <th className="px-4 py-2 text-center">Select</th>
           <th className="px-4 py-2 text-left">Process ID</th>
           <th className="px-4 py-2 text-left">Process Type</th>
+          <th className="px-4 py-2 text-left">Employee</th>
           <th className="px-4 py-2 text-left">Lot Numbers</th>
           <th className="px-4 py-2 text-left">Products</th>
           <th className="px-4 py-2 text-left">Supplier</th>
@@ -308,9 +323,10 @@ export default function ReportsPage() {
               </td>
               <td className="px-4 py-2">{r.process_id}</td>
               <td className="px-4 py-2">{r.process_type}</td>
+              <td className="px-4 py-2">{r.employee || "—"}</td>
               <td className="px-4 py-2">{r.lot_numbers || "—"}</td>
               <td className="px-4 py-2">{r.products || "—"}</td>
-              <td className="px-4 py-2">{r.suppliers || "—"}</td>
+              <td className="px-4 py-2">{r.supplier || r.suppliers || "—"}</td>
               <td className="px-4 py-2 text-right">
                 {Number(r.output_total || 0).toLocaleString()}
               </td>
@@ -333,6 +349,7 @@ export default function ReportsPage() {
         )}
       </div>
     </div>
+    </Layout>
   );
 }
 
@@ -345,6 +362,7 @@ function ReportModal({ report, onClose }) {
   const outputs = safeParse(report.outputs);
   const totals = safeParse(report.totals);
   const boxes = safeParse(report.boxes); // for Mixing reports
+  const inputs = safeParse(report.inputs);
 
   function safeParse(json) {
     try {
@@ -356,16 +374,18 @@ function ReportModal({ report, onClose }) {
 
   // Handle special layout for Mixing Reports
   const isMixing = report.process_type === "Mixing";
+  const isBagging = report.process_type === "Bagging";
+  const isOrderFulfillment = report.process_type === "Order Fulfillment";
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-2xl max-w-5xl w-full relative shadow-xl max-h-[90vh] flex flex-col">
         {/* Fixed Header */}
         <div className="flex justify-between items-center border-b p-4 sticky top-0 bg-white z-10 rounded-t-2xl">
           <h2 className="text-xl font-bold">
-            {isMixing
-              ? `Mixing Process Report — ${report.process_id}`
-              : `Qsage Process Report — ${report.process_id}`}
+            {report.process_type
+              ? `${report.process_type} Process Report — ${report.process_id || "N/A"}`
+              : `Process Report — ${report.id}`}
           </h2>
           <button
             className="text-gray-500 hover:text-black text-2xl"
@@ -381,16 +401,172 @@ function ReportModal({ report, onClose }) {
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6 text-sm">
             <p><strong>Process Type:</strong> {report.process_type}</p>
             <p><strong>Process ID:</strong> {report.process_id}</p>
+            <p><strong>Employee:</strong> {report.employee || "—"}</p>
             <p><strong>Date:</strong> {new Date(report.created_at).toLocaleString()}</p>
             {isMixing ? (
               <p><strong>Bin Used:</strong> {report.co2_bin}</p>
             ) : (
-              <p><strong>Supplier:</strong> {report.suppliers || "—"}</p>
+              <p><strong>Supplier:</strong> {report.supplier || report.suppliers || "—"}</p>
             )}
+            <p><strong>Customer:</strong> {report.customer || "—"}</p>
             <p><strong>Lot Numbers:</strong> {report.lot_numbers}</p>
             <p><strong>Products:</strong> {report.products}</p>
             <p><strong>Notes:</strong> {report.notes || "—"}</p>
           </div>
+
+          {isBagging ? (
+          <>
+            <h3 className="font-semibold text-lg mb-2">Inputs</h3>
+            {inputs && inputs.boxes?.length > 0 ? (
+              <table className="w-full text-sm border mb-6">
+                <thead className="bg-gray-50 text-center">
+                  <tr>
+                    <th className="p-2">Source</th>
+                    <th className="p-2">Box ID</th>
+                    <th className="p-2">Product</th>
+                    <th className="p-2">Lot #</th>
+                    <th className="p-2">Weight (lbs)</th>
+                  </tr>
+                </thead>
+                <tbody className="text-center">
+                  {inputs.boxes.map((b, i) => (
+                    <tr key={i} className="border-t">
+                      <td className="p-2">{b.sourceTable || "—"}</td>
+                      <td className="p-2">{b.boxId || "—"}</td>
+                      <td className="p-2">{b.product || "—"}</td>
+                      <td className="p-2">{b.lotNumber || "—"}</td>
+                      <td className="p-2">{b.amount || 0}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <p className="text-sm italic text-gray-500">No input boxes recorded.</p>
+            )}
+
+            {/* 🔹 CO2 Draws Section */}
+            {inputs?.co2_draws?.length > 0 && (
+              <>
+                <h4 className="font-semibold text-md mb-2 mt-4 text-gray-700">
+                  CO₂ Tank Inputs
+                </h4>
+                <table className="w-full text-sm border mb-6">
+                  <thead className="bg-gray-50 text-center">
+                    <tr>
+                      <th className="p-2">CO₂ Bin</th>
+                      <th className="p-2">Product(s)</th>
+                      <th className="p-2">Lot Number(s)</th>
+                      <th className="p-2">Amount Removed (lbs)</th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-center">
+                    {inputs.co2_draws.map((draw, i) => (
+                      <tr key={i} className="border-t">
+                        <td className="p-2">{draw.co2_bin || "—"}</td>
+                        <td className="p-2">
+                          {Array.isArray(draw.products)
+                            ? draw.products.join(", ")
+                            : draw.products || "—"}
+                        </td>
+                        <td className="p-2">
+                          {Array.isArray(draw.lotNumbers)
+                            ? draw.lotNumbers.join(", ")
+                            : draw.lot_numbers || draw.lotNumbers || "—"}
+                        </td>
+                        <td className="p-2">
+                          {draw.weightLbs ?? draw.amount_removed ?? draw.amount ?? 0}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </>
+            )}
+
+            <h3 className="font-semibold text-lg mb-2 mt-4">Outputs (Pallets)</h3>
+            {Array.isArray(report.outputs) && report.outputs.length > 0 ? (
+              <table className="w-full text-sm border mb-6">
+                <thead className="bg-gray-50 text-center">
+                  <tr>
+                    <th className="p-2">Pallet ID</th>
+                    <th className="p-2">Product</th>
+                    <th className="p-2">Bag Type</th>
+                    <th className="p-2">Bags</th>
+                    <th className="p-2">Weight (lbs)</th>
+                    <th className="p-2">Location</th>
+                  </tr>
+                </thead>
+                <tbody className="text-center">
+                  {report.outputs.map((p, i) => (
+                    <tr key={i} className="border-t">
+                      <td className="p-2">{p.pallet_id}</td>
+                      <td className="p-2">{p.product}</td>
+                      <td className="p-2">{p.bag_type}</td>
+                      <td className="p-2">{p.num_bags}</td>
+                      <td className="p-2">{p.total_weight}</td>
+                      <td className="p-2">{p.storage_location}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <p className="text-sm italic text-gray-500">No pallet data recorded.</p>
+            )}
+          </>
+        ) : null}
+
+        {/* --- Orders REPORT LAYOUT --- */}
+        {isOrderFulfillment ? (
+          <>
+            <h3 className="font-semibold text-lg mb-2">Fulfilled Items</h3>
+            {Array.isArray(report.items) && report.items.length > 0 ? (
+              <table className="w-full text-sm border mb-6">
+                <thead className="bg-gray-50 text-center">
+                  <tr>
+                    <th className="p-2">Source Type</th>
+                    <th className="p-2">Identifier</th>
+                    <th className="p-2">Lot Numbers</th>
+                    <th className="p-2">Products</th>
+                    <th className="p-2">Supplier</th>
+                    <th className="p-2">Available (lbs)</th>
+                    <th className="p-2">Removed (lbs)</th>
+                    <th className="p-2">Partial?</th>
+                    <th className="p-2">Remaining (lbs)</th>
+                  </tr>
+                </thead>
+                <tbody className="text-center">
+                  {report.items.map((item, i) => (
+                    <tr key={i} className="border-t">
+                      <td className="p-2 capitalize">{item.sourceType || "—"}</td>
+                      <td className="p-2">{item.identifier || "—"}</td>
+                      <td className="p-2">{item.lotNumbers || "—"}</td>
+                      <td className="p-2">{item.products || "—"}</td>
+                      <td className="p-2">{item.supplier || "—"}</td>
+                      <td className="p-2">{item.availableWeight ?? 0}</td>
+                      <td className="p-2 font-semibold text-blue-700">
+                        {item.removeWeight ?? 0}
+                      </td>
+                      <td className="p-2">{item.isPartial ? "Yes" : "No"}</td>
+                      <td className="p-2">{item.newRemainingWeight ?? 0}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <p className="text-sm italic text-gray-500">
+                No fulfillment items recorded.
+              </p>
+            )}
+            <div className="text-right font-semibold text-base mt-2">
+              Total Weight Fulfilled:{" "}
+              <span className="text-green-700">
+                {Number(report.total_weight || 0).toLocaleString()} lbs
+              </span>
+            </div>
+          </>
+        ) : null}
+
+
 
           {/* --- MIXING REPORT LAYOUT --- */}
           {isMixing ? (
@@ -493,9 +669,120 @@ function ReportModal({ report, onClose }) {
 }
 
 
-
 function Section({ title, data }) {
   if (!data || Object.keys(data).length === 0) return null;
+
+  // 🧩 Handle array-type data (like inbound boxes)
+  if (Array.isArray(data)) {
+    return (
+      <div className="mb-6">
+        <h3 className="font-semibold text-lg mb-2">{title}</h3>
+        <table className="w-full text-xs border mb-2">
+          <thead className="bg-gray-50 text-center">
+            <tr>
+              {Object.keys(data[0] || {}).map((k) => (
+                <th key={k} className="p-1 capitalize">
+                  {k.replace(/([A-Z])/g, " $1")}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="text-center">
+            {data.map((row, i) => (
+              <tr key={i} className="border-t">
+                {Object.values(row).map((v, j) => (
+                  <td key={j} className="p-1">
+                    {String(v ?? "—")}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+
+  // --- Enhanced handling for Outputs (Clean, Rerun, Screenings, Trash) ---
+  if (title === "Outputs" && data) {
+    const clean = data.clean || [];
+    const reruns = data.reruns || [];
+    const screenings = data.screenings || {};
+    const trash = data.trash || [];
+
+    // Helper to render each box table
+    const renderBoxTable = (rows, label) => (
+      <div className="mb-4">
+        {label && <h4 className="font-medium mb-1 text-gray-700">{label}</h4>}
+        <table className="w-full text-xs border mb-2">
+          <thead className="bg-gray-50 text-center">
+            <tr>
+              <th className="p-1">Box ID</th>
+              <th className="p-1">Physical Box ID</th>
+              <th className="p-1">Box #</th>
+              <th className="p-1">Weight (lbs)</th>
+              <th className="p-1">Location</th>
+            </tr>
+          </thead>
+          <tbody className="text-center">
+            {rows.map((b, i) => {
+              const boxId =
+                b.Box_ID || b.boxId || b.box_id || b.BoxId || "—";
+              const physicalId =
+                b.physicalBoxId || b.physical_box_id || "—";
+              const dateValue =
+                b.date ||
+                b.created_at ||
+                b.timestamp ||
+                b.Date_Stored ||
+                null;
+              return (
+                <tr key={i} className="border-t">
+                  <td className="p-1">{boxId}</td>
+                  <td className="p-1">{physicalId}</td>
+                  <td className="p-1">{b.boxNumber ?? "—"}</td>
+                  <td className="p-1">{b.weightLbs ?? b.weight ?? "—"}</td>
+                  <td className="p-1">
+                    {b.storageLocation ||
+                    b.location ||
+                    b.Location ||
+                    b.newLocation ||
+                    b.storage_location ||
+                    "—"}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    );
+
+    return (
+      <div className="mb-6">
+        <h3 className="font-semibold text-lg mb-2">Outputs</h3>
+
+        {Array.isArray(clean) && clean.length > 0 && renderBoxTable(clean, "Clean")}
+        {Array.isArray(reruns) && reruns.length > 0 && renderBoxTable(reruns, "Rerun")}
+
+        {Object.keys(screenings).length > 0 && (
+          <div className="mb-4">
+            <h4 className="font-medium mb-1 text-gray-700">Screenings</h4>
+            {Object.entries(screenings).map(([type, boxes]) => (
+              <div key={type} className="mb-3">
+                <h5 className="font-medium text-gray-600 capitalize">{type}</h5>
+                {renderBoxTable(boxes, "")}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {Array.isArray(trash) && trash.length > 0 && renderBoxTable(trash, "Trash")}
+      </div>
+    );
+  }
+
+  // --- Default generic section renderer ---
   return (
     <div className="mb-6">
       <h3 className="font-semibold text-lg mb-2">{title}</h3>
@@ -504,7 +791,7 @@ function Section({ title, data }) {
           <h4 className="font-medium capitalize mb-1 text-gray-700">
             {key.replace(/_/g, " ")}
           </h4>
-          {typeof value === "object" && Array.isArray(value) ? (
+          {Array.isArray(value) ? (
             <table className="w-full text-xs border mb-2">
               <thead className="bg-gray-50">
                 <tr>

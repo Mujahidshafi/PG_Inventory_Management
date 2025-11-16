@@ -275,7 +275,7 @@ function Search() {
                       <p>
                         <span className="font-semibold">Date Stored:</span>{" "}
                         {process.date_stored
-                          ? new Date(process.date_stored).toLocaleDateString()
+                          ? new Date(`${process.date_stored}T00:00:00Z`).toLocaleDateString('en-US')
                           : "—"}
                       </p>
                     </div>

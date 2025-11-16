@@ -38,9 +38,6 @@ function ForgotPassword() {
 
   return (
     <div className="flex flex-col flex-wrap items-center justify-between bg-white">
-      <p className="absolute bottom-2 left-6 text-sm text-[#3D5147] opacity-80 font-[amiri] z-[9999]">
-        © 2025 Pleasant Grove Farms
-      </p>
       {/* Header */}
       <div className="relative flex flex-row items-center justify-between w-[95%] p-6 m-[40px] bg-white">
         {/* Back Button */}
