@@ -42,6 +42,7 @@ function AdminMenu() {
         <Link href="/newFieldRun" className={buttonStyle}>New Field Run</Link>
         <Link href="/transfer" className={buttonStyle}>Transfer</Link>
         <Link href="/qsageJob" className={buttonStyle}>Qsage Job</Link>
+        <Link href="/spiralJob" className={buttonStyle}>Spiral Job</Link>
         <Link href="/sortexJob" className={buttonStyle}>Sortex Job</Link>
         <Link href="/mixingJob" className={buttonStyle}>Mix</Link>
         <Link href="/baggingJob" className={buttonStyle}>Bagging Job</Link>

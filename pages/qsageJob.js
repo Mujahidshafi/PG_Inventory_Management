@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import ScrollingLayout from "../components/scrollingLayout";
+import { printBoxLabel } from "../lib/labelPrint";
+
 
 /* -------------------- Helpers -------------------- */
 
@@ -294,13 +296,15 @@ function BoxTable({
         <table className="w-full min-w-[820px] table-fixed">
           <thead>
             <tr className="text-left text-sm text-gray-600 bg-gray-50">
-              <th className="px-4 py-2 w-30">Box ID</th>
+              <th className="px-4 py-2 w-24">Box ID</th>
               <th className="px-4 py-2 w-20">Box #</th>
-              <th className="px-4 py-2 w-40">Weight (lbs)</th>
+              <th className="px-4 py-2 w-30">Weight (lbs)</th>
               <th className="px-4 py-2 w-40">Physical Box ID</th>
-              <th className="px-4 py-2 w-24">Use Physical Box</th>
+              <th className="px-4 py-2 w-15">Use Physical Box</th>
               <th className="px-4 py-2 w-20">Net Weight (lbs)</th>
-              <th className="px-4 py-2 w-56">Storage Location</th>
+              <th className="px-4 py-2 w-40">Storage Location</th>
+              <th className="px-4 py-2 w-40">Product (Auto / Custom)</th>
+              <th className="px-4 py-2 w-20">print</th>
               <th className="px-4 py-2 w-16">✕</th>
             </tr>
           </thead>
@@ -403,6 +407,55 @@ function BoxTable({
                         }
                       />
                     </td>
+
+                    {/* Product (Auto / Custom) for all kinds */}
+                    <td className="px-4 py-2">
+                     {/*} <div className="text-xs text-gray-500 mb-1">
+                        Will save as:{" "}
+                        <span className="font-semibold">
+                          {b.useCustomProduct && String(b.customProduct || "").trim()
+                            ? String(b.customProduct).trim()
+                            : "Auto (combined products)"}
+                      </span>
+                      </div>*/}
+                      <label className="inline-flex items-center gap-2 text-xs">
+                        <input
+                          type="checkbox"
+                          checked={!!b.useCustomProduct}
+                          onChange={(e) => updateBox(i, "useCustomProduct", e.target.checked)}
+                        />
+                        Custom product?
+                      </label>
+                      <input
+                        type="text"
+                        className={`mt-1 w-full rounded border px-2 py-1 text-xs ${
+                          b.useCustomProduct && !String(b.customProduct || "").trim() ? "border-red-400" : ""
+                        }`}
+                        placeholder="Type custom product…"
+                        value={b.customProduct || ""}
+                        onChange={(e) => updateBox(i, "customProduct", e.target.value)}
+                        disabled={!b.useCustomProduct}
+                      />
+                      {b.useCustomProduct && !String(b.customProduct || "").trim() && (
+                        <div className="text-[10px] text-red-600 mt-0.5">
+                          Enter a product name or uncheck.
+                        </div>
+                      )}
+                    </td>
+
+                    <td className="px-4 py-2 text-center space-x-2">
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        if (!boxId) return;
+                        await printBoxLabel(boxId);
+                      }}
+                      className="rounded-lg border px-2 py-1 text-sm hover:bg-gray-50"
+                      title="Print barcode label"
+                    >
+                      🖨️ Print
+                    </button>
+                  </td>
 
                     {/* Remove */}
                     <td className="px-4 py-2 text-center">
@@ -774,6 +827,8 @@ export default function QsageCleaningPage() {
             physicalBoxId: "",
             usePhysicalBox: false,
             storageLocation: "",
+            useCustomProduct: false,
+            customProduct: "",
           },
         ];
       } else {
@@ -801,6 +856,8 @@ export default function QsageCleaningPage() {
             physicalBoxId: "",
             usePhysicalBox: false,
             storageLocation: "",
+            useCustomProduct: false,
+            customProduct: "",
           },
         ];
       }
@@ -939,6 +996,11 @@ export default function QsageCleaningPage() {
     };
   }, [state.boxes, inboundNetTotal, physicalBoxesMap]);
 
+   const productForBox = (b, fallback) =>
+   (b?.useCustomProduct && String(b?.customProduct || "").trim())
+     ? String(b.customProduct).trim()
+      : fallback;
+
   /* ---------- Validation ---------- */
 
   const validate = () => {
@@ -1017,12 +1079,13 @@ export default function QsageCleaningPage() {
         const net = computeNetWeight(b, physicalBoxesMap);
         if (net <= 0) continue;
         const boxId = `${state.processID}C${b.boxNumber || i + 1}`;
+        const productForThisBox = productForBox(b, productStr);
         await supabase.from("clean_product_storage").insert({
           Box_ID: boxId,
           Process_ID: state.processID,
           Location: b.storageLocation || "",
           Lot_Number: lotNumber,
-          Product: productStr,
+          Product: productForThisBox,
           Amount: net,
           Supplier: supplierName,
           Notes: state.notes || null,
@@ -1036,12 +1099,13 @@ export default function QsageCleaningPage() {
         const net = computeNetWeight(b, physicalBoxesMap);
         if (net <= 0) continue;
         const boxId = `${state.processID}R${b.boxNumber || i + 1}`;
+        const productForThisBox = productForBox(b, productStr);
         await supabase.from("rerun_product_storage").insert({
           Box_ID: boxId,
           Process_ID: state.processID,
           Location: b.storageLocation || "",
           Lot_Number: lotNumber,
-          Product: productStr,
+          Product: productForThisBox,
           Amount: net,
           Supplier: supplierName,
           Notes: state.notes || null,
@@ -1056,12 +1120,13 @@ export default function QsageCleaningPage() {
         if (net <= 0) continue;
         const code = screeningCode[sf.type] || "S";
         const boxId = `${state.processID}${code}${sf.boxNumber || sf.index + 1}`;
+        const productForThisBox = productForBox(b, productStr);
         await supabase.from("screening_storage_shed").insert({
           Box_ID: boxId,
           Process_ID: state.processID,
           Location: "Screening Shed",
           Lot_Number: lotNumber,
-          Product: productStr,
+          Product: productForThisBox,
           Amount: net,
           Type: sf.type,
           Supplier: supplierName,

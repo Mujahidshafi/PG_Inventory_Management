@@ -4,6 +4,8 @@ import Layout from "../components/layout";
 
 const LS_KEY = "orderFulfillmentDraft_v2";
 
+const nowISO = () => new Date().toISOString();
+
 const siloOrder = [
   "HQ-1","HQ-2","HQ-3","HQ-4","HQ-5","HQ-6","HQ-7","HQ-8","HQ-9","HQ-10",
   "HQ-11","HQ-12","HQ-13","HQ-14","HQ-15","HQ-16","HQ-17","HQ-18",
@@ -237,6 +239,7 @@ export default function OrderFulfillmentPage() {
       removeWeight: amt,
       isPartial: true,
       newRemainingWeight: Math.max(current - amt, 0),
+      scannedAt: nowISO(),
     };
 
     setState((prev) => ({
@@ -283,6 +286,7 @@ export default function OrderFulfillmentPage() {
             isPartial: false,
             newRemainingWeight: "",
             bagType: data.bag_type,
+            scannedAt: nowISO(),
           };
           setState((prev) => ({
             ...prev,
@@ -319,6 +323,7 @@ export default function OrderFulfillmentPage() {
             isPartial: false,
             newRemainingWeight: "",
             location: data.Location || "",
+            scannedAt: nowISO(),
           };
           setState((prev) => ({
             ...prev,
@@ -355,6 +360,7 @@ export default function OrderFulfillmentPage() {
             isPartial: false,
             newRemainingWeight: "",
             location: data.Location || "",
+            scannedAt: nowISO(),
           };
           setState((prev) => ({
             ...prev,
@@ -391,6 +397,7 @@ export default function OrderFulfillmentPage() {
             isPartial: false,
             newRemainingWeight: "",
             type: data.Type,
+            scannedAt: nowISO(),
           };
           setState((prev) => ({
             ...prev,
@@ -490,7 +497,7 @@ export default function OrderFulfillmentPage() {
   // ---------- Validation ----------
   const validate = () => {
     const errs = [];
-    if (!state.processId.trim()) errs.push("Process ID is required.");
+    if (!state.processId.trim()) errs.push("Order ID is required.");
     if (!state.employee) errs.push("Employee is required.");
     if (!state.items || state.items.length === 0)
       errs.push("Add at least one item to fulfill.");
@@ -700,7 +707,7 @@ export default function OrderFulfillmentPage() {
           {/* Left: Controls */}
           <div className="rounded-2xl border bg-white p-4 shadow-sm">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
-              <HeaderField label="Process ID">
+              <HeaderField label="Order ID">
                 <input
                   className="w-full rounded-lg border px-3 py-2"
                   placeholder="e.g., OF-2025-11-001"
@@ -801,7 +808,7 @@ export default function OrderFulfillmentPage() {
 
             {showValidation && (
               <div className="mt-3 rounded-lg border border-amber-300 bg-amber-50 p-2 text-xs text-amber-900">
-                Ensure Process ID, Employee, and at least one valid removal line are set.
+                Ensure Order ID, Employee, and at least one valid removal line are set.
               </div>
             )}
 
@@ -994,19 +1001,21 @@ export default function OrderFulfillmentPage() {
                         />
                       </td>
                       <td className="px-2 py-2 text-right">
-                        <input
-                          type="number"
-                          step="any"
-                          placeholder="Enter lbs…"
-                          disabled={!it.isPartial}
-                          value={it.isPartial ? (it.newRemainingWeight ?? "") : ""}
-                          onChange={(e) =>
-                            updateItem(it.id, {
-                              newRemainingWeight: e.target.value === "" ? "" : e.target.value,
-                            })
-                          }
-                        />
-                      </td>
+                      <input
+                        type="number"
+                        min="0"
+                        step="any"
+                        className="w-full rounded border px-1 py-1 text-right"
+                        placeholder="Enter lbs…"
+                        disabled={!it.isPartial}
+                        value={it.isPartial ? (it.newRemainingWeight ?? "") : ""}
+                        onChange={(e) =>
+                          updateItem(it.id, {
+                            newRemainingWeight: e.target.value === "" ? "" : e.target.value,
+                          })
+                        }
+                      />
+                    </td>
 
                       <td className="px-2 py-2 text-center">
                         <button
