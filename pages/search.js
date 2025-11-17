@@ -16,17 +16,31 @@ function Search() {
   const [yearOptions, setYearOptions] = useState([]);
   const [openMenus, setOpenMenus] = useState([]);
   const [sortOrder, setSortOrder] = useState("newest");
+  const [selectedStorage, setSelectedStorage] = useState("");
+
+  const storageTypes = [
+    "Field Run Storage",
+    "Screening Storage",
+    "Clean Storage",
+    "CO2 Bin Storage",
+    "Rerun Storage",
+    "Bagged Storage",
+    "Trash",
+  ];
 
   // Fetch data for main table
   useEffect(() => {
     async function fetchAllData() {
       setLoading(true);
 
-      const [fieldRun, screening, trash, clean] = await Promise.all([
+      const [fieldRun, screening, trash, clean, rerun, co2bins, bagged] = await Promise.all([
         supabase.from("field_run_storage_test").select("*"),
         supabase.from("screening_storage_shed").select("*"),
         supabase.from("trash").select("*"),
         supabase.from("clean_product_storage").select("*"),
+        supabase.from("rerun_product_storage").select("*"),
+        supabase.from("inside_co2_bins").select("*"),
+        supabase.from("bagged_storage").select("*"),
       ]);
 
       if (fieldRun.error || screening.error || trash.error || clean.error) {
@@ -63,11 +77,47 @@ function Search() {
           };
         });
 
+        const rerunNormalized = rerun.data.map((item) => ({
+          lot_number: item.Lot_Number,
+          product: item.Product,
+          location: item.Location,
+          weight: item.Amount,
+          moisture: null,
+          type: null,
+          date_stored: item.Date_Stored,
+          box: item.Box_ID,
+        }));
+
+        const co2Normalized = co2bins.data.map((item) => ({
+          lot_number: item.lot_numbers,
+          product: item.products,
+          location: item.co2_bin,
+          weight: item.total_weight,
+          moisture: null,
+          type: null,
+          date_stored: item.created_at,
+          box: null,
+        }));
+
+        const baggedNormalized = bagged.data.map((item) => ({
+          lot_number: item.lot_number,
+          product: item.product,
+          location: item.storage_location,
+          weight: item.total_weight,
+          moisture: null,
+          type: item.bag_type,
+          date_stored: item.created_at,
+          box: null,
+        }));
+
       const mergedData = [
         ...normalize(fieldRun.data, "Field Run Storage"),
         ...normalize(screening.data, "Screening Storage"),
         ...normalize(trash.data, "Trash"),
         ...normalize(clean.data, "Clean Storage"),
+        ...rerunNormalized.map(item => ({ ...item, source: "Rerun Storage" })),
+        ...co2Normalized.map(item => ({ ...item, source: "CO2 Bin Storage" })),
+        ...baggedNormalized.map(item => ({ ...item, source: "Bagged Storage" })),
       ];
 
       // Sort newest first
@@ -128,6 +178,9 @@ function Search() {
     const matchesProduct = selectedProduct
       ? productText.includes(selectedProduct)
       : true;
+    const matchesStorage = selectedStorage
+      ? item.source === selectedStorage
+      : true;
     const matchesLot = selectedLot
       ? Array.isArray(item.lot_number)
         ? item.lot_number.includes(selectedLot)
@@ -142,7 +195,7 @@ function Search() {
 
     const matchesYear = selectedYear ? yearValue === Number(selectedYear) : true;
 
-    return matchesProduct && matchesSearch && matchesYear && matchesLot;
+    return matchesProduct && matchesSearch && matchesYear && matchesLot && matchesStorage;
   });
 
   const sortedResults = [...filteredResults].sort((a, b) => {
@@ -161,6 +214,9 @@ function Search() {
     "Screening Storage": "bg-[#8B6E4E]",
     "Trash": "bg-gray-600",
     "Clean Storage": "bg-[#2C3A35]",
+    "Rerun Storage": "bg-[#ba752e]",
+    "CO2 Bin Storage": "bg-[#4E3A5A]",
+    "Bagged Storage": "bg-[#985e7b]",
   };
 
   return (
@@ -198,6 +254,20 @@ function Search() {
               </option>
             ))}
           </select>
+
+          <label className="mt-4 mb-2 block">Storage Type</label>
+            <select
+              className="w-full rounded bg-white p-2 text-black"
+              value={selectedStorage}
+              onChange={(e) => setSelectedStorage(e.target.value)}
+            >
+              <option value="">Select</option>
+              {storageTypes.map((type) => (
+                <option key={type} value={type}>
+                  {type}
+                </option>
+              ))}
+            </select>
         </div>
 
         {/* Search Results */}
@@ -262,7 +332,11 @@ function Search() {
                     <div className="ml-4 flex w-1/4 flex-col">
                       <p>Weight: {process.weight}</p>
                       <p>Location: {process.location}</p>
-                      <p>Moisture: {process.moisture ?? 0}%</p>
+                      {process.source !== "Rerun Storage" &&
+                      process.moisture !== null &&
+                      process.moisture !== undefined && (
+                        <p>Moisture: {process.moisture}%</p>
+                      )}
                       {process.type !== null &&
                         process.type !== undefined &&
                         process.type !== "" && (
@@ -275,7 +349,7 @@ function Search() {
                       <p>
                         <span className="font-semibold">Date Stored:</span>{" "}
                         {process.date_stored
-                          ? new Date(`${process.date_stored}T00:00:00Z`).toLocaleDateString('en-US')
+                          ? new Date(process.date_stored).toLocaleDateString('en-US')
                           : "—"}
                       </p>
                     </div>
