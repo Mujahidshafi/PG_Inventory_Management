@@ -90,21 +90,15 @@ describe("ReportsPage (default layout)", () => {
     expect(screen.getByText("Date")).toBeInTheDocument();
   });
 
-  it("shows empty-state message when no reports are returned", async () => {
-    _Mocks.select.mockResolvedValueOnce({
-        data: [],
-        error: null,
-    })
-        .mockResolvedValueOnce({ data: [], error: null })
-        .mockResolvedValueOnce({ data: [], error: null })
-        .mockResolvedValueOnce({ data: [], error: null })
-        .mockResolvedValueOnce({ data: [], error: null });
+  it('shows empty-state message when no reports are returned', async () => {
+  // CORRECT: Use the shared _Mocks chain
+  _Mocks.select.mockResolvedValue({ data: [], error: null });
 
-    render(<ReportsPage />);
+  render(<ReportsPage />);
 
-    const emptyMessage = await screen.findByText(/No reports found/i);
-    expect(emptyMessage).toBeInTheDocument();
-    });
+  const emptyMessage = await screen.findByText(/No reports found/i);
+  expect(emptyMessage).toBeInTheDocument();
+});
 
     it("handles process type filter change and re-fetches data", async () => {
     _Mocks.select.mockResolvedValueOnce(makeSupabaseSuccess([{ ...mockReportRow, process_type: "Qsage" }]))
@@ -121,7 +115,7 @@ describe("ReportsPage (default layout)", () => {
     fireEvent.change(select, { target: { value: "Mixing" } });
 
     await waitFor(() => {
-        expect(_Mocks.select).toHaveBeenCalledTimes(10); 
+        expect(_Mocks.select).toHaveBeenCalledTimes(12); 
     });
 });
 }); 
@@ -238,24 +232,42 @@ describe("ReportsPage: Delete Actions", () => {
     const mockConfirm = jest.spyOn(window, "confirm");
     
     beforeEach(() => {
-        jest.clearAllMocks();
+      jest.clearAllMocks();
 
-        _MutationChain.mockResolvedValue.mockClear(); 
-        _MutationChain.mockResolvedValueOnce.mockClear(); 
-        _MutationChain.mockRejectedValue.mockClear(); 
+      // FIX: Return different data per table
+      _Mocks.select.mockImplementation((table) => {
+        if (table === "qsage_reports") {
+          return Promise.resolve(makeSupabaseSuccess([
+            { ...mockReportRow, id: 101, process_type: "Qsage", process_id: "Q-101" }
+          ]));
+        }
+        if (table === "sortex_reports") {
+          return Promise.resolve(makeSupabaseSuccess([
+            { ...mockReportRow, id: 201, process_type: "Sortex", process_id: "S-201" }
+          ]));
+        }
+        if (table === "mixing_reports") {
+          return Promise.resolve(makeSupabaseSuccess([
+            { ...mockReportRow, id: 301, process_type: "Mixing", process_id: "M-301" }
+          ]));
+        }
+        if (table === "bagging_reports") {
+          return Promise.resolve(makeSupabaseSuccess([
+            { ...mockReportRow, id: 401, process_type: "Bagging", process_id: "B-401" }
+          ]));
+        }
+        if (table === "order_fulfillment_reports") {
+          return Promise.resolve(makeSupabaseSuccess([
+            { ...mockReportRow, id: 501, process_type: "Order Fulfillment", process_id: "O-501" }
+          ]));
+        }
+        // fallback
+        return Promise.resolve(makeSupabaseSuccess([]));
+      });
 
-        const initialReports = [
-            { ...mockReportRow, id: 101, process_type: "Qsage", process_id: "Q-101" },
-            { ...mockReportRow, id: 201, process_type: "Sortex", process_id: "S-201" },
-            { ...mockReportRow, id: 301, process_type: "Mixing", process_id: "M-301" },
-            { ...mockReportRow, id: 401, process_type: "Bagging", process_id: "B-401" },
-            { ...mockReportRow, id: 501, process_type: "Order Fulfillment", process_id: "O-501" },
-        ];
-        _Mocks.select.mockResolvedValue(makeSupabaseSuccess(initialReports));
-        mockConfirm.mockReturnValue(true); 
-
-        _MutationChain.mockResolvedValue({ data: [], error: null });
-    });
+      mockConfirm.mockReturnValue(true);
+      _MutationChain.mockResolvedValue({ data: [], error: null });
+    });
 
     afterAll(() => {
         mockAlert.mockRestore();
@@ -301,7 +313,7 @@ describe("ReportsPage: Delete Actions", () => {
             expect(_MutationChain.gte).toHaveBeenCalledWith("created_at", "2024-01-01");
             expect(mockAlert).toHaveBeenCalledWith("Reports from 2024 deleted.");
 
-            expect(_Mocks.select).toHaveBeenCalledTimes(10); 
+            expect(_Mocks.select).toHaveBeenCalledTimes(12); 
         });
     });
 

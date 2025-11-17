@@ -12,31 +12,8 @@ function AdminMenu() {
   const session = useSession();
   const supabase = useSupabaseClient();
 
-  useEffect(() => {
-    const fetchRole = async () => {
-      if (!session?.user) return;
-
-      const { data, error } = await supabase
-        .from('users')
-        .select('role')
-        .eq('id', session.user.id)
-        .single();
-
-      if (error) console.error('Error fetching role:', error.message);
-      else setRole(data.role);
-    };
-
-    fetchRole();
-  }, [session,supabase]);
-
-  const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (!error) window.location.href = '/login';
-    else console.error('Logout error:', error.message);
-  }
-
   return (
-    <Layout title="Admin Menu" onSettingsClick={() => setShowSettings(!showSettings)} onLogout={handleLogout}>
+    <Layout title="Admin Menu">
       {/* Admin Buttons */}
       <div className="grid grid-cols-4 gap-8">
         <Link href="/newFieldRun" className={buttonStyle}>New Field Run</Link>

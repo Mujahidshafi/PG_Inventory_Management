@@ -255,11 +255,12 @@ function Search() {
             ))}
           </select>
 
-          <label className="mt-4 mb-2 block">Storage Type</label>
+          <label className="mt-4 mb-2 block" htmlFor="storageType">Storage Type</label>
             <select
               className="w-full rounded bg-white p-2 text-black"
               value={selectedStorage}
               onChange={(e) => setSelectedStorage(e.target.value)}
+              id="storageType"
             >
               <option value="">Select</option>
               {storageTypes.map((type) => (
