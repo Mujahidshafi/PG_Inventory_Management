@@ -166,7 +166,7 @@ How to download and setup to run.
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Testing 
-Links or a description of how to test.
+All of our tests are located in the __tests__ folder at the root of our project.
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Deployment 
