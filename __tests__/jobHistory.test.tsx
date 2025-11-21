@@ -28,12 +28,12 @@ jest.mock("../lib/supabaseClient", () => {
 });
 
 describe("JobHistory page", () => {
+  //Test 1
   test("Shows jobs that are not running AND complete", async () => {
     render(<JobHistory />);
 
     const { fakeJobs } = require("../__mocks__/makeFakeJobs");
 
-    // Jobs that *should* be shown in JobHistory based on state
     const eligibleJobs = fakeJobs.filter(
       (job: any) => job.is_running === false && job.is_complete === true
     );

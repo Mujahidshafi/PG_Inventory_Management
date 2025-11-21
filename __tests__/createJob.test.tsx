@@ -39,7 +39,7 @@ describe("CreateJob page", () => {
     (global.fetch as jest.Mock).mockReset();
   });
 
-  test("shows modal error when required fields are empty", async () => {
+  test("shows error when required fields are empty", async () => {
     const user = userEvent.setup();
     render(<CreateJob />);
 
