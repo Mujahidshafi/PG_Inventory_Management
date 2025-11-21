@@ -13,13 +13,39 @@ function CreateJob() {
     jobType: "",
   });
 
+  const [error, setError] = useState("");
+  const [showModal, setShowModal] = useState(false);
+
   const handleChange = (key, value) => {
     setFields({ ...fields, [key]: value });
   };
 
   const handleSubmit = async () => {
+    setError("");
+    setShowModal(false);
+
+    const requiredFields = [
+      "productDescription",
+      "location",
+      "lotNumber",
+      "amount",
+      "processId",
+      "jobType",
+    ];
+
+    for (const key of requiredFields) {
+      if (!fields[key] || fields[key].trim() === "") {
+        const message = `${key} cannot be empty.`;
+        console.error(message);
+        setError(message);
+        setShowModal(true);
+        return;
+      }
+    }
+
     try {
       const payload = { ...fields };
+      console.log("CreateJob: sending payload:", payload);
 
       const res = await fetch("/api/createJobBackend", {
         method: "POST",
@@ -27,21 +53,37 @@ function CreateJob() {
         body: JSON.stringify(payload),
       });
 
-      if (res.ok) {
-        console.log("Create Job Save");
-        setFields({
-          productDescription: "",
-          location: "",
-          lotNumber: "",
-          amount: "",
-          processId: "",
-          jobType: "",
-        });
-      } else {
-        console.error("Failed to save Job");
+      console.log("CreateJob: response status:", res.status);
+
+      if (res.status === 400) {
+        const data = await res.json();
+        console.log("CreateJob: 400 response body:", data);
+        const message = data.message || "Please check your input.";
+        setError(message);
+        setShowModal(true);
+        return;
       }
+
+      if (!res.ok) {
+        console.error("CreateJob: failed to save job");
+        setError("Failed to save job.");
+        setShowModal(true);
+        return;
+      }
+
+      console.log("CreateJob: save success");
+      setFields({
+        productDescription: "",
+        location: "",
+        lotNumber: "",
+        amount: "",
+        processId: "",
+        jobType: "",
+      });
     } catch (err) {
-      console.error("Error:", err);
+      console.error("CreateJob: error during submit:", err);
+      setError("Something went wrong.");
+      setShowModal(true);
     }
   };
 
@@ -62,7 +104,6 @@ function CreateJob() {
       onSettingsClick={() => console.log(" ")}
     >
       <div className="w-full px-8 flex flex-col items-center">
-        {/* Input fields */}
         <div className="grid grid-cols-3 gap-28 w-full max-w-5xl mb-35">
           {fieldLabels.map(({ key, label, type }) => (
             <TextFields
@@ -75,16 +116,12 @@ function CreateJob() {
               placeholder={`Enter ${label.toLowerCase()}`}
             />
           ))}
-
-          {/* Job Type Dropdown */}
+          
           <div className="flex flex-col">
-            <label
-              htmlFor="jobType"
-              className="block text-center mb-2"
-            >
+            <label htmlFor="jobType" className="block text-center mb-2">
               Job Type
             </label>
-            <select 
+            <select
               id="jobType"
               value={fields.jobType}
               onChange={(e) => handleChange("jobType", e.target.value)}
@@ -100,14 +137,34 @@ function CreateJob() {
           </div>
         </div>
 
-        {/* Save Button */}
         <div className="flex justify-center">
           <Button label="Save" color="red" onClick={handleSubmit} />
         </div>
       </div>
+
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-transparent flex justify-center items-center z-50">
+          <div className="bg-white rounded-lg p-6 w-80 relative">
+            <button
+              onClick={() => setShowModal(false)}
+              className="absolute top-2 right-2 text-gray-600 text-xl"
+            >
+              ×
+            </button>
+            <p className="text-red-600 text-center mb-6">{error}</p>
+            <div className="flex justify-center">
+              <button
+                onClick={() => setShowModal(false)}
+                className="px-6 py-2 rounded-xl shadow-md bg-[#5D1214] text-white hover:bg-[#2C3A35]"
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </Layout>
   );
 }
 
 export default CreateJob;
-
