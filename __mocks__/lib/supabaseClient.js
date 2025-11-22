@@ -1,69 +1,76 @@
-// __mocks__/lib/supabaseClient.js
-
-// helper so chains are awaitable
-const makeThenable = (result) => ({
-  then: (resolve) => resolve(result),
-  catch: () => {},
-});
-
-const makeQuery = (result = { data: null, error: null }) => {
-  const q = {
-    // chainable reads
-    select: jest.fn(() => q),
-    order: jest.fn(() => q),
-    ilike: jest.fn(() => q),
-    eq: jest.fn(() => q),
-
-    // “finalizers”
-    single: jest.fn(async () => result),
-    maybeSingle: jest.fn(async () => result),
-
-    // writes
-    insert: jest.fn(async (payload) => ({ data: null, error: null, payload })),
-    update: jest.fn(async () => ({ data: null, error: null })),
-    delete: jest.fn(async () => ({ data: null, error: null })),
-
-    // allow `await supabase.from(...).select()...`
-    ...makeThenable(result),
-  };
-  return q;
-};
-
-let __impl = null;
-let __fromCalls = [];
-
-const mockFrom = jest.fn((table) => {
-  __fromCalls.push(['from', table]);
-  return __impl ? __impl(table) : makeQuery({ data: null, error: null });
-});
-
 const mockAuth = {
-  signUp: jest.fn(),
-  signInWithPassword: jest.fn(),
-  signOut: jest.fn(),
-  getSession: jest.fn(),
-  getUser: jest.fn(),
-  onAuthStateChange: jest.fn(() => ({
-    data: { subscription: { unsubscribe: jest.fn() } },
-    error: null,
-  })),
+    signUp: jest.fn(),
+    signInWithPassword: jest.fn(),
+    signOut: jest.fn(),
+    getSession: jest.fn(),
+    getUser: jest.fn(),
+    onAuthStateChange: jest.fn(() => ({
+        data: {
+            subscription: { unsubscribe: jest.fn() },
+        },
+        error: null,
+    })),
 };
 
-const supabase = {
-  from: mockFrom,
-  auth: mockAuth,
+export const _QueryChain = {
+    order: jest.fn(),
+    ilike: jest.fn(),
+    eq: jest.fn(),
+    in: jest.fn(),
+    gte: jest.fn(),
+    lte: jest.fn(),
 
-  // testing helpers used by the tests
-  __setFromImpl: (impl) => { __impl = impl; },
-  __reset: () => {
-    __impl = null;
-    __fromCalls = [];
-    mockFrom.mockClear();
-    Object.values(mockAuth).forEach((fn) => fn?.mockClear?.());
-  },
-  __getFromCalls: () => __fromCalls.slice(),
+    single: jest.fn(), 
+
+    mockResolvedValue: jest.fn(), 
+    mockResolvedValueOnce: jest.fn(),
+    mockRejectedValue: jest.fn(),
+
+    then: jest.fn(), 
 };
 
-export { supabase };
-export const createClient = () => supabase;
-export default supabase;
+const createChainableQuery = () => {
+    Object.keys(_QueryChain).forEach(key => {
+        if (typeof _QueryChain[key] === 'function' && 
+            !['single', 'then', 'mockResolvedValue', 'mockResolvedValueOnce', 'mockRejectedValue'].includes(key)
+        ) {
+            _QueryChain[key].mockReturnThis();
+        }
+    });
+
+    _QueryChain.mockResolvedValue.mockImplementation(() => _QueryChain);
+    _QueryChain.mockRejectedValue.mockImplementation(() => _QueryChain);
+
+    _QueryChain.then.mockImplementation((resolve, reject) => {
+        return _QueryChain.mockResolvedValue(); 
+    });
+
+    return _QueryChain;
+};
+
+
+const mockFrom = jest.fn((tableName) => {
+    return {
+        select: jest.fn(() => createChainableQuery()),
+        update: jest.fn(() => createChainableQuery()),
+        insert: jest.fn(() => createChainableQuery()),
+        delete: jest.fn(() => createChainableQuery()),
+    };
+});
+
+
+const mockRpc = jest.fn();
+
+
+const mockSupabaseClient = {
+    from: mockFrom,
+    auth: mockAuth,
+    rpc: mockRpc,
+};
+
+export const supabase = mockSupabaseClient;
+export const createClient = () => mockSupabaseClient;
+
+export const _MutationChain = _QueryChain; 
+
+export default mockSupabaseClient;

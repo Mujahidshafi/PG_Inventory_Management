@@ -64,18 +64,34 @@ const ScrollingLayout = ({ title, children, showBack, backRoute, onLogout }) => 
         </button>
       </div>
 
-      {/* Settings dropdown */}
+      {/* Settings Dropdown */}
       {showSettings && (
-        <div className="absolute top-20 right-12 w-48 bg-white rounded-lg shadow-lg p-4 z-50">
-          <p className="text-sm text-gray-600 mb-1">Account: {session?.user?.email}</p>
-          <p className="text-sm text-gray-600 mb-4">Role: {role || "Unknown"}</p>
+      <div className="absolute top-20 right-4 sm:right-8 md:right-12 w-72 max-w-[90vw] bg-white rounded-lg shadow-2xl p-5 z-50 border border-gray-200">
+        <div className="space-y-3">
+          {/* Email — wraps cleanly */}
+          <div className="text-sm text-gray-700 font-[amiri] break-all leading-tight">
+            <span className="font-semibold text-gray-900">Account:</span>{' '}
+            {session?.user?.email || "Guest"}
+          </div>
+
+          {/* Role */}
+          <div className="text-sm text-gray-600 font-[amiri]">
+            <span className="font-semibold text-gray-900">Role:</span>{' '}
+            {role || "Loading..."}
+          </div>
+
+          {/* Logout Button — full width, always visible */}
           <button
-            className="w-full bg-[#3D5147] hover:bg-[#2c3a35] text-white py-1 px-2 rounded-md cursor-pointer"
-            onClick={() => (onLogout ?? handleLogout)()}
+            className="w-full bg-[#3D5147] hover:bg-[#2c3a35] text-white py-3 px-4 rounded-lg font-[amiri] text-lg transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 cursor-pointer"
+            onClick={() => {
+              console.log("Logout clicked");
+              (onLogout ?? handleLogout)();
+            }}
           >
             Log Out ↪
           </button>
         </div>
+      </div>
       )}
 
       {/* Auto-expanding content box */}

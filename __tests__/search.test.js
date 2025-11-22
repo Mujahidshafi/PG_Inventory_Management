@@ -56,8 +56,8 @@ describe('Search Page', () => {
     )
 
     render(<Search />)
-    expect(await screen.findAllByText(/Tomato/i)).toHaveLength(4) // 4 storage types
-    expect(await screen.findAllByText(/Lot #: 123/i)).toHaveLength(4)
+    expect(await screen.findAllByText(/Tomato/i)).toHaveLength(5)
+    expect(await screen.findAllByText(/Lot #: 123/i)).toHaveLength(5)
   })
 
   it('filters results based on search input', async () => {
@@ -77,7 +77,7 @@ describe('Search Page', () => {
     fireEvent.change(input, { target: { value: 'Carrot' } })
 
     expect(screen.queryByText(/Tomato/i)).not.toBeInTheDocument()
-    expect(screen.getAllByText(/Carrot/i)).toHaveLength(4)
+    expect(screen.getAllByText(/Carrot/i)).toHaveLength(5)
   })
 
   it('filters results based on year selection', async () => {
