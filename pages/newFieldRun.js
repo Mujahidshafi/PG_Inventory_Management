@@ -24,7 +24,11 @@ function NewFieldRun() {
   const [binData, setBinData] = useState(null);
   const [status, setStatus] = useState("");
 
-  // NEW: dynamic locations from DB
+  // error modal (same pattern as CreateJob)
+  const [error, setError] = useState("");
+  const [showModal, setShowModal] = useState(false);
+
+  // dynamic locations from DB
   const [locations, setLocations] = useState([]);
   const [loadingLocs, setLoadingLocs] = useState(true);
 
@@ -45,16 +49,20 @@ function NewFieldRun() {
 
       // Unique, non-empty, trimmed
       const uniq = Array.from(
-        new Set((data || []).map(r => (r?.location || "").trim()).filter(Boolean))
+        new Set(
+          (data || [])
+            .map((r) => (r && r.location ? r.location.trim() : ""))
+            .filter(Boolean)
+        )
       );
 
       // Keep preferred order first, then any not in list A→Z
       const inOrder = uniq
-        .filter(l => siloOrder.includes(l))
+        .filter((l) => siloOrder.includes(l))
         .sort((a, b) => siloOrder.indexOf(a) - siloOrder.indexOf(b));
 
       const notInOrder = uniq
-        .filter(l => !siloOrder.includes(l))
+        .filter((l) => !siloOrder.includes(l))
         .sort((a, b) => a.localeCompare(b));
 
       setLocations([...inOrder, ...notInOrder]);
@@ -62,7 +70,7 @@ function NewFieldRun() {
     };
 
     fetchLocations();
-  }, []); // run once
+  }, []);
 
   // --- Fetch single bin data when location changes ---
   const fetchSelectedBin = async (location) => {
@@ -94,10 +102,28 @@ function NewFieldRun() {
 
   // --- Save field run ---
   const handleSubmit = async () => {
+    setError("");
+    setShowModal(false);
+
     const { fieldLotNumber, productDescription, Weight, Moisture, Location } = fields;
-    if (!Location || !fieldLotNumber || !productDescription || !Weight) {
-      alert("Please fill in all required fields.");
-      return;
+
+    // Required fields (Moisture is optional)
+    const requiredFields = [
+      { key: "Location", label: "Location" },
+      { key: "fieldLotNumber", label: "Field Lot Number" },
+      { key: "productDescription", label: "Product Description" },
+      { key: "Weight", label: "Weight (lbs)" },
+    ];
+
+    for (const { key, label } of requiredFields) {
+      const value = fields[key];
+      if (!value || value.toString().trim() === "") {
+        const message = `${label} cannot be empty.`;
+        console.error(message);
+        setError(message);
+        setShowModal(true);
+        return;
+      }
     }
 
     const weightNum = Number(Weight);
@@ -116,13 +142,14 @@ function NewFieldRun() {
       if (fetchError) throw fetchError;
 
       if (existing) {
-        // ✅ Update existing bin
         const updatedLots = Array.isArray(existing.lot_number)
           ? [...new Set([...existing.lot_number, fieldLotNumber])]
           : [fieldLotNumber];
+
         const updatedProducts = Array.isArray(existing.product)
           ? [...new Set([...existing.product, productDescription])]
           : [productDescription];
+
         const newWeight = Number(existing.weight || 0) + weightNum;
 
         const { error: updateError } = await supabase
@@ -137,9 +164,8 @@ function NewFieldRun() {
           .eq("location", Location);
 
         if (updateError) throw updateError;
-        setStatus(`✅ Updated ${Location}: +${weightNum} lbs added.`);
+        setStatus(`Updated ${Location}: +${weightNum} lbs added.`);
       } else {
-        // ✅ Insert new bin entry
         const { error: insertError } = await supabase
           .from("field_run_storage_test")
           .insert({
@@ -152,7 +178,7 @@ function NewFieldRun() {
           });
 
         if (insertError) throw insertError;
-        setStatus(`✅ Added new entry for ${Location}.`);
+        setStatus(` Added new entry for ${Location}.`);
       }
 
       // Refresh that bin’s data
@@ -168,8 +194,10 @@ function NewFieldRun() {
       });
       setDateTime("");
     } catch (err) {
-      console.error("❌ Error saving field run:", err);
-      setStatus("❌ Error: " + err.message);
+      console.error("Error saving field run:", err);
+      setStatus("Error: " + (err && err.message ? err.message : "Unknown error"));
+      setError("Something went wrong while saving.");
+      setShowModal(true);
     }
   };
 
@@ -178,7 +206,7 @@ function NewFieldRun() {
       <div className="w-full px-8 flex flex-col items-center">
         {/* --- Input Form --- */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-5xl mb-10">
-          {/* Location Dropdown (now dynamic) */}
+          {/* Location Dropdown (dynamic) */}
           <div>
             <label htmlFor="location" className="block text-center -mb-5">
               Select Location
@@ -264,7 +292,9 @@ function NewFieldRun() {
             </h2>
 
             {!binData ? (
-              <p className="text-center text-gray-500">No data for this bin yet.</p>
+              <p className="text-center text-gray-500">
+                No data for this bin yet.
+              </p>
             ) : (
               <div className="overflow-x-auto border rounded-lg shadow">
                 <table className="w-full text-sm text-center">
@@ -290,7 +320,9 @@ function NewFieldRun() {
                           : binData.product}
                       </td>
                       <td className="p-2">{binData.weight}</td>
-                      <td className="p-2">{binData.moisture ?? "—"}</td>
+                      <td className="p-2">
+                        {binData.moisture != null ? binData.moisture : "—"}
+                      </td>
                       <td className="p-2">
                         {binData.date_stored
                           ? new Date(binData.date_stored).toLocaleString()
@@ -304,6 +336,29 @@ function NewFieldRun() {
           </div>
         )}
       </div>
+
+      {/* Error Modal (same style as CreateJob) */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-transparent flex justify-center items-center z-50">
+          <div className="bg-white rounded-lg p-6 w-80 relative">
+            <button
+              onClick={() => setShowModal(false)}
+              className="absolute top-2 right-2 text-gray-600 text-xl"
+            >
+              ×
+            </button>
+            <p className="text-red-600 text-center mb-6">{error}</p>
+            <div className="flex justify-center">
+              <button
+                onClick={() => setShowModal(false)}
+                className="px-6 py-2 rounded-xl shadow-md bg-[#5D1214] text-white hover:bg-[#2C3A35]"
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </Layout>
   );
 }
