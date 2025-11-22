@@ -54,3 +54,19 @@ beforeAll(() => {
 afterAll(() => {
   console.error = originalError;
 });
+
+// --- Global browser API shims for JSDOM ---
+if (typeof window !== 'undefined') {
+  if (!window.alert) {
+    Object.defineProperty(window, 'alert', {
+      value: jest.fn(),
+      writable: true,
+    });
+  }
+  if (!window.confirm) {
+    Object.defineProperty(window, 'confirm', {
+      value: jest.fn(() => true), // default to “OK”
+      writable: true,
+    });
+  }
+}
