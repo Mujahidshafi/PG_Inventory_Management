@@ -93,4 +93,41 @@ test("adds a bin removal", async () => {
   fireEvent.click(addButton);
 
   expect(await screen.findByText("HQ-1")).toBeInTheDocument();
+
 });
+
+
+// Saving a draft displays a "Draft saved." status message
+test("shows status message when saving draft", async () => {
+  render(<OrderFulfillmentPage />);
+
+  // Click the Save Draft button
+  fireEvent.click(
+    screen.getByRole("button", { name: /Save Draft/i })
+  );
+
+  // Expect the status message to appear
+  expect(
+    await screen.findByText(/Draft saved\./i)
+  ).toBeInTheDocument();
+});
+
+// Clearing a draft displays a "Draft cleared." status message
+test("shows status message when clearing draft", async () => {
+  jest.spyOn(window, "confirm").mockReturnValue(true);
+
+  render(<OrderFulfillmentPage />);
+
+  // Click the Clear Draft button
+  fireEvent.click(
+    screen.getByRole("button", { name: /Clear Draft/i })
+  );
+
+  expect(
+    await screen.findByText(/Draft cleared\./i)
+  ).toBeInTheDocument();
+
+  window.confirm.mockRestore();
+});
+
+
