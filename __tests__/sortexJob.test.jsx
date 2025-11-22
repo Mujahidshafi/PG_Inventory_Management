@@ -9,7 +9,7 @@ import userEvent from '@testing-library/user-event';
 // Mock the exact paths used by the page
 jest.mock('../lib/supabaseClient', () => {
   // point directly to your manual mock next to __tests__
-  return require('../__mocks__/lib/supabaseClient.js');
+  return require('../__mocks__/lib/supabaseClient_jobs.js');
 });
 jest.mock('../components/scrollingLayout', () => ({
   __esModule: true,

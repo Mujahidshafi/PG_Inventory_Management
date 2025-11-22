@@ -9,7 +9,7 @@ import userEvent from '@testing-library/user-event';
 // IMPORTANT: mock the same path your page imports
 jest.mock('../lib/supabaseClient', () => {
   // point directly to your manual mock next to __tests__
-  return require('../__mocks__/lib/supabaseClient.js');
+  return require('../__mocks__/lib/supabaseClient_jobs.js');
 });
 import { supabase } from '../lib/supabaseClient';
 
