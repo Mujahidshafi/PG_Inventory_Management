@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import CropMenu from "./CropMenu";
+import CropMenu from "../pages/CropMenu";
 
 // Mock Supabase once for this test file
 jest.mock("../lib/supabase", () => ({

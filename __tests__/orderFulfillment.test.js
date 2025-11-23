@@ -60,15 +60,16 @@ test("renders Order Fulfillment heading", () => {
 
 //Validation warning appears when clicking Complete Fulfillment with no data
 test("shows validation warning when clicking Complete Fulfillment with no data", async () => {
+  window.alert = jest.fn();
   render(<OrderFulfillmentPage />);
 
   fireEvent.click(
     screen.getByRole("button", { name: /Complete Fulfillment/i })
   );
 
-  expect(
-    await screen.findByText(/Ensure Process ID, Employee/i)
-  ).toBeInTheDocument();
+  expect(window.alert).toHaveBeenCalledWith(
+    expect.stringMatching(/Please fix the following:/i)
+  );
 });
 
 //Adding a bin removal displays a new row
