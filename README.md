@@ -8,7 +8,7 @@ An inventory tracking and management system built for Pleasant Grove Farms to st
 ![Next.js](https://img.shields.io/badge/Next.js-13-blue)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-ORM-green)
 ![Tailwind](https://img.shields.io/badge/Tailwind-CSS-blue)
-![Status](https://img.shields.io/badge/Status-In_Progress-yellow)
+![Status](https://img.shields.io/badge/Status-Complete-brightgreen)
 
 Our team the Syntax Stingers are building a simple and efficient inventory management system for Pleasant Grove Farms. Their current process relies on the management of spreadsheets. This makes it difficult to keep track of what they have in stock. Our system will make it easier for them by having everything they need in an intuitive and organized interface.
 
@@ -166,7 +166,7 @@ How to download and setup to run.
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Testing 
-Links or a description of how to test.
+All of our tests are located in the __tests__ folder at the root of our project.
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Deployment 
@@ -178,14 +178,14 @@ How to deploy the app.
 
 ### Team Contacts
 
-- [Mujahid Shafi](https://github.com/Mujahidshafi) — [Email](mailto:muja.shafi@gmail.com)
-- [Amber Aring](https://github.com/aaring25) — [Email](mailto:aring.amber@gmail.com)
-- [Purity Maina](https://github.com/p-maina) — [Email](mailto:puritymainam@gmail.com)
-- [Gene Arellano](https://github.com/genearellano) — [Email](mailto:kenare1431@gmail.com)
-- [Anjoe Mateo](https://github.com/anmateo) — [Email](mailto:useramateo@gmail.com)
-- [Lamba Mujadedi](https://github.com/lambamojo) — [Email](mailto:lambamojo123@gmail.com)
-- [Subhanullah Lalzai](https://github.com/Subhan-4) — [Email](mailto:subhanullahmomand3@gmail.com)
-- [Hamzah Ramzan](https://github.com/Bahamas360) — [Email](mailto:mramzan331@gmail.com)
+- [Mujahid Shafi](https://github.com/Mujahidshafi) — muja.shafi@gmail.com
+- [Amber Aring](https://github.com/aaring25) — mailto:aring.amber@gmail.com
+- [Purity Maina](https://github.com/p-maina) — mailto:puritymainam@gmail.com
+- [Gene Arellano](https://github.com/genearellano) — mailto:kenare1431@gmail.com
+- [Anjoe Mateo](https://github.com/anmateo) — useramateo@gmail.com
+- [Lamba Mujadedi](https://github.com/lambamojo) — lambamojo123@gmail.com
+- [Subhanullah Lalzai](https://github.com/Subhan-4) — subhanullahmomand3@gmail.com
+- [Hamzah Ramzan](https://github.com/Bahamas360) — mramzan331@gmail.com
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
