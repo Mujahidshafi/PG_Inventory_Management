@@ -167,6 +167,36 @@ How to download and setup to run.
 
 ## Testing 
 All of our tests are located in the __tests__ folder at the root of our project.
+These tests help ensure that the core features and components work before deployment.
+
+Tools used: Jest and the React Testing Library.
+
+Unit Testing: Valifating individual components, funcitons, and utilities in isolation.
+Integration Testing: Ensure that multiple components or modules work cohesively together.
+
+Tests can be conducted after fully downloading the project.
+  1. Open project in visual studio code (Skip steps 2 and 3 if Terminal already open)
+  2. Click the View button on the top left corner
+  3. Click Terminal
+  4. Type the command below and then press enter key
+
+    npm init jest@latest
+  5. In the Terminal type the command below and then press enter key
+
+    npm test
+     
+This should run all the test that are in __tests__ folder
+
+NOTE: Tests can also be individually run.
+
+Example: 
+        
+    npm test -- __tests__/cleanStorage.test.js
+                
+Details: 
+    
+    npm test -- __tests__(file name)
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Deployment 
