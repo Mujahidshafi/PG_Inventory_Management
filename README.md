@@ -52,6 +52,7 @@ Pleasant Grove Farms currently uses spreadsheets to manage over 3,000 acres of c
 * [![PostgreSQL][PostgreSQL.js]][PostgreSQL-url]
 * [![Supabase][Supabase.js]][Supabase-url]
 * [![Jest][Jest.js]][Jest-url]
+* [![React Testing Library]][RTL-url]
 * [![Vercel][Vercel.js]][Vercel-url]
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -61,7 +62,7 @@ Pleasant Grove Farms currently uses spreadsheets to manage over 3,000 acres of c
 - Admin login and role-based access
 - Inventory CRUD (Create, Read, Update, Delete)
 - Mill Job tracking and outputs
-- Search by year, location, and product
+- Search by lot number, location, and product
 - Transfer and location update pages
 - ERD-based database structure
 
@@ -157,20 +158,102 @@ Allows admins to create, update, and complete orders, as well as view all active
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Back End Visuals
-This is our Entity Relationship Diagram:
+This is our Entity Relationship Diagram:<br>
+<img width="531" height="563" alt="Image" src="https://github.com/user-attachments/assets/63fc9ff8-6b5c-48cd-a396-133a9e75f1c5" /><br>
+<img width="773" height="295" alt="Image" src="https://github.com/user-attachments/assets/af7a0a19-0723-4502-b5e3-5b0890258cc5" />
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Developer Instructions
-How to download and setup to run.
+Before downloading the project, make sure the following software is installed:
+- [Git](https://git-scm.com/downloads)
+- [Visual Studio Code](https://code.visualstudio.com/)
+  - After installing VS Code, change the default terminal to bash using the command palette:
+    - Open the palette with CTRL + Shift + P and input `Terminal: Select Default Profile`
+    - Select Git Bash as the new default
+- [Node.js](https://nodejs.org/)
+  - For Node, make sure that the source folder path is present in Environmental Variables / User variables / Path on Windows
+    - Ex: C:\Program Files\nodejs
+
+To clone the repository, the command palette on VS Code can be used:<br>
+- Open the palette with CTRL + Shift + P in VS Code and input `Git:Clone`
+- Paste this URL into the input: https://github.com/Mujahidshafi/PG_Inventory_Management
+- Press Enter to chose a location for the project
+
+To open a terminal for completing the next steps, use Terminal / New Terminal in the top left of VS Code.
+
+Before installing the dependencies needed for this project, create a Node.js project in the folder using this command:<br>
+
+    npm init -y
+
+Installing Dependencies:<br>
+- Open a new terminal
+- Install Next.js, React, and React-DOM with this command:
+
+      npm install next@latest react@latest react-dom@latest
+- Install Tailwind CSS with this command:
+
+      npm install -D @tailwindcss/postcss
+- Install Jest and the testing libraries with this command:
+
+      npm install --save-dev jest jest-environment-jsdom @testing-library/react @testing-library/jest-dom next/jest
+
+Before running the project a .env.local file will need to be created in the source folder, to get the information to insert into this file, contact Mujahid Shafi at muja.shafi@gmail.com.
+
+To run the project locally, use this command:
+
+    npm run dev
+If any dependencies are missing, they will be installed and then the environment can be run again<br>
+The webiste will now be available at: [http://localhost:3000](http://localhost:3000)
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Testing 
-All of our tests are located in the __tests__ folder at the root of our project.
+All of our tests are located in the `__tests__` folder at the root of our project.<br>
+These tests help ensure that the core features and components work before deployment.
+
+Tools used: Jest and the React Testing Library.
+
+Unit Testing: Validating individual components, functions, and utilities in isolation.<br>
+Integration Testing: Ensure that multiple components or modules work cohesively together.
+
+Tests can be conducted after fully downloading the project.
+  1. Open the project in Visual Studio Code (Skip steps 2 and 3 if the Terminal is already open)
+  2. Click the View button in the top left corner
+  3. Click Terminal
+  4. Type the command below and then press the enter key:
+
+    npm init jest@latest
+  5. In the Terminal, type the command below and then press the enter key:
+
+    npm test
+     
+This should run all the tests that are in the `__tests__` folder.
+
+NOTE: Tests can also be individually run.
+
+Example: 
+        
+    npm test -- __tests__/cleanStorage.test.js
+                
+Details: 
+    
+    npm test -- __tests__/(file name)
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Deployment 
-How to deploy the app.
+Redeploying releases is simple with Vercel:
+- Vercel automatically redeploys the application whenever changes are merged into the main branch on GitHub.
+- Any updates pushed to a feature branch must be merged into main to trigger a deployment.
+
+Handling Build Errors:
+- If a deployment fails, review the Build Logs in the Vercel Dashboard:
+  - Go to your project → Deployments
+  - Click the failed deployment → View Logs
+- Look for error messages indicating the cause (e.g., missing dependencies, syntax errors, environment variables).
+- Resolve the issue in your local repository, commit the fix, and merge into main. Vercel will automatically attempt a new deployment.
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Contributors
@@ -178,14 +261,14 @@ How to deploy the app.
 
 ### Team Contacts
 
-- [Mujahid Shafi](https://github.com/Mujahidshafi) — muja.shafi@gmail.com
-- [Amber Aring](https://github.com/aaring25) — mailto:aring.amber@gmail.com
-- [Purity Maina](https://github.com/p-maina) — mailto:puritymainam@gmail.com
-- [Gene Arellano](https://github.com/genearellano) — mailto:kenare1431@gmail.com
-- [Anjoe Mateo](https://github.com/anmateo) — useramateo@gmail.com
-- [Lamba Mujadedi](https://github.com/lambamojo) — lambamojo123@gmail.com
-- [Subhanullah Lalzai](https://github.com/Subhan-4) — subhanullahmomand3@gmail.com
-- [Hamzah Ramzan](https://github.com/Bahamas360) — mramzan331@gmail.com
+- [Mujahid Shafi](https://github.com/Mujahidshafi) — `muja.shafi@gmail.com`
+- [Amber Aring](https://github.com/aaring25) — `aring.amber@gmail.com`
+- [Purity Maina](https://github.com/p-maina) — `puritymainam@gmail.com`
+- [Gene Arellano](https://github.com/genearellano) — `kenare1431@gmail.com`
+- [Anjoe Mateo](https://github.com/anmateo) — `useramateo@gmail.com`
+- [Lamba Mujadedi](https://github.com/lambamojo) — `lambamojo123@gmail.com`
+- [Subhanullah Lalzai](https://github.com/Subhan-4) — `subhanullahmomand3@gmail.com`
+- [Hamzah Ramzan](https://github.com/Bahamas360) — `mramzan331@gmail.com`
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -203,3 +286,5 @@ How to deploy the app.
 [Tailwind-url]: https://tailwindcss.com/
 [Jest.js]: https://img.shields.io/badge/Jest-C21325?style=for-the-badge&logo=jest&logoColor=white
 [Jest-url]: https://jestjs.io/
+[React Testing Library]: https://img.shields.io/badge/React%20Testing%20Library-E33332?style=for-the-badge&logo=testinglibrary&logoColor=white
+[RTL-url]: https://testing-library.com/docs/react-testing-library/intro/
