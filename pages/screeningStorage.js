@@ -247,7 +247,7 @@ useEffect(() => {
           {visibleData.map((item, index) => (
             <div 
             key={index}
-            class = "bg-gray-100 w-[100%] h-[10%] rounded-[30px] shadow-lg items-start items-center justify-around flex gap-2 p-4"
+            class = "bg-gray-100 w-[100%] rounded-[30px] shadow-lg flex flex-wrap items-start justify-between gap-4 p-4"
             >
                 
               <div class = "flex flex-col items-center gap-2">
