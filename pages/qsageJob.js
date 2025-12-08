@@ -9,6 +9,68 @@ import { printBoxLabel } from "../lib/labelPrint";
 const todayISO = () => new Date().toISOString().slice(0, 10);
 const safeNum = (v) => (v === "" || v === null || isNaN(Number(v)) ? 0 : Number(v));
 
+const enrichInboundList = (list = [], physicalBoxesMap) =>
+  (list || []).map((b, i) => {
+    const gross = safeNum(b.weightLbs);
+    const pbw =
+      b.usePhysicalBox && b.physicalBoxId
+        ? (physicalBoxesMap.get(b.physicalBoxId) || 0)
+        : 0;
+
+    const net = Math.max(gross - pbw, 0);
+
+    return {
+      ...b,
+      index: i,
+      grossWeight: gross,
+      physicalBoxWeight: pbw,
+      netWeight: net,
+
+      // (optional) keep a consistent alias if you ever want it
+      net_weight: net,
+    };
+  });
+
+const resolveProductForBox = (b, fallback) =>
+  (b?.useCustomProduct && String(b?.customProduct || "").trim())
+    ? String(b.customProduct).trim()
+    : fallback;
+
+const buildOutputBoxId = (processID, kind, b, index, screeningType = null) => {
+  if (!processID) return "";
+  const num = b.boxNumber || index + 1;
+
+  if (kind === "clean") return `${processID}C${num}`;
+  if (kind === "reruns") return `${processID}R${num}`;
+  if (kind === "trash") return `${processID}T${num}`;
+
+  if (kind === "screenings") {
+    const code = screeningCode[screeningType] || "S";
+    return `${processID}${code}${num}`;
+  }
+  return "";
+};
+
+const enrichOutputList = (list = [], kind, processID, physicalBoxesMap, fallbackProduct, screeningType = null) =>
+  (list || []).map((b, i) => {
+    const net = computeNetWeight(b, physicalBoxesMap);
+    const resolvedProduct = resolveProductForBox(b, fallbackProduct);
+
+    return {
+      ...b,
+      // normalized/report-friendly fields
+      kind,
+      screeningType: screeningType || null,
+      boxId: buildOutputBoxId(processID, kind, b, i, screeningType),
+      grossWeight: safeNum(b.weightLbs),
+      netWeight: net,
+      resolvedProduct,
+      productSource: (b?.useCustomProduct && String(b?.customProduct || "").trim())
+        ? "custom"
+        : "auto",
+    };
+  });
+
 const SCREENING_TYPES = [
   "Air",
   "Dust",
@@ -1047,6 +1109,49 @@ export default function QsageCleaningPage() {
       });
     }
 
+    const fallbackProduct = productStr; // combined from inputs
+
+    const enrichedClean = enrichOutputList(
+      boxes.clean,
+      "clean",
+      state.processID,
+      physicalBoxesMap,
+      fallbackProduct
+    );
+
+    const enrichedReruns = enrichOutputList(
+      boxes.reruns,
+      "reruns",
+      state.processID,
+      physicalBoxesMap,
+      fallbackProduct
+    );
+
+    const enrichedTrash = enrichOutputList(
+      boxes.trash,
+      "trash",
+      state.processID,
+      physicalBoxesMap,
+      fallbackProduct
+    );
+
+    const enrichedScreenings = {};
+    for (const t of SCREENING_TYPES) {
+      enrichedScreenings[t] = enrichOutputList(
+        (boxes.screenings || {})[t] || [],
+        "screenings",
+        state.processID,
+        physicalBoxesMap,
+        fallbackProduct,
+        t
+      );
+    }
+
+    const enrichedInbound = enrichInboundList(
+      boxes.inbound || [],
+      physicalBoxesMap
+    );
+
     const payload = {
       process_id: state.processID.trim(),
       process_type: "Qsage",
@@ -1063,12 +1168,15 @@ export default function QsageCleaningPage() {
       trash_total: outputsTotals.trash,
       balance: outputsTotals.balance,
       bins_used: state.binsUsed || [],
-      inbound_boxes: boxes.inbound || [],
+
+      // ✅ USE ENRICHED INBOUND
+      inbound_boxes: enrichedInbound,
+
       outputs: {
-        clean: boxes.clean || [],
-        reruns: boxes.reruns || [],
-        screenings: boxes.screenings || {},
-        trash: boxes.trash || [],
+        clean: enrichedClean,
+        reruns: enrichedReruns,
+        screenings: enrichedScreenings,
+        trash: enrichedTrash,
       },
       totals: outputsTotals,
     };
@@ -1120,7 +1228,7 @@ export default function QsageCleaningPage() {
         if (net <= 0) continue;
         const code = screeningCode[sf.type] || "S";
         const boxId = `${state.processID}${code}${sf.boxNumber || sf.index + 1}`;
-        const productForThisBox = productForBox(b, productStr);
+        const productForThisBox = productForBox(sf, productStr);
         await supabase.from("screening_storage_shed").insert({
           Box_ID: boxId,
           Process_ID: state.processID,
@@ -1155,13 +1263,14 @@ export default function QsageCleaningPage() {
 
       /* Update source bins (field_run_storage_test) based on inbound net usage */
       const inboundByBin = {};
-      for (const b of boxes.inbound || []) {
-        if (!b.binLocation) continue;
-        const net = computeNetWeight(b, physicalBoxesMap);
-        if (net <= 0) continue;
-        inboundByBin[b.binLocation] =
-          (inboundByBin[b.binLocation] || 0) + net;
-      }
+        for (const b of enrichedInbound) {
+          if (!b.binLocation) continue;
+          const net = Number(b.netWeight) || 0;
+          if (net <= 0) continue;
+
+          inboundByBin[b.binLocation] =
+            (inboundByBin[b.binLocation] || 0) + net;
+        }
 
       for (const [location, used] of Object.entries(inboundByBin)) {
         const { data: existing } = await supabase

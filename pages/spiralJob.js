@@ -56,11 +56,22 @@ const makeInboundRow = () => ({
 const makeOutputRow = () => ({
   boxNumber: "",
   weightLbsRaw: "",
-  weightLbs: 0,
+  weightLbs: 0, // net stored here
   storageLocation: "",
   physicalBoxId: "",
   usePhysicalBox: false,
+
+  // ✅ custom product tracking
   productOverride: "",
+  useCustomProduct: false,
+  customProduct: "",
+  resolvedProduct: "",
+  productSource: "auto", // "auto" | "custom"
+
+  // ✅ optional but nice for clarity/debug/reporting
+  grossWeight: 0,
+  physicalBoxWeight: 0,
+  netWeight: 0,
 });
 
 /* --------------------------- Physical Box Lookup ------------------------- */
@@ -207,14 +218,22 @@ function OutputBoxTable({
                         onChange={(e) => {
                           const raw = e.target.value;
                           const gross = Number(raw) || 0;
-                          let net = gross;
 
-                          if (b.usePhysicalBox && b.physicalBoxId) {
-                            const pbw = getPBWeight(b.physicalBoxId);
-                            net = Math.max(gross - pbw, 0);
-                          }
+                          const pbw =
+                            b.usePhysicalBox && b.physicalBoxId
+                              ? getPBWeight(b.physicalBoxId)
+                              : 0;
+
+                          const net = Math.max(gross - pbw, 0);
 
                           onUpdate(i, "weightLbsRaw", raw);
+
+                          // ✅ store detailed fields
+                          onUpdate(i, "grossWeight", gross);
+                          onUpdate(i, "physicalBoxWeight", pbw);
+                          onUpdate(i, "netWeight", net);
+
+                          // ✅ keep legacy field used everywhere else
                           onUpdate(i, "weightLbs", net);
                         }}
                       />
@@ -240,16 +259,23 @@ function OutputBoxTable({
                         checked={!!b.usePhysicalBox}
                         onChange={(e) => {
                           const usePB = e.target.checked;
-                          let net = Number(
-                            b.weightLbsRaw ?? b.weightLbs
-                          ) || 0;
+                          const gross = Number(b.weightLbsRaw ?? b.weightLbs) || 0;
 
-                          if (usePB && b.physicalBoxId) {
-                            const pbw = getPBWeight(b.physicalBoxId);
-                            net = Math.max(net - pbw, 0);
-                          }
+                          const pbw =
+                            usePB && b.physicalBoxId
+                              ? getPBWeight(b.physicalBoxId)
+                              : 0;
+
+                          const net = Math.max(gross - pbw, 0);
 
                           onUpdate(i, "usePhysicalBox", usePB);
+
+                          // ✅ store detailed fields
+                          onUpdate(i, "grossWeight", gross);
+                          onUpdate(i, "physicalBoxWeight", pbw);
+                          onUpdate(i, "netWeight", net);
+
+                          // ✅ main field
                           onUpdate(i, "weightLbs", net);
                         }}
                       />
@@ -271,12 +297,23 @@ function OutputBoxTable({
                     {/* Product (override) */}
                    <td className="px-3 py-2">
                      <input
-                       className="w-full rounded border px-2 py-1"
-                       type="text"
-                       placeholder="Leave blank to use auto products"
-                       value={b.productOverride || ""}
-                       onChange={(e) => onUpdate(i, "productOverride", e.target.value)}
-                     />
+                      className="w-full rounded border px-2 py-1"
+                      type="text"
+                      placeholder="Leave blank to use auto products"
+                      value={b.productOverride || ""}
+                      onChange={(e) => {
+                        const val = e.target.value;
+
+                        onUpdate(i, "productOverride", val);
+
+                        const hasCustom = !!String(val || "").trim();
+
+                        // ✅ fields Reports modal knows
+                        onUpdate(i, "useCustomProduct", hasCustom);
+                        onUpdate(i, "customProduct", val);
+                        onUpdate(i, "productSource", hasCustom ? "custom" : "auto");
+                      }}
+                    />
                    </td>
 
                     {/* Storage Location */}
@@ -1025,6 +1062,7 @@ export default function SpiralCleaningPage() {
             (b) => safeNum(b.weightLbs !== undefined ? b.weightLbs : b.weightLbsRaw) > 0
           )
           .map((b, idx) => {
+            const defaultProductStr = combinedProducts || ""; // already in scope above
             const boxNumber = b.boxNumber || idx + 1;
             const gross = Number(b.weightLbsRaw !== undefined ? b.weightLbsRaw : b.weightLbs) || 0;
             const pbw = b.usePhysicalBox && b.physicalBoxId ? getPBWeight(b.physicalBoxId) : 0;
@@ -1032,12 +1070,26 @@ export default function SpiralCleaningPage() {
             const Box_ID =
               state.processID && prefix ? `${state.processID}${prefix}${boxNumber}` : null;
 
+            const override = String(b.productOverride || "").trim();
+            const resolvedProduct = override || defaultProductStr;
+            const isCustom = !!override;
+
             return {
               ...b,
               boxNumber,
               grossWeight: gross,
               physicalBoxWeight: pbw,
+              netWeight: net,
+
+              // ✅ unify field usage
               weightLbs: net,
+
+              // ✅ Reports-friendly fields
+              resolvedProduct,
+              productSource: isCustom ? "custom" : "auto",
+              useCustomProduct: isCustom,
+              customProduct: isCustom ? override : "",
+
               Box_ID,
               date: new Date().toISOString(),
             };

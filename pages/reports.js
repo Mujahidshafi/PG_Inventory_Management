@@ -755,57 +755,117 @@ function Section({ title, data }) {
     const screenings = data.screenings ?? [];
 
     const renderBoxTable = (rows, label) => {
-    const formatDate = (d) => (d ? new Date(d).toLocaleString() : "—");
+      const formatDate = (d) => (d ? new Date(d).toLocaleString() : "—");
 
-    return (
-      <div className="mb-4">
-        {label && <h4 className="font-medium mb-1 text-gray-700">{label}</h4>}
-        <table className="w-full text-xs border mb-2">
-          <thead className="bg-gray-50 text-center">
-            <tr>
-              <th className="p-1">Box ID</th>
-              <th className="p-1">Physical Box ID</th>
-              <th className="p-1">Box #</th>
-              <th className="p-1">Weight (lbs)</th>
-              <th className="p-1">Location</th>
-              <th className="p-1">Date</th> {/* NEW */}
-            </tr>
-          </thead>
-          <tbody className="text-center">
-            {rows.map((b, i) => {
-              const boxId =
-                b.Box_ID || b.boxId || b.box_id || b.BoxId || "—";
-              const physicalId = b.physicalBoxId || b.physical_box_id || "—";
-              const loc =
-                b.storageLocation ||
-                b.location ||
-                b.Location ||
-                b.newLocation ||
-                b.storage_location ||
-                "—";
-              const dt =
-                b.date ||
-                b.created_at ||
-                b.timestamp ||
-                b.Date_Stored ||
-                null; // supports Qsage/Sortex/Spiral variants
+      const pickBoxId = (b) =>
+        b.Box_ID || b.boxId || b.box_id || b.BoxId || "—";
 
-              return (
-                <tr key={i} className="border-t">
-                  <td className="p-1">{boxId}</td>
-                  <td className="p-1">{physicalId}</td>
-                  <td className="p-1">{b.boxNumber ?? "—"}</td>
-                  <td className="p-1">{b.weightLbs ?? b.weight ?? "—"}</td>
-                  <td className="p-1">{loc}</td>
-                  <td className="p-1">{formatDate(dt)}</td> {/* NEW */}
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-    );
-  };
+      const pickPhysicalId = (b) =>
+        b.physicalBoxId || b.physical_box_id || "—";
+
+      const pickLocation = (b) =>
+        b.storageLocation ||
+        b.storage_location ||
+        b.location ||
+        b.Location ||
+        b.newLocation ||
+        "—";
+
+      const pickResolvedProduct = (b) =>
+        b.resolvedProduct ||
+        b.Product ||
+        b.product ||
+        b.customProduct ||
+        "—";
+
+      const isCustomBox = (b) =>
+        b.productSource === "custom" ||
+        (b.useCustomProduct && String(b.customProduct || "").trim());
+
+      const pickGross = (b) =>
+        b.grossWeight ??
+        b.weightLbs ??
+        b.weight ??
+        "—";
+
+      const pickNet = (b) =>
+        b.netWeight ??
+        b.net_weight ??
+        b.Net_Weight ??
+        b.weightLbs ??
+        b.weight ??
+        0;
+
+      return (
+        <div className="mb-4">
+          {label && <h4 className="font-medium mb-1 text-gray-700">{label}</h4>}
+
+          <table className="w-full text-xs border mb-2">
+            <thead className="bg-gray-50 text-center">
+              <tr>
+                <th className="p-1">Box ID</th>
+                <th className="p-1">Physical Box ID</th>
+                <th className="p-1">Box #</th>
+                <th className="p-1">Gross (lbs)</th>
+                <th className="p-1">Net (lbs)</th>
+                <th className="p-1">Product</th>
+                <th className="p-1">Location</th>
+                <th className="p-1">Date</th>
+              </tr>
+            </thead>
+
+            <tbody className="text-center">
+              {rows.map((b, i) => {
+                const boxId = pickBoxId(b);
+                const physicalId = pickPhysicalId(b);
+                const loc = pickLocation(b);
+
+                const dt =
+                  b.date ||
+                  b.created_at ||
+                  b.timestamp ||
+                  b.Date_Stored ||
+                  null;
+
+                const gross = pickGross(b);
+                const net = pickNet(b);
+                const product = pickResolvedProduct(b);
+
+                return (
+                  <tr key={i} className="border-t">
+                    <td className="p-1">{boxId}</td>
+                    <td className="p-1">{physicalId}</td>
+                    <td className="p-1">{b.boxNumber ?? "—"}</td>
+
+                    <td className="p-1">
+                      {typeof gross === "number"
+                        ? gross.toLocaleString()
+                        : String(gross ?? "—")}
+                    </td>
+
+                    <td className="p-1 font-semibold">
+                      {Number(net || 0).toLocaleString()}
+                    </td>
+
+                    <td className="p-1">
+                      <span>{product}</span>
+                      {isCustomBox(b) && (
+                        <span className="ml-1 inline-block text-[9px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-800">
+                          custom
+                        </span>
+                      )}
+                    </td>
+
+                    <td className="p-1">{loc}</td>
+                    <td className="p-1">{formatDate(dt)}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      );
+    };
 
 
     return (
@@ -882,17 +942,37 @@ function Section({ title, data }) {
 function InboundSection({ inbound }) {
   if (!Array.isArray(inbound) || inbound.length === 0) return null;
 
-  // Normalize every inbound row
-  const rows = inbound.map((b) => ({
-    sourceType: b.sourceType || "—",
-    binLocation: b.binLocation || b.bin_location || "—",
-    boxNumber: b.boxNumber || "—",
-    weightLbs: b.weightLbs || b.weight || "—",
-    physicalBoxId: b.physicalBoxId || "—",
-    usePhysicalBox: b.usePhysicalBox ? "Yes" : "No",
-    lotNumber: b.lotNumber || b.lot || "—",
-    product: b.product || b.products || "—",
-  }));
+  const toNum = (v) => {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : 0;
+  };
+
+  const rows = inbound.map((b) => {
+    const gross =
+      b.grossWeight ??
+      b.gross_weight ??
+      b.weightLbs ??
+      b.weight ??
+      0;
+
+    const net =
+      b.netWeight ??
+      b.net_weight ??
+      b.Net_Weight ??
+      null;
+
+    return {
+      sourceType: b.sourceType || "—",
+      binLocation: b.binLocation || b.bin_location || "—",
+      boxNumber: b.boxNumber || "—",
+      grossWeight: toNum(gross),
+      physicalBoxId: b.physicalBoxId || b.physical_box_id || "—",
+      usePhysicalBox: b.usePhysicalBox ? "Yes" : "No",
+      netWeight: net !== null ? toNum(net) : toNum(gross), // fallback for older reports
+      lotNumber: b.lotNumber || b.lot || "—",
+      product: b.product || b.products || "—",
+    };
+  });
 
   return (
     <div className="mb-6">
@@ -904,9 +984,10 @@ function InboundSection({ inbound }) {
             <th className="p-1">Source Type</th>
             <th className="p-1">Bin Location</th>
             <th className="p-1">Box #</th>
-            <th className="p-1">Weight (lbs)</th>
+            <th className="p-1">Gross Weight (lbs)</th>
             <th className="p-1">Physical Box ID</th>
             <th className="p-1">Use Physical Box</th>
+            <th className="p-1">Net Weight (lbs)</th>
             <th className="p-1">Lot Number</th>
             <th className="p-1">Product</th>
           </tr>
@@ -918,9 +999,19 @@ function InboundSection({ inbound }) {
               <td className="p-1 capitalize">{r.sourceType}</td>
               <td className="p-1">{r.binLocation}</td>
               <td className="p-1">{r.boxNumber}</td>
-              <td className="p-1">{r.weightLbs}</td>
+
+              {/* ✅ FIXED: use grossWeight, not weightLbs */}
+              <td className="p-1 tabular-nums">
+                {r.grossWeight.toLocaleString()}
+              </td>
+
               <td className="p-1">{r.physicalBoxId}</td>
               <td className="p-1">{r.usePhysicalBox}</td>
+
+              <td className="p-1 font-semibold tabular-nums">
+                {r.netWeight.toLocaleString()}
+              </td>
+
               <td className="p-1">{r.lotNumber}</td>
               <td className="p-1">{r.product}</td>
             </tr>

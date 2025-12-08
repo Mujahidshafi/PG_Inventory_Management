@@ -1170,6 +1170,7 @@ const combinedProducts = useMemo(() => {
             grossWeight: gross,
             physicalBoxWeight: pbw,
             netWeight: net,
+            weightLbs: net,
           };
         });
 
@@ -1209,10 +1210,11 @@ const combinedProducts = useMemo(() => {
               ...b,
               boxNumber,
               grossWeight: gross,
+              netWeight: net,                 // ✅ ADD THIS
               physicalBoxWeight: pbw,
-              weightLbs: net,
+              weightLbs: net,                 // keep for backward compatibility
               Box_ID,
-              date: new Date().toISOString(), // ✅ add this
+              date: new Date().toISOString(),
             };
           });
 
