@@ -24,6 +24,72 @@ function MixingJob() {
   const scanInputRef = useRef(null);
   const autosaveTimerRef = useRef(null);
 
+  const [bins, setBins] = useState([]);
+
+  const fetchBins = async () => {
+  try {
+    const { data, error } = await supabase
+      .from("inside_co2_bins")
+      .select("co2_bin")
+      .order("co2_bin", { ascending: true });
+
+    if (error) {
+      console.error("Error fetching bins:", error);
+      // Keep the current selection visible even on error
+      setBins((prev) => {
+        const s = new Set(prev);
+        if (state.co2Bin) s.add(state.co2Bin);
+        return Array.from(s).sort();
+      });
+      return;
+    }
+
+    const list = Array.from(
+      new Set((data || []).map((r) => String(r.co2_bin).trim()).filter(Boolean))
+    );
+
+    // Ensure the drafted/selected bin remains visible even if not in the result yet
+    if (state.co2Bin && !list.includes(state.co2Bin)) list.push(state.co2Bin);
+
+    setBins(list.sort());
+  } catch (e) {
+    console.error("Unexpected bins fetch error:", e);
+    setBins((prev) => {
+      const s = new Set(prev);
+      if (state.co2Bin) s.add(state.co2Bin);
+      return Array.from(s).sort();
+    });
+  }
+};
+
+useEffect(() => {
+  fetchBins();
+
+  // Realtime: refresh when inside_co2_bins changes
+  const channel = supabase
+    .channel("realtime:inside_co2_bins")
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "inside_co2_bins" },
+      () => fetchBins()
+    )
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(channel);
+  };
+}, []);
+
+// If a draft later sets state.co2Bin, make sure it’s in the options
+useEffect(() => {
+  if (!state.co2Bin) return;
+  setBins((prev) => {
+    const s = new Set(prev);
+    s.add(state.co2Bin);
+    return Array.from(s).sort();
+  });
+}, [state.co2Bin]);
+
   // === Load draft on mount ===
   useEffect(() => {
     try {
@@ -340,16 +406,28 @@ function MixingJob() {
             <label className="block text-sm font-medium mb-1" htmlFor="co2-bin">
               CO₂ Bin
             </label>
-            <select
-              value={state.co2Bin}
-              onChange={(e) => setState((prev) => ({ ...prev, co2Bin: e.target.value }))}
-              className="border rounded-lg px-3 py-2 w-full bg-white"
-              id="co2-bin"
-            >
-              <option value="">Select Bin</option>
-              <option value="Co2-1">Co2-1</option>
-              <option value="Co2-2">Co2-2</option>
-            </select>
+
+            <div className="flex gap-2">
+              <select
+                id="co2-bin"
+                className="border rounded-lg px-3 py-2 w-full bg-white"
+                value={state.co2Bin}
+                onChange={(e) => setState((prev) => ({ ...prev, co2Bin: e.target.value }))}
+              >
+                <option value="">Select Bin</option>
+                {bins.map((b) => (
+                  <option key={b} value={b}>
+                    {b}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {bins.length === 0 && (
+              <p className="text-xs text-gray-500 mt-1">
+                No bins found in <code>inside_co2_bins</code>.
+              </p>
+            )}
           </div>
 
           <div>

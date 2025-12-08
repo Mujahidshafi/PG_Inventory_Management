@@ -60,6 +60,7 @@ const makeOutputRow = () => ({
   storageLocation: "",
   physicalBoxId: "",
   usePhysicalBox: false,
+  productOverride: "",
 });
 
 /* --------------------------- Physical Box Lookup ------------------------- */
@@ -143,7 +144,7 @@ function OutputBoxTable({
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[720px] table-fixed text-xs">
+        <table className="w-full min-w-[900px] table-fixed text-xs">
           <thead className="bg-gray-50 text-gray-600">
             <tr>
               <th className="px-3 py-2 w-24">Box ID</th>
@@ -152,6 +153,7 @@ function OutputBoxTable({
               <th className="px-3 py-2 w-32">Physical Box ID</th>
               <th className="px-3 py-2 w-16">Use PB</th>
               <th className="px-4 py-2 w-20">Net Weight (lbs)</th>
+              <th className="px-3 py-2 w-40">Custom Product</th>
               <th className="px-3 py-2 w-40">Storage Location</th>
               <th className="px-4 py-2 w-20">print</th>
               <th className="px-3 py-2 w-16">Remove</th>
@@ -160,7 +162,7 @@ function OutputBoxTable({
           <tbody>
             {!rows || rows.length === 0 ? (
               <tr>
-                <td colSpan={9} className="px-4 py-6 text-center text-gray-500">
+                <td colSpan={10} className="px-4 py-6 text-center text-gray-500">
                   No boxes yet. Click “Add Box”.
                 </td>
               </tr>
@@ -265,6 +267,17 @@ function OutputBoxTable({
                         return net.toLocaleString();
                       })()}
                     </td>
+
+                    {/* Product (override) */}
+                   <td className="px-3 py-2">
+                     <input
+                       className="w-full rounded border px-2 py-1"
+                       type="text"
+                       placeholder="Leave blank to use auto products"
+                       value={b.productOverride || ""}
+                       onChange={(e) => onUpdate(i, "productOverride", e.target.value)}
+                     />
+                   </td>
 
                     {/* Storage Location */}
                     <td className="px-3 py-2">
@@ -1036,33 +1049,41 @@ export default function SpiralCleaningPage() {
 
       // Insert into storage tables
       const lotNumberStr = combinedLotNumbers || "";
-      const productStr = combinedProducts || "";
+      const defaultProductStr = combinedProducts || "";
       const supplier = state.selectedSupplier || null;
       const notes = state.notes?.trim() || null;
       const employee = state.selectedEmployee || null;
 
       // Clean
       for (const b of cleanOut) {
+        const rowProducts = (b.productOverride && b.productOverride.trim())
+          ? b.productOverride.trim()
+          : defaultProductStr;
+
         await supabase.from("clean_product_storage").insert({
           Process_ID: state.processID,
           Box_ID: b.Box_ID,
           Location: b.storageLocation || "",
           Lot_Number: lotNumberStr,
-          Product: productStr,
+          Product: rowProducts,
           Amount: b.weightLbs,
           Supplier: supplier,
           Notes: notes,
         });
       }
 
-      // Screenings → screening_storage_shed with Type='Screenings'
+      // Screenings
       for (const b of screeningsOut) {
+        const rowProducts = (b.productOverride && b.productOverride.trim())
+          ? b.productOverride.trim()
+          : defaultProductStr;
+
         await supabase.from("screening_storage_shed").insert({
           Process_ID: state.processID,
           Box_ID: b.Box_ID,
           Location: b.storageLocation || "Screening Shed",
           Lot_Number: lotNumberStr,
-          Product: productStr,
+          Product: rowProducts,
           Amount: b.weightLbs,
           Type: "Screenings",
           Supplier: supplier,
@@ -1104,7 +1125,7 @@ export default function SpiralCleaningPage() {
         employee,
         suppliers: supplier,
         lot_numbers: lotNumberStr,
-        products: productStr,
+        products: defaultProductStr,
         notes,
         input_total: totals.inputAmount,
         output_total: totals.outputTotal,

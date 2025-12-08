@@ -15,6 +15,12 @@ const DEFAULT_STATE = {
 };
 
 // Helpers
+const TOTE_WEIGHTS = {
+  "2000lb tote": 2000,
+  "2200lb tote": 2200,
+  "2500lb tote": 2500,
+};
+
 const safeNum = (v) => (v === "" || v === null || isNaN(Number(v)) ? 0 : Number(v));
 const uniq = (arr) => Array.from(new Set(arr.filter(Boolean)));
 const todayISO = () => new Date().toISOString().slice(0, 10);
@@ -63,6 +69,7 @@ export default function BaggingJob() {
   const [state, setState] = useState(DEFAULT_STATE);
 
   const [physicalBoxes, setPhysicalBoxes] = useState([]);
+  
 
   // Build a quick lookup map: PB_ID -> weight
   const pbMap = useMemo(
@@ -225,19 +232,20 @@ export default function BaggingJob() {
 
   // Outbound pallet total
   const palletsTotalWeight = useMemo(
-    () =>
-      pallets.reduce((sum, p) => {
-        const bt = p.bagType;
-        const n = safeNum(p.numBags);
-        const manual = safeNum(p.totalWeight);
-        if (manual > 0) return sum + manual;
-        if (bt === "25lb") return sum + n * 25;
-        if (bt === "50lb") return sum + n * 50;
-        if (bt === "2000lb tote") return sum + n * 2000;
-        return sum;
-      }, 0),
-    [pallets]
-  );
+  () =>
+    pallets.reduce((sum, p) => {
+      const manual = safeNum(p.totalWeight);
+      if (manual > 0) return sum + manual;
+
+      const n = safeNum(p.numBags || 1);
+      if (p.bagType === "25lb") return sum + n * 25;
+      if (p.bagType === "50lb") return sum + n * 50;
+      if (p.bagType in TOTE_WEIGHTS) return sum + n * TOTE_WEIGHTS[p.bagType];
+      return sum;
+    }, 0),
+  [pallets]
+);
+
 
   const balance = useMemo(
     () => inboundTotals.total - palletsTotalWeight,
@@ -414,25 +422,28 @@ export default function BaggingJob() {
   // ───────────────────────────── Handlers: Pallets ─────────────────────────────
 
   const addPallet = (bagType) => {
-    const isTote = bagType === "2000lb tote";
-        const newId = makePalletId(pallets.length); // generate once here
-        const nowIso = new Date().toISOString();
-        setPallets((prev) => [
-            ...prev,
-            {
-            id: newId,               // ✅ store this permanent ID
-            pallet_id: newId,        // ✅ for clarity when saving
-            bagType,
-            numBags: isTote ? 1 : "",
-            totalWeight: isTote ? 2000 : "",
-            storageLocation: "",
-            notes: "",
-            createdAt: nowIso,
-            },
-        ]);
-        dirtyRef.current = true;
-        markTyping();
-    };
+  const isTote = bagType in TOTE_WEIGHTS;
+  const defaultWeight = isTote ? TOTE_WEIGHTS[bagType] : 0;
+
+  const newId = makePalletId(pallets.length);
+  const nowIso = new Date().toISOString();
+
+  setPallets((prev) => [
+    ...prev,
+    {
+      id: newId,
+      pallet_id: newId,
+      bagType,
+      numBags: isTote ? 1 : "",
+      totalWeight: isTote ? defaultWeight : "",
+      storageLocation: "",
+      notes: "",
+      createdAt: nowIso,
+    },
+  ]);
+  dirtyRef.current = true;
+  markTyping();
+};
 
 
 
@@ -453,14 +464,15 @@ export default function BaggingJob() {
   };
 
   const getPalletDisplayWeight = (p) => {
-    const manual = safeNum(p.totalWeight);
-    if (manual > 0) return manual;
-    const n = safeNum(p.numBags);
-    if (p.bagType === "25lb") return n * 25;
-    if (p.bagType === "50lb") return n * 50;
-    if (p.bagType === "2000lb tote") return n * 2000;
-    return 0;
-  };
+  const manual = safeNum(p.totalWeight);
+  if (manual > 0) return manual;
+
+  const n = safeNum(p.numBags || 1);
+  if (p.bagType === "25lb") return n * 25;
+  if (p.bagType === "50lb") return n * 50;
+  if (p.bagType in TOTE_WEIGHTS) return n * TOTE_WEIGHTS[p.bagType];
+  return 0;
+};
 
   // ───────────────────────────── Complete / Save ─────────────────────────────
 
@@ -1006,6 +1018,20 @@ export default function BaggingJob() {
             >
               + 2000 lb Tote
             </button>
+            <button
+              type="button"
+              onClick={() => addPallet("2200lb tote")}
+              className="px-3 py-1.5 text-xs border rounded-lg hover:bg-gray-50"
+            >
+              + 2200 lb Tote
+            </button>
+            <button
+              type="button"
+              onClick={() => addPallet("2500lb tote")}
+              className="px-3 py-1.5 text-xs border rounded-lg hover:bg-gray-50"
+            >
+              + 2500 lb Tote
+            </button>
           </div>
         </div>
 
@@ -1040,13 +1066,10 @@ export default function BaggingJob() {
               ) : (
                 pallets.map((p, i) => {
                   const auto =
-                    p.bagType === "25lb"
-                      ? safeNum(p.numBags) * 25
-                      : p.bagType === "50lb"
-                      ? safeNum(p.numBags) * 50
-                      : p.bagType === "2000lb tote"
-                      ? safeNum(p.numBags || 1) * 2000
-                      : 0;
+                    p.bagType === "25lb" ? safeNum(p.numBags) * 25 :
+                    p.bagType === "50lb" ? safeNum(p.numBags) * 50 :
+                    (p.bagType in TOTE_WEIGHTS) ? safeNum(p.numBags || 1) * TOTE_WEIGHTS[p.bagType] :
+                    0;
 
                   const display =
                     p.totalWeight && safeNum(p.totalWeight) > 0
@@ -1066,7 +1089,7 @@ export default function BaggingJob() {
                           onChange={(e) =>
                             updatePallet(i, "numBags", e.target.value)
                           }
-                          disabled={p.bagType === "2000lb tote"}
+                          disabled={p.bagType in TOTE_WEIGHTS}
                         />
                       </td>
                       <td className="px-2 py-1 text-right">
