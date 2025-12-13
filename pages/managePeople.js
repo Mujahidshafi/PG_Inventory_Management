@@ -42,35 +42,57 @@ export default function ManagePeoplePage() {
   // Employee actions
   const addEmployee = async () => {
     if (!newEmployee.trim()) return;
-    const { error } = await supabase
+
+    const { data, error } = await supabase
       .from("employees")
-      .insert({ name: newEmployee.trim(), active: true });
-    if (error) alert(error.message);
-    else {
-      setEmployees([...employees, { name: newEmployee.trim(), active: true }]);
+      .insert({ name: newEmployee.trim(), active: true })
+      .select()
+      .single();   // ← ensure we get back "id"
+
+    if (error) {
+      alert(error.message);
+    } else {
+      // data = { id: 12, name: "...", active: true }
+      setEmployees((prev) => [...prev, data]);
       setNewEmployee("");
     }
   };
 
   const updateEmployee = async (id, field, value) => {
-    const { error } = await supabase
-      .from("employees")
-      .update({ [field]: value })
-      .eq("id", id);
-    if (error) alert(error.message);
-    else {
-      setEmployees((prev) =>
-        prev.map((emp) => (emp.id === id ? { ...emp, [field]: value } : emp))
-      );
-    }
-  };
+  if (!id) {
+    console.error("Missing employee ID for update");
+    return;
+  }
+  const { error } = await supabase
+    .from("employees")
+    .update({ [field]: value })
+    .eq("id", id);
 
-  const deleteEmployee = async (id) => {
-    if (!confirm("Delete this employee?")) return;
-    const { error } = await supabase.from("employees").delete().eq("id", id);
-    if (error) alert(error.message);
-    else setEmployees(employees.filter((e) => e.id !== id));
-  };
+  if (error) alert(error.message);
+  else {
+    setEmployees((prev) =>
+      prev.map((emp) => (emp.id === id ? { ...emp, [field]: value } : emp))
+    );
+  }
+};
+
+const deleteEmployee = async (id) => {
+  if (!id) {
+    console.error("Missing employee ID for delete");
+    return;
+  }
+  if (!confirm("Delete this employee?")) return;
+
+  const { error } = await supabase
+    .from("employees")
+    .delete()
+    .eq("id", id);
+
+  if (error) alert(error.message);
+  else {
+    setEmployees((prev) => prev.filter((e) => e.id !== id));
+  }
+};
 
   // Customer actions
   const addCustomer = async () => {

@@ -192,6 +192,10 @@ export default function Transfer() {
       return;
     }
 
+    const txTimestamp = dateTime
+    ? new Date(dateTime).toISOString()
+    : new Date().toISOString();
+
     setProcessing(true);
 
     try {
@@ -213,9 +217,22 @@ export default function Transfer() {
       const mergedProducts = Array.from(new Set([...toProducts, ...fromProducts]));
 
       // 1️⃣ Update source silo (weight only; moisture & arrays unchanged)
+      const fromUpdate = transferAll
+        ? {
+            weight: newFromWeight,      // will be 0
+            lot_number: [],             // empty
+            product: [],                // empty
+            moisture: 0,             // "empty" moisture
+            date_stored: txTimestamp,
+          }
+        : {
+            weight: newFromWeight,      // partial transfer
+            date_stored: txTimestamp,   // still update last-activity date
+          };
+
       const { error: fromError } = await supabase
         .from("field_run_storage_test")
-        .update({ weight: newFromWeight })
+        .update(fromUpdate)
         .eq("location", from);
 
       if (fromError) {
@@ -229,7 +246,8 @@ export default function Transfer() {
           weight: newToWeight,
           lot_number: mergedLots,
           product: mergedProducts,
-          moisture: destMoisture, // <-- ONLY here, from user input or 0
+          moisture: destMoisture,   // from user input or 0
+          date_stored: txTimestamp, // same transaction date
         })
         .eq("location", to);
 
