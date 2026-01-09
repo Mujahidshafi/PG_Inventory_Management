@@ -14,6 +14,33 @@ const DEFAULT_STATE = {
   selectedSupplier: "",
 };
 
+const normToken = (v) =>
+  String(v ?? "")
+    .trim()
+    .replace(/\s+/g, " "); // collapse extra spaces
+
+// If you want case-insensitive matching, use .toUpperCase() here.
+// For lots I usually do uppercase; for products it's optional.
+const normLot = (v) => normToken(v).toUpperCase();
+const normProd = (v) => normToken(v); // keep case as typed; change if you want
+
+const dedupeCsv = (csv, normalizer = normToken) => {
+  const tokens = String(csv ?? "")
+    .split(",")
+    .map(normalizer)
+    .filter(Boolean);
+
+  return Array.from(new Set(tokens)).join(", ");
+};
+
+const dedupeArrayLike = (val, normalizer = normToken) => {
+  // handles arrays OR strings OR null
+  if (!val && val !== 0) return [];
+  if (Array.isArray(val)) return Array.from(new Set(val.map(normalizer).filter(Boolean)));
+  return Array.from(new Set(String(val).split(",").map(normalizer).filter(Boolean)));
+};
+
+
 // Helpers
 const TOTE_WEIGHTS = {
   "2000lb tote": 2000,
@@ -195,30 +222,30 @@ export default function BaggingJob() {
 
   const combinedLots = useMemo(() => {
     const fromBoxes = boxSources
-      .map((b) => (b.lotNumber || "").split(","))
-      .flat()
-      .map((s) => s.trim());
+      .flatMap((b) => String(b.lotNumber || "").split(","))
+      .map(normLot)
+      .filter(Boolean);
 
     const fromCo2 = co2Draws
-      .map((d) => d.lotNumbers || [])
-      .flat()
-      .map((s) => String(s).trim());
+      .flatMap((d) => dedupeArrayLike(d.lotNumbers, normLot))
+      .map(normLot)
+      .filter(Boolean);
 
-    return uniq([...fromBoxes, ...fromCo2]).join(", ");
+    return Array.from(new Set([...fromBoxes, ...fromCo2])).join(", ");
   }, [boxSources, co2Draws]);
 
   const combinedProducts = useMemo(() => {
     const fromBoxes = boxSources
-      .map((b) => (b.product || "").split(","))
-      .flat()
-      .map((s) => s.trim());
+      .flatMap((b) => String(b.product || "").split(","))
+      .map(normProd)
+      .filter(Boolean);
 
     const fromCo2 = co2Draws
-      .map((d) => d.products || [])
-      .flat()
-      .map((s) => String(s).trim());
+      .flatMap((d) => dedupeArrayLike(d.products, normProd))
+      .map(normProd)
+      .filter(Boolean);
 
-    return uniq([...fromBoxes, ...fromCo2]).join(", ");
+    return Array.from(new Set([...fromBoxes, ...fromCo2])).join(", ");
   }, [boxSources, co2Draws]);
 
   const combinedSuppliers = useMemo(() => {
@@ -489,14 +516,17 @@ export default function BaggingJob() {
       alert("Add at least one pallet/tote output.");
       return;
     }
+    const lotsNoDup = dedupeCsv(combinedLots, normLot);
+    const prodsNoDup = dedupeCsv(combinedProducts, normProd);
+    const suppNoDup = dedupeCsv(combinedSuppliers, normToken);
 
     const palletPayload = pallets.map((p, idx) => {
       const total = getPalletDisplayWeight(p);
       return {
         pallet_id: p.pallet_id || makePalletId(idx),
-        lot_number: combinedLots || "",
-        product: combinedProducts || "",
-        supplier: combinedSuppliers || null,
+        lot_number: lotsNoDup,
+        product: prodsNoDup,
+        supplier: suppNoDup || null,
         bag_type: p.bagType,
         num_bags: safeNum(p.numBags),
         total_weight: total,
@@ -583,22 +613,23 @@ export default function BaggingJob() {
     }
 
       // 4) Insert report record
-        const reportPayload = {
-            process_type: "Bagging",
-            employee: selectedEmployee,
-            notes,
-            lot_numbers: combinedLots,
-            products: combinedProducts,
-            supplier: combinedSuppliers,
-            input_total: inboundTotals.total,
-            output_total: sumPallets,
-            balance,
-            inputs: {
-                boxes: boxSources,
-                co2_draws: co2Draws,
-            },
-            outputs: palletPayload,
-        };
+      const reportPayload = {
+        process_type: "Bagging",
+        employee: selectedEmployee,
+        notes,
+        lot_numbers: lotsNoDup,
+        products: prodsNoDup,
+        supplier: suppNoDup || null,
+        input_total: inboundTotals.total,
+        output_total: sumPallets,
+        balance,
+        inputs: {
+          boxes: boxSources,
+          co2_draws: co2Draws,
+        },
+        outputs: palletPayload,
+      };
+
 
         const { error: repErr } = await supabase.from("bagging_reports").insert(reportPayload);
         if (repErr) console.error("Bagging report insert error:", repErr);

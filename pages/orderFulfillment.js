@@ -16,6 +16,21 @@ const siloOrder = [
 const todayISO = () => new Date().toISOString().slice(0, 10);
 const safeNum = (v) => (v === "" || v === null ? 0 : Number(v) || 0);
 
+const normToken = (v) =>
+  String(v ?? "")
+    .trim()
+    .replace(/\s+/g, " ")
+    
+
+const dedupeCsv = (csv) => {
+  const tokens = String(csv ?? "")
+    .split(",")
+    .map(normToken)
+    .filter(Boolean);
+
+  return Array.from(new Set(tokens)).join(", ");
+}
+
 const normalizeJsonArray = (val) => {
   if (!val && val !== 0) return [];
   if (Array.isArray(val)) return val.map(String);
@@ -653,6 +668,9 @@ export default function OrderFulfillmentPage() {
       // Use converted items in the report
       const itemsForReport = (state.items || []).map((row) => ({
         ...row,
+        lotNumbers: dedupeCsv(row.lotNumbers),
+        products: dedupeCsv(row.products),
+        supplier: row.supplier ? String(row.supplier).trim() : null,
         newRemainingWeight: toNumOrNull(row.newRemainingWeight),
       }));
 
