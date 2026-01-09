@@ -25,16 +25,6 @@ const safeNum = (v) => (v === "" || v === null || isNaN(Number(v)) ? 0 : Number(
 const uniq = (arr) => Array.from(new Set(arr.filter(Boolean)));
 const todayISO = () => new Date().toISOString().slice(0, 10);
 
-const getPBMap = (arr=[]) => new Map(arr.map(p => [String(p.physical_box_id).trim(), Number(p.weight) || 0]));
-const findPBWeight = (map, id) => (id ? (map.get(String(id).trim()) || 0) : 0);
-
-const computeNet = (gross, usePB, pbId) => {
-  const g = safeNum(gross);
-  if (!usePB || !pbId) return g;
-  const pbw = findPBWeight(pbMap, pbId);
-  return Math.max(g - pbw, 0);
-};
-
 
 // Auto Pallet ID generator (simple + unique enough for now)
 const makePalletId = (index) => {
@@ -69,6 +59,16 @@ export default function BaggingJob() {
   const [state, setState] = useState(DEFAULT_STATE);
 
   const [physicalBoxes, setPhysicalBoxes] = useState([]);
+
+  const buildDraft = () => ({
+    jobDate: state.jobDate,
+    inputs: boxSources,
+    co2Draws,
+    pallets,
+    notes,
+    selectedEmployee,
+    ts: Date.now(),
+  });
   
 
   // Build a quick lookup map: PB_ID -> weight
@@ -89,24 +89,26 @@ export default function BaggingJob() {
   };
 
     useEffect(() => {
-        try {
-            const raw = localStorage.getItem(LS_KEY);
-            if (raw) {
-            const parsed = JSON.parse(raw);
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return;
 
-            // ✅ Restore all relevant parts
-            setState({ ...DEFAULT_STATE, ...parsed });
+    const parsed = JSON.parse(raw);
 
-            if (parsed.inputs) setBoxSources(parsed.inputs);
-            if (parsed.co2Draws) setCo2Draws(parsed.co2Draws);
-            if (parsed.pallets) setPallets(parsed.pallets);
-            if (parsed.selectedEmployee) setSelectedEmployee(parsed.selectedEmployee);
-            if (parsed.notes) setNotes(parsed.notes);
-            }
-        } catch (e) {
-            console.warn("Bagging draft load error", e);
-        }
-        }, []);
+    setState((prev) => ({
+      ...prev,
+      jobDate: parsed.jobDate || prev.jobDate,
+    }));
+
+    setBoxSources(parsed.inputs || []);
+    setCo2Draws(parsed.co2Draws || []);
+    setPallets(parsed.pallets || []);
+    setNotes(parsed.notes || "");
+    setSelectedEmployee(parsed.selectedEmployee || "");
+  } catch (e) {
+    console.warn("Bagging draft load error", e);
+  }
+}, []);
 
 
     const typingTimeoutRef = useRef(null);
@@ -128,21 +130,18 @@ export default function BaggingJob() {
     };
 
     useEffect(() => {
-    const t = setInterval(() => {
-        const now = Date.now();
-        if (!isTypingRef.current && dirtyRef.current && now - lastSavedRef.current >= 60000) {
+      const t = setTimeout(() => {
         try {
-            localStorage.setItem(LS_KEY, JSON.stringify(stateRef.current));
-            lastSavedRef.current = now;
-            dirtyRef.current = false;
-            console.log("✅ Bagging draft autosaved.");
+          localStorage.setItem(LS_KEY, JSON.stringify(buildDraft()));
+          // console.log("✅ Bagging draft autosaved");
         } catch (e) {
-            console.warn("Autosave failed:", e);
+          console.warn("Autosave failed:", e);
         }
-        }
-    }, 5000);
-    return () => clearInterval(t);
-    }, []);
+      }, 800); // debounce delay
+
+      return () => clearTimeout(t);
+    }, [state.jobDate, boxSources, co2Draws, pallets, notes, selectedEmployee]);
+
 
 
   // ───────────────────────────── Load employees + CO₂ bins ─────────────────────────────
@@ -691,18 +690,12 @@ export default function BaggingJob() {
                 <button
                     className="rounded-xl border px-3 py-2 text-sm hover:bg-gray-50"
                     onClick={() => {
-                    const snapshot = {
-                        ...state,
-                        selectedEmployee,
-                        notes,
-                        inputs: boxSources,
-                        co2Draws,
-                        pallets,
-                        };
-
-                        localStorage.setItem(LS_KEY, JSON.stringify(snapshot));
+                      try {
+                        localStorage.setItem(LS_KEY, JSON.stringify(buildDraft()));
                         alert("Draft saved!");
-                        dirtyRef.current = false;
+                      } catch (e) {
+                        alert("Failed to save draft.");
+                      }
                     }}
                 >
                     Save Draft

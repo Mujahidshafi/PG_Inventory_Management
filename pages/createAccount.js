@@ -49,13 +49,13 @@ function CreateAccount() {
       return;
     }
 
-    // Insert into users table
-    const { error: profileError } = await supabase.from("users").insert({
-      id: userId,
-      name,
-      email,
-      role,
-    });
+    // Create/Update users profile row
+    const { error: profileError } = await supabase
+      .from("users")
+      .upsert(
+        { id: userId, name, email, role },
+        { onConflict: "id" } // primary key
+      );
 
     if (profileError) {
       setError("Failed to create user profile: " + profileError.message);

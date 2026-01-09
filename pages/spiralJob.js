@@ -1121,6 +1121,8 @@ export default function SpiralCleaningPage() {
           Amount: b.weightLbs,
           Supplier: supplier,
           Notes: notes,
+          physical_box_id: b.physicalBoxId || null,
+          Date_Stored: new Date().toISOString(),
         });
       }
 
@@ -1140,6 +1142,8 @@ export default function SpiralCleaningPage() {
           Type: "Screenings",
           Supplier: supplier,
           Notes: notes,
+          physical_box_id: b.physicalBoxId || null,
+          Date_Stored: new Date().toISOString(),
         });
       }
 

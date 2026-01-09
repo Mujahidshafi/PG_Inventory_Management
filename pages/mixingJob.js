@@ -301,7 +301,7 @@ useEffect(() => {
           total_weight: totalUsedWeight,
           notes: state.notes?.trim() || null,
           boxes: updatedBoxes,
-          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
         },
         { onConflict: ["co2_bin"] }
       );

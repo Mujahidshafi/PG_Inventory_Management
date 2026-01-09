@@ -1243,6 +1243,8 @@ const combinedProducts = useMemo(() => {
           Amount: b.weightLbs,
           Supplier: supplier,
           Notes: notes,
+          Date_Stored: new Date().toISOString(),
+          physical_box_id: b.physicalBoxId || null,
         });
       }
 
@@ -1257,6 +1259,8 @@ const combinedProducts = useMemo(() => {
           Amount: b.weightLbs,
           Supplier: supplier,
           Notes: notes,
+          Date_Stored: new Date().toISOString(),
+          physical_box_id: b.physicalBoxId || null,
         });
       }
 
@@ -1272,6 +1276,8 @@ const combinedProducts = useMemo(() => {
           Type: "Rejects",
           Supplier: supplier,
           Notes: notes,
+          Date_Stored: new Date().toISOString(),
+          physical_box_id: b.physicalBoxId || null,
         });
       }
 
